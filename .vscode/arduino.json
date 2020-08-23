@@ -1,0 +1,7 @@
+{
+    "board": "espressif:esp32:firebeetle32",
+    "configuration": "FlashFreq=80,UploadSpeed=921600",
+    "programmer": "AVR ISP",
+    "sketch": "testsoftware_dabv2_1.ino",
+    "port": "COM3"
+}

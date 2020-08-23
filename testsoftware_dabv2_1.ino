@@ -6,7 +6,7 @@
 #include <Wire.h>
 #include <SparkFunBQ27441.h>
 
-//3 seconds WDT
+//3 seconds WDT1
 #define WDT_TIMEOUT 3
 
 // Set BATTERY_CAPACITY to the design capacity of your battery.
@@ -93,15 +93,7 @@ void onEventCallback(BM83_event_t *event){
 
 void loop() {
     // resetting WDT every 2s, 5 times only
-  if (millis() - last >= 2000 && i < 5) {
-      Serial.println("Resetting WDT...");
-      esp_task_wdt_reset();
-      last = millis();
-      i++;
-      if (i == 5) {
-        Serial.println("Stopping WDT reset. CPU should reboot in 3s");
-      }
-  }
+
 
     // Read battery stats from the BQ27441-G1A
   unsigned int soc = lipo.soc();  // Read state-of-charge (%)
