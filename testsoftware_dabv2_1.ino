@@ -126,7 +126,7 @@ void loop() {
 
   bm83.run();
     
-     //BM83 start routine (required)
+     //BM83 start routine (required)1
 
     if (Serial.available() > 0)
     {
