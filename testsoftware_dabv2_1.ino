@@ -1,10 +1,10 @@
-#include <esp_task_wdt.h>
-#include "BM83.h"           // Bluetooth Module BM83 Library
-#include <SoftwareSerial.h> //SoftwareSerial Library for ESP32
-#include <APA102.h>         //RGB LED's Library
-#include <BD37544FS.h>
-#include <Wire.h>
-#include <SparkFunBQ27441.h>
+#include <esp_task_wdt.h>    //esp32 watchdog header
+#include "BM83.h"            // Bluetooth Module BM83 Library
+#include <SoftwareSerial.h>  //SoftwareSerial Library for ESP32
+#include <APA102.h>          //RGB LED's Library
+#include <BD37544FS.h>       //Sound processor Library
+#include <Wire.h>            //i2c library
+#include <SparkFunBQ27441.h> //fuel gauge library
 
 //60 seconds WDT1
 #define WDT_TIMEOUT 60
@@ -21,6 +21,7 @@ BD37544FS bd;
 const int mfbPin = 4;
 int i = 0;
 int last = millis();
+int fuelgauge_init = 0;
 
 SoftwareSerial swSerial(RX_PIN, TX_PIN);
 BM83 bm83(swSerial, TX_IND);
@@ -28,88 +29,75 @@ BM83 bm83(swSerial, TX_IND);
 SemaphoreHandle_t xSemaphore;
 TaskHandle_t xHandle;
 
-
-
 void loop()
 {
 
     vTaskDelete(NULL);
 }
-
-void bm83_loop(void *pvParameters)
+void read_print_fuelgauge(void *pvParameters)
 {
     while (1)
     {
-
-        // Read battery stats from the BQ27441-G1A
-        unsigned int soc = lipo.soc();                   // Read state-of-charge (%)
-        unsigned int volts = lipo.voltage();             // Read battery voltage (mV)
-        int current = lipo.current(AVG);                 // Read average current (mA)
-        unsigned int fullCapacity = lipo.capacity(FULL); // Read full capacity (mAh)
-        unsigned int capacity = lipo.capacity(REMAIN);   // Read remaining capacity (mAh)
-        int power = lipo.power();                        // Read average power draw (mW)
-        int health = lipo.soh();                         // Read state-of-health (%)
-
-        // Now print out those values:
-        String toPrint = String(soc) + "% | ";
-        toPrint += String(volts) + " mV Voltage | ";
-        toPrint += String(current) + " mA | ";
-        toPrint += String(capacity) + " / ";
-        toPrint += String(fullCapacity) + " mAh | ";
-        toPrint += String(power) + " mW | ";
-        toPrint += String(health) + "%";
-
-        Serial.println(toPrint);
-
-        bm83.run();
-
-        //BM83 start routine (required)1
-
-        if (Serial.available() > 0)
+        if (fuelgauge_init == 1)
         {
+            // Read battery stats from the BQ27441-G1A
+            unsigned int soc = lipo.soc();                   // Read state-of-charge (%)
+            unsigned int volts = lipo.voltage();             // Read battery voltage (mV)
+            int current = lipo.current(AVG);                 // Read average current (mA)
+            unsigned int fullCapacity = lipo.capacity(FULL); // Read full capacity (mAh)
+            unsigned int capacity = lipo.capacity(REMAIN);   // Read remaining capacity (mAh)
+            int power = lipo.power();                        // Read average power draw (mW)
+            int health = lipo.soh();                         // Read state-of-health (%)
 
-            // read the incoming byte:
-            char c = Serial.read();
-            switch (c)
-            {
-            case 'a':
-                bm83.getStatus();
-                break;
-            case 'b':
-                // Other Action, Please see BM83_Debug.h
-                bm83.musicControl(MUSIC_CONTROL_PLAY);
-                break;
-            case 'c':
-                // Other Action, Please see BM83_Debug.h
-                bm83.musicControl(MUSIC_CONTROL_NEXT);
-                break;
-            case 'd':
-                bm83.startBt();
-                break;
-            case 'e':
-                // Other Action, Please see BM83_Debug.h
-                bm83.mmiAction(BM83_MMI_STANDBY_ENTERING_PAIRING);
-                break;
-            case 'f':
-                // Other Action, Please see BM83_Debug.h
-                bm83.mmiAction(BM83_MMI_MUTE_MIC);
-                break;
-            case 'g':
-                bm83.powerOff();
-                break;
-            case 'h':
-                bm83.powerOn();
-                break;
-            case 'i':
-                String number_s = "1234567890";
-                bm83.makeCall(&number_s);
-                break;
-            }
+            // Now print out those values:
+            String toPrint = String(soc) + "% | ";
+            toPrint += String(volts) + " mV | ";
+            toPrint += String(current) + " mA | ";
+            toPrint += String(capacity) + " / ";
+            toPrint += String(fullCapacity) + " mAh | ";
+            toPrint += String(power) + " mW | ";
+            toPrint += String(health) + "%";
+
+            Serial.println(toPrint);
         }
+
         esp_task_wdt_reset();
         vTaskDelay(1000);
     }
     vTaskDelete(xHandle);
+}
+void bm83_setup(void *pvParameters)
+{
+    Serial.println("Setting up BM83");
+    //BM83 start routine (required)1
+    pinMode(mfbPin, OUTPUT);    // sets the MFB Pin 4 as output
+    digitalWrite(mfbPin, HIGH); // sets the MFB Pin 4 "High" to power on BM83 over BAT_IN
+    delay(500);
+    bm83.setCallback(onEventCallback);
+    vTaskDelay(5);
+    bm83.run();
+    bm83.powerOn();                                    // Sends "power on" command over UART to BM83
+    bm83.mmiAction(BM83_MMI_STANDBY_ENTERING_PAIRING); // Sends "enter Pairing" command over UART to BM83
+    digitalWrite(mfbPin, LOW);                         // sets the MFB Pin 4 "LOW" (no longer needed after power on process)
+    Serial.println("BM83 Setup complete...");
+
+    vTaskDelete(NULL);
+}
+
+
+void onEventCallback(BM83_event_t *event)
+{
+    // handle Event
+    Serial.print("[EVENT]: ");
+    Serial.println(event->event_code, HEX);
+
+    for (int i = 0; i < event->param_len; i++)
+    {
+        Serial.print(event->parameter[i], HEX);
+        Serial.print(" ");
+    }
+    Serial.println("");
+    vTaskDelay(1000);
 }
 
 void setup()
@@ -121,31 +109,23 @@ void setup()
     xSemaphore = xSemaphoreCreateBinary();
 
     // wen "CONFIG_SYSTEM_EVENT_TASK_STACK_SIZE" bruchsch wird glaub de speicher selber zeugwise
-    xTaskCreate(&bm83_loop, "bm83_loop", 2000, NULL, 1, &xHandle);
+    xTaskCreate(bm83_setup, "bm83_setup", 4000, NULL, 1, &xHandle);
+    xTaskCreate(read_print_fuelgauge, "read_print_fuelgauge", 4000, NULL, 2, &xHandle);
 
     Serial.begin(9600);
 
     Serial.println("Configuring WDT...");
     esp_task_wdt_init(WDT_TIMEOUT, true); //enable panic so ESP32 restarts
-    esp_task_wdt_add(xHandle);               //add current thread to WDT watch
+    esp_task_wdt_add(xHandle);            //add current thread to WDT watch
 
     swSerial.begin(115200);
 
     Wire.begin();
     Wire.setClock(100000);
 
-    pinMode(mfbPin, OUTPUT);    // sets the MFB Pin 4 as output
-    digitalWrite(mfbPin, HIGH); // sets the MFB Pin 4 "High" to power on BM83 over BAT_IN
-    delay(500);
-    bm83.run();
-    
-    bm83.powerOn();                                    // Sends "power on" command over UART to BM83
-    bm83.mmiAction(BM83_MMI_STANDBY_ENTERING_PAIRING); // Sends "enter Pairing" command over UART to BM83
-    digitalWrite(mfbPin, LOW);                         // sets the MFB Pin 4 "LOW" (no longer needed after power on process)
-
     bd.setSelect(0);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
     bd.setIn_gain(0); // int 0...7 === 0...20 dB
-    bd.setVol_1(-25); // int 0...87 === 0...-87 dB
+    bd.setVol_1(-10); // int 0...87 === 0...-87 dB
     bd.setFad_1(0);   // int 0...87 === 0...-87 dB
     bd.setFad_2(0);   // int 0...87 === 0...-87 dB
     bd.setBass(0);    // int -7...0...+7 === -14...+14 dB
@@ -163,6 +143,7 @@ void setup()
             ;
     }
     Serial.println("Connected to BQ27441!");
+    fuelgauge_init = 1;
 
     // Uset lipo.setCapacity(BATTERY_CAPACITY) to set the design capacity
     // of your battery.
