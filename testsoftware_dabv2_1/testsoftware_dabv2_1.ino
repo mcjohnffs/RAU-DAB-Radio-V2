@@ -63,8 +63,15 @@ int buttonState1 = 0;         // variable for reading the pushbutton status
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef* m_pElemXRingGauge1= NULL;
-
+gslc_tsElemRef* m_pElemListbox1_2 = NULL;
+gslc_tsElemRef* m_pElemTextbox2   = NULL;
+gslc_tsElemRef* m_pElemToggle2    = NULL;
+gslc_tsElemRef* m_pElemToggle3    = NULL;
+gslc_tsElemRef* m_pElemToggle3_4  = NULL;
+gslc_tsElemRef* m_pElemToggle3_5  = NULL;
+gslc_tsElemRef* m_pElemToggle3_6  = NULL;
+gslc_tsElemRef* m_pElemXRingGauge3= NULL;
+gslc_tsElemRef* m_pElemXRingGauge3_4= NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -93,7 +100,44 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
         break;
       case E_ELEM_BTN4:
         break;
-
+      case E_ELEM_TOGGLE2:
+        // TODO Add code for Toggle button ON/OFF state
+        if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2)) {
+          ;
+        }
+        break;
+      case E_ELEM_TOGGLE3:
+        // TODO Add code for Toggle button ON/OFF state
+        if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle3)) {
+          ;
+        }
+        break;
+      case E_ELEM_TOGGLE4:
+        // TODO Add code for Toggle button ON/OFF state
+        if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle3_4)) {
+          ;
+        }
+        break;
+      case E_ELEM_TOGGLE5:
+        // TODO Add code for Toggle button ON/OFF state
+        if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle3_5)) {
+          ;
+        }
+        break;
+      case E_ELEM_TOGGLE6:
+        // TODO Add code for Toggle button ON/OFF state
+        if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle3_6)) {
+          ;
+        }
+        break;
+      case E_ELEM_BTN9:
+        break;
+      case E_ELEM_BTN10:
+        break;
+      case E_ELEM_BTN11:
+        break;
+      case E_ELEM_BTN12:
+        break;
 //<Button Enums !End!>
       default:
         break;
@@ -107,14 +151,39 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
 //<Keypad Callback !End!>
 //<Spinner Callback !Start!>
 //<Spinner Callback !End!>
-//<Listbox Callback !Start!>
-//<Listbox Callback !End!>
+bool CbListbox(void* pvGui, void* pvElemRef, int16_t nSelId)
+{
+  gslc_tsGui*     pGui     = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem    = gslc_GetElemFromRef(pGui, pElemRef);
+  char            acTxt[MAX_STR + 1];
+  
+  if (pElemRef == NULL) {
+    return false;
+  }
+
+  // From the element's ID we can determine which listbox was active.
+  switch (pElem->nId) {
+//<Listbox Enums !Start!>
+    case E_ELEM_LISTBOX2:
+      if (nSelId != XLISTBOX_SEL_NONE) {
+        gslc_ElemXListboxGetItem(&m_gui, pElemRef, nSelId, acTxt, MAX_STR);
+      }
+      break;
+
+//<Listbox Enums !End!>
+    default:
+      break;
+  }
+  return true;
+}
 //<Draw Callback !Start!>
 //<Draw Callback !End!>
 //<Slider Callback !Start!>
 //<Slider Callback !End!>
 //<Tick Callback !Start!>
 //<Tick Callback !End!>
+
 
 
 void bm83_loop(void *pvParameters)
@@ -188,7 +257,7 @@ void encoder_loop(void *pvParameters)
     //process new value. Here is simple output.
     Serial.print("Value: ");
     Serial.println(encoderValue);
-    gslc_ElemXRingGaugeSetVal(&m_gui, m_pElemXRingGauge1, encoderValue);
+    gslc_ElemXRingGaugeSetVal(&m_gui, m_pElemXRingGauge3, encoderValue);
     vTaskDelay(5);
     bd.setVol_1(encoderValue);
     
