@@ -5,6 +5,28 @@
 #include <BD37544FS.h>       //Sound processor Library
 #include "Wire.h"           //i2c library
 #include <SparkFunBQ27441.h> //fuel gauge library
+  
+#include "AiEsp32RotaryEncoder.h"
+#include "displaytest_GSLC.h"
+
+
+int16_t oldEnc1Pos, enc1Pos;
+uint8_t enc1_buttonState;
+
+int16_t oldEnc2Pos, enc2Pos;
+uint8_t enc2_buttonState;
+
+#define ROTARY_ENCODER1_A_PIN 39
+#define ROTARY_ENCODER1_B_PIN 36
+#define ROTARY_ENCODER1_BUTTON_PIN 34
+
+#define ROTARY_ENCODER2_A_PIN 32
+#define ROTARY_ENCODER2_B_PIN 35
+#define ROTARY_ENCODER2_BUTTON_PIN 33
+
+AiEsp32RotaryEncoder rotaryEncoder1 = AiEsp32RotaryEncoder(ROTARY_ENCODER1_A_PIN, ROTARY_ENCODER1_B_PIN, ROTARY_ENCODER1_BUTTON_PIN, -1);
+AiEsp32RotaryEncoder rotaryEncoder2 = AiEsp32RotaryEncoder(ROTARY_ENCODER2_A_PIN, ROTARY_ENCODER2_B_PIN, ROTARY_ENCODER2_BUTTON_PIN, -1);
+
 
 
 // Set BATTERY_CAPACITY to the design capacity of your battery.
@@ -31,9 +53,69 @@ SemaphoreHandle_t xSemaphore;
 TaskHandle_t xHandle;
 
 // constants won't change. They're used here to set pin numbers:
-const int button1Pin = 15;    // the number of the pushbutton pin
+const int button1Pin = 26;    // the number of the pushbutton pin
 
 int buttonState1 = 0;         // variable for reading the pushbutton status
+
+// ------------------------------------------------
+// Program Globals
+// ------------------------------------------------
+
+// Save some element references for direct access
+//<Save_References !Start!>
+gslc_tsElemRef* m_pElemXRingGauge1= NULL;
+
+//<Save_References !End!>
+
+// Define debug message function
+static int16_t DebugOut(char ch) { if (ch == (char)'\n') Serial.println(""); else Serial.write(ch); return 0; }
+
+// ------------------------------------------------
+// Callback Methods
+// ------------------------------------------------
+// Common Button callback
+bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+{
+  // Typecast the parameters to match the GUI and element types
+  gslc_tsGui*     pGui     = (gslc_tsGui*)(pvGui);
+  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
+  gslc_tsElem*    pElem    = gslc_GetElemFromRef(pGui,pElemRef);
+
+  if ( eTouch == GSLC_TOUCH_UP_IN ) {
+    // From the element's ID we can determine which button was pressed.
+    switch (pElem->nId) {
+//<Button Enums !Start!>
+      case E_ELEM_BTN1:
+        break;
+      case E_ELEM_BTN2:
+        break;
+      case E_ELEM_BTN3:
+        break;
+      case E_ELEM_BTN4:
+        break;
+
+//<Button Enums !End!>
+      default:
+        break;
+    }
+  }
+  return true;
+}
+//<Checkbox Callback !Start!>
+//<Checkbox Callback !End!>
+//<Keypad Callback !Start!>
+//<Keypad Callback !End!>
+//<Spinner Callback !Start!>
+//<Spinner Callback !End!>
+//<Listbox Callback !Start!>
+//<Listbox Callback !End!>
+//<Draw Callback !Start!>
+//<Draw Callback !End!>
+//<Slider Callback !Start!>
+//<Slider Callback !End!>
+//<Tick Callback !Start!>
+//<Tick Callback !End!>
+
 
 void bm83_loop(void *pvParameters)
 {
@@ -41,7 +123,80 @@ void bm83_loop(void *pvParameters)
 
     bm83.run();
 
+    vTaskDelay(1);
+  }
+
+
+
+
+}
+
+void timerIsr(void *pvParameters)
+{
+  while (1) {
+
+
+
+    
+    
     vTaskDelay(100);
+  }
+
+
+
+
+}
+
+
+void encoder_loop(void *pvParameters)
+{
+
+
+  while (1) {
+    //first lets handle rotary encoder button click
+  if (rotaryEncoder1.currentButtonState() == BUT_RELEASED) {
+    //we can process it here or call separate function like:
+      
+  }
+
+  //lets see if anything changed
+  int8_t encoderDelta = rotaryEncoder1.encoderChanged();
+  
+  //optionally we can ignore whenever there is no change
+  //if (encoderDelta == 0) return;
+  
+    //for some cases we only want to know if value is 
+    //increased or decreased (typically for menu items)
+  if (encoderDelta>0) {
+
+  Serial.print("+");
+  
+  }
+  if (encoderDelta<0) {
+  
+  Serial.print("-");
+
+    //for other cases we want to know what is current value. 
+    //Additionally often we only want if something changed
+  //example: when using rotary encoder to set termostat temperature, or sound volume etc
+  }
+  //if value is changed compared to our last read
+  if (encoderDelta!=0) {
+    //now we need current value
+    int16_t encoderValue = rotaryEncoder1.readEncoder();
+
+    //process new value. Here is simple output.
+    Serial.print("Value: ");
+    Serial.println(encoderValue);
+    gslc_ElemXRingGaugeSetVal(&m_gui, m_pElemXRingGauge1, encoderValue);
+    vTaskDelay(5);
+    bd.setVol_1(encoderValue);
+    
+
+  }
+
+  gslc_Update(&m_gui);
+  vTaskDelay(1);
   }
 
 
@@ -103,12 +258,13 @@ void sound_proc_setup(void *pvParameters)
 {
 while (1) {
 buttonState1 = digitalRead(button1Pin);
-  if (buttonState1 == HIGH){
+
+  if (buttonState1 == LOW){
   bd.setSelect(0);   // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
-  bd.setIn_gain(10); // int 0...7 === 0...20 dB
-  bd.setVol_1(1);    // int 0...87 === 0...-87 dB
-  bd.setFad_1(1);    // int 0...87 === 0...-87 dB
-  bd.setFad_2(1);    // int 0...87 === 0...-87 dB
+  bd.setIn_gain(0); // int 0...7 === 0...20 dB
+  bd.setVol_1(0);    // int 0...87 === 0...-87 dB
+  bd.setFad_1(0);    // int 0...87 === 0...-87 dB
+  bd.setFad_2(0);    // int 0...87 === 0...-87 dB
   bd.setBass(0);     // int -7...0...+7 === -14...+14 dB
   bd.setMidd(0);     // int -7...0...+7 === -14...+14 dB
   bd.setTreb(0);     // int -7...0...+7 === -14...+14 dB
@@ -116,49 +272,42 @@ buttonState1 = digitalRead(button1Pin);
   Serial.println("Sound p Setup complete...");
 
   }
-  vTaskDelay(100);
+  vTaskDelay(10);
   
 }
 }
 
-void onEventCallback(BM83_event_t *event)
-{
-  // handle Event
-  Serial.print("[EVENT]: ");
-  Serial.println(event->event_code, HEX);
 
-  for (int i = 0; i < event->param_len; i++)
-  {
-    Serial.print(event->parameter[i], HEX);
-    Serial.print(" ");
-  }
-  Serial.println("");
-  vTaskDelay(100);
-}
 
 void setup()
 {
-  Wire.begin(21, 22, 100000);
+  Wire.begin(21, 22, 400000);
   swSerial.begin(115200);
   
   Serial.begin(9600);
   Serial.println();
   Serial.println("running setup");
-  bm83.setCallback(onEventCallback);
+  
+  gslc_InitDebug(&DebugOut);
+  InitGUIslice_gen();
 
-
-  /* Create the semaphore to guard a shared resource.  As we are using
-    the semaphore for mutual exclusion we create a mutex semaphore
-    rather than a binary semaphore. */
-  xSemaphore = xSemaphoreCreateBinary();
-
-  // wen "CONFIG_SYSTEM_EVENT_TASK_STACK_SIZE" bruchsch wird glaub de speicher selber zeugwise
+  // pssible use of "CONFIG_SYSTEM_EVENT_TASK_STACK_SIZE"
   xTaskCreate(bm83_setup, "bm83_setup", 4000, NULL, 4, &xHandle);
   xTaskCreate(bm83_loop, "bm83_loop", 4000, NULL, 1, &xHandle);
   xTaskCreate(read_print_fuelgauge, "read_print_fuelgauge", 2048, NULL, 2, &xHandle);
   xTaskCreate(sound_proc_setup, "sound_proc_setup", 2048, NULL, 3, &xHandle);
+  xTaskCreate(encoder_loop, "encoder_loop", 4096, NULL, 1, &xHandle);
+  xTaskCreate(timerIsr, "timerIsr", 1024, NULL, 1, &xHandle);
 
+  
 
+  rotaryEncoder1.begin();
+  rotaryEncoder1.setup([]{rotaryEncoder1.readEncoder_ISR();});
+  rotaryEncoder1.setBoundaries(0,20,false);
+
+  rotaryEncoder2.begin();
+  rotaryEncoder2.setup([]{rotaryEncoder2.readEncoder_ISR();});
+  rotaryEncoder2.setBoundaries(0,20,false);
 
   // initialize the pushbutton pin as an input:
   pinMode(button1Pin, INPUT);
