@@ -10,11 +10,6 @@
 #include "displaytest_GSLC.h"
 
 
-int16_t oldEnc1Pos, enc1Pos;
-uint8_t enc1_buttonState;
-
-int16_t oldEnc2Pos, enc2Pos;
-uint8_t enc2_buttonState;
 
 #define ROTARY_ENCODER1_A_PIN 39
 #define ROTARY_ENCODER1_B_PIN 36
@@ -53,9 +48,23 @@ SemaphoreHandle_t xSemaphore;
 TaskHandle_t xHandle;
 
 // constants won't change. They're used here to set pin numbers:
-const int button1Pin = 26;    // the number of the pushbutton pin
+#define button2Pin 1   // the number of the pushbutton pin
+#define led2Pin 3
+int buttonState2 = 0;         // variable for reading the pushbutton status
 
-int buttonState1 = 0;         // variable for reading the pushbutton status
+#define button3Pin 23    // the number of the pushbutton pin
+#define led3Pin 19    // the number of the pushbutton pin
+int buttonState3 = 0;         // variable for reading the pushbutton status
+
+#define button4Pin 26    // the number of the pushbutton pin
+#define led4Pin 27    // the number of the pushbutton pin
+int buttonState4 = 0;         // variable for reading the pushbutton status
+
+
+// setting PWM properties
+const int freq = 2000;
+const int ledChannel = 0;
+const int resolution = 8;
 
 // ------------------------------------------------
 // Program Globals
@@ -93,28 +102,44 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
     switch (pElem->nId) {
 //<Button Enums !Start!>
       case E_ELEM_BTN1:
+      bd.setSelect(0);   // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
+  bd.setIn_gain(0); // int 0...7 === 0...20 dB
+  bd.setVol_1(0);    // int 0...87 === 0...-87 dB
+  bd.setFad_1(0);    // int 0...87 === 0...-87 dB
+  bd.setFad_2(0);    // int 0...87 === 0...-87 dB
+  bd.setBass(0);     // int -7...0...+7 === -14...+14 dB
+  bd.setMidd(0);     // int -7...0...+7 === -14...+14 dB
+  bd.setTreb(0);     // int -7...0...+7 === -14...+14 dB
         break;
       case E_ELEM_BTN2:
+      bm83.mmiAction(BM83_MMI_STANDBY_ENTERING_PAIRING); // Sends "enter Pairing" command over UART to BM83
+      
         break;
       case E_ELEM_BTN3:
+      
         break;
       case E_ELEM_BTN4:
+      
         break;
       case E_ELEM_TOGGLE2:
         // TODO Add code for Toggle button ON/OFF state
         if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2)) {
+
+          
           ;
         }
         break;
       case E_ELEM_TOGGLE3:
         // TODO Add code for Toggle button ON/OFF state
         if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle3)) {
+          
           ;
         }
         break;
       case E_ELEM_TOGGLE4:
         // TODO Add code for Toggle button ON/OFF state
         if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle3_4)) {
+          
           ;
         }
         break;
@@ -200,15 +225,36 @@ void bm83_loop(void *pvParameters)
 
 }
 
-void timerIsr(void *pvParameters)
+
+void ledtest(void *pvParameters)
 {
   while (1) {
 
+            // configure LED PWM functionalitites
+  ledcSetup(ledChannel, freq, resolution);
+  
+  // attach the channel to the GPIO to be controlled
+  ledcAttachPin(led2Pin, ledChannel);
+  ledcAttachPin(led3Pin, ledChannel);
+  ledcAttachPin(led4Pin, ledChannel);
+
+        // increase the LED brightness
+  for(int dutyCycle = 0; dutyCycle <= 255; dutyCycle++){   
+    // changing the LED brightness with PWM
+    ledcWrite(ledChannel, dutyCycle);
+    delay(15);
+  }
+
+  // decrease the LED brightness
+  for(int dutyCycle = 255; dutyCycle >= 0; dutyCycle--){
+    // changing the LED brightness with PWM
+    ledcWrite(ledChannel, dutyCycle);   
+    delay(15);
+}
 
 
-    
-    
-    vTaskDelay(100);
+
+    vTaskDelay(1);
   }
 
 
@@ -217,31 +263,33 @@ void timerIsr(void *pvParameters)
 }
 
 
+
 void encoder_loop(void *pvParameters)
 {
 
 
   while (1) {
     //first lets handle rotary encoder button click
-  if (rotaryEncoder1.currentButtonState() == BUT_RELEASED) {
+  if (rotaryEncoder1.currentButtonState() == BUT_RELEASED || rotaryEncoder2.currentButtonState() == BUT_RELEASED) {
     //we can process it here or call separate function like:
       
   }
 
   //lets see if anything changed
   int8_t encoderDelta = rotaryEncoder1.encoderChanged();
+  int8_t encoderDelta2 = rotaryEncoder2.encoderChanged();
   
   //optionally we can ignore whenever there is no change
   //if (encoderDelta == 0) return;
   
     //for some cases we only want to know if value is 
     //increased or decreased (typically for menu items)
-  if (encoderDelta>0) {
+  if (encoderDelta>0 || encoderDelta2>0) {
 
   Serial.print("+");
   
   }
-  if (encoderDelta<0) {
+  if (encoderDelta<0 || encoderDelta2<0) {
   
   Serial.print("-");
 
@@ -249,19 +297,35 @@ void encoder_loop(void *pvParameters)
     //Additionally often we only want if something changed
   //example: when using rotary encoder to set termostat temperature, or sound volume etc
   }
+
+  int16_t encoderValue = rotaryEncoder1.readEncoder();
+    int16_t encoderValue2 = rotaryEncoder2.readEncoder();
   //if value is changed compared to our last read
   if (encoderDelta!=0) {
     //now we need current value
-    int16_t encoderValue = rotaryEncoder1.readEncoder();
+
 
     //process new value. Here is simple output.
-    Serial.print("Value: ");
+    Serial.print("Value 1:  ");
     Serial.println(encoderValue);
+
     gslc_ElemXRingGaugeSetVal(&m_gui, m_pElemXRingGauge3, encoderValue);
-    vTaskDelay(5);
+    
+    vTaskDelay(3);
     bd.setVol_1(encoderValue);
     
 
+  }
+
+  if (encoderDelta2!=0) {
+
+
+      Serial.print("Value 2: ");
+    Serial.println(encoderValue2);
+
+    gslc_ElemXRingGaugeSetVal(&m_gui, m_pElemXRingGauge3_4, encoderValue2);
+    vTaskDelay(3);
+    
   }
 
   gslc_Update(&m_gui);
@@ -314,7 +378,7 @@ void bm83_setup(void *pvParameters)
   digitalWrite(mfbPin, HIGH); // sets the MFB Pin 4 "High" to power on BM83 over BAT_IN
   vTaskDelay(10);
   bm83.powerOn();                                    // Sends "power on" command over UART to BM83
-  bm83.mmiAction(BM83_MMI_STANDBY_ENTERING_PAIRING); // Sends "enter Pairing" command over UART to BM83
+  
   digitalWrite(mfbPin, LOW);                         // sets the MFB Pin 4 "LOW" (no longer needed after power on process)
   Serial.println("BM83 Setup complete...");
   Serial.print(SDA);
@@ -326,9 +390,9 @@ void bm83_setup(void *pvParameters)
 void sound_proc_setup(void *pvParameters)
 {
 while (1) {
-buttonState1 = digitalRead(button1Pin);
+buttonState4 = digitalRead(button4Pin);
 
-  if (buttonState1 == LOW){
+  if (buttonState4 == LOW){
   bd.setSelect(0);   // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
   bd.setIn_gain(0); // int 0...7 === 0...20 dB
   bd.setVol_1(0);    // int 0...87 === 0...-87 dB
@@ -366,20 +430,29 @@ void setup()
   xTaskCreate(read_print_fuelgauge, "read_print_fuelgauge", 2048, NULL, 2, &xHandle);
   xTaskCreate(sound_proc_setup, "sound_proc_setup", 2048, NULL, 3, &xHandle);
   xTaskCreate(encoder_loop, "encoder_loop", 4096, NULL, 1, &xHandle);
-  xTaskCreate(timerIsr, "timerIsr", 1024, NULL, 1, &xHandle);
+  xTaskCreate(ledtest, "ledtest", 4096, NULL, 5, &xHandle);
 
   
 
   rotaryEncoder1.begin();
   rotaryEncoder1.setup([]{rotaryEncoder1.readEncoder_ISR();});
   rotaryEncoder1.setBoundaries(0,20,false);
+  
 
   rotaryEncoder2.begin();
   rotaryEncoder2.setup([]{rotaryEncoder2.readEncoder_ISR();});
   rotaryEncoder2.setBoundaries(0,20,false);
 
-  // initialize the pushbutton pin as an input:
-  pinMode(button1Pin, INPUT);
+  // initialize the pushbuttons and leds as inputs | outputs:
+  pinMode(button2Pin, INPUT);
+  pinMode(button3Pin, INPUT);
+  pinMode(button4Pin, INPUT);
+  
+  pinMode(led2Pin, OUTPUT);
+  pinMode(led3Pin, OUTPUT);
+  pinMode(led4Pin, OUTPUT);
+
+
   
 
   
