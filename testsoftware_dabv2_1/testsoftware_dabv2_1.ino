@@ -392,7 +392,7 @@ void sound_proc_setup(void *pvParameters)
 while (1) {
 buttonState4 = digitalRead(button4Pin);
 
-  if (buttonState4 == LOW){
+  if (buttonState4 == HIGH){
   bd.setSelect(0);   // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
   bd.setIn_gain(0); // int 0...7 === 0...20 dB
   bd.setVol_1(0);    // int 0...87 === 0...-87 dB
@@ -414,7 +414,7 @@ buttonState4 = digitalRead(button4Pin);
 
 void setup()
 {
-  Wire.begin(21, 22, 400000);
+  Wire.begin(21, 22, 100000);
   swSerial.begin(115200);
   
   Serial.begin(9600);
@@ -425,12 +425,12 @@ void setup()
   InitGUIslice_gen();
 
   // pssible use of "CONFIG_SYSTEM_EVENT_TASK_STACK_SIZE"
-  xTaskCreate(bm83_setup, "bm83_setup", 4000, NULL, 4, &xHandle);
+  xTaskCreate(bm83_setup, "bm83_setup", 4000, NULL, 3, &xHandle);
   xTaskCreate(bm83_loop, "bm83_loop", 4000, NULL, 1, &xHandle);
   xTaskCreate(read_print_fuelgauge, "read_print_fuelgauge", 2048, NULL, 2, &xHandle);
   xTaskCreate(sound_proc_setup, "sound_proc_setup", 2048, NULL, 3, &xHandle);
   xTaskCreate(encoder_loop, "encoder_loop", 4096, NULL, 1, &xHandle);
-  xTaskCreate(ledtest, "ledtest", 4096, NULL, 5, &xHandle);
+  xTaskCreate(ledtest, "ledtest", 4096, NULL, 1, &xHandle);
 
   
 
