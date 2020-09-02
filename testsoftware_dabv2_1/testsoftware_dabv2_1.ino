@@ -208,7 +208,7 @@ void mcp23017_buttons(void *pvParameters)
     /*Read  level of Group GPIOA pins*/
     if (value2 == LOW)
     {
-      Serial.println("Button 2 pressed!");
+      Serial.println("Button 2 pressed. Condiguring Sound Processor!");
       bd.setSelect(0);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
       bd.setIn_gain(0); // int 0...7 === 0...20 dB
       bd.setVol_1(0);   // int 0...87 === 0...-87 dB
@@ -363,6 +363,10 @@ void read_print_fuelgauge(void *pvParameters)
   {
     if (fuelgauge_init == 1)
     {
+
+      xSemaphoreTake(xSemaphore, 30);
+      Serial.println("read_print_fuelgauge: Using Semaphore to read Charger Board Values....");
+
       // Read battery stats from the BQ27441-G1A
       unsigned int soc = lipo.soc();                   // Read state-of-charge (%)
       unsigned int volts = lipo.voltage();             // Read battery voltage (mV)
@@ -382,6 +386,8 @@ void read_print_fuelgauge(void *pvParameters)
       toPrint += String(health) + "%";
 
       Serial.println(toPrint);
+      xSemaphoreGive(xSemaphore);
+      Serial.println("read_print_fuelgauge: Reading complete...returning Semaphore");
     }
 
     vTaskDelay(5000);
@@ -389,6 +395,9 @@ void read_print_fuelgauge(void *pvParameters)
 }
 void bm83_setup(void *pvParameters)
 {
+  xSemaphoreTake(xSemaphore, 30);
+  Serial.println("bm83_setup: Using Semaphore");
+
   Serial.println("Setting up BM83");
   //BM83 start routine (required)1
   pinMode(mfbPin, OUTPUT);    // sets the MFB Pin 4 as output
@@ -397,8 +406,9 @@ void bm83_setup(void *pvParameters)
   bm83.powerOn(); // Sends "power on" command over UART to BM83
 
   digitalWrite(mfbPin, LOW); // sets the MFB Pin 4 "LOW" (no longer needed after power on process)
-  Serial.println("BM83 Setup complete...");
-
+  Serial.println("bm83_setup: BM83 Setup complete...");
+  xSemaphoreGive(xSemaphore);
+  Serial.println("bm83_setup: BM83 Setup complete...returning Semaphore");
   vTaskDelete(NULL);
 }
 
@@ -409,8 +419,11 @@ void sound_proc_setup(void *pvParameters)
 
     if (buttonState5 == HIGH)
     {
+      xSemaphoreTake(xSemaphore, 30);
+      Serial.println("sound_proc_setup: Using Semaphore");
 
-      Serial.println("Sound p Setup complete...");
+      xSemaphoreGive(xSemaphore);
+      Serial.println("sound_proc_setup: Sound p Setup complete...returning Semaphore");
     }
     vTaskDelete(NULL);
   }
@@ -430,6 +443,8 @@ void setup()
 
   // possible use of "CONFIG_SYSTEM_EVENT_TASK_STACK_SIZE"
   // xTaskCreatePinnedToCore Core Auswahl
+
+  xSemaphore = xSemaphoreCreateBinary();
 
   // Setup Tasks
   xTaskCreatePinnedToCore(bm83_setup, "bm83_setup", 4000, NULL, 3, &xHandle, 0);
