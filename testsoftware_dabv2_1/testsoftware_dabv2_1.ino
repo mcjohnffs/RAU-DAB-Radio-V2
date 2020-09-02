@@ -1,16 +1,26 @@
-#include "esp_system.h"
-#include "BM83.h"            // Bluetooth Module BM83 Library
-#include <SoftwareSerial.h>  //SoftwareSerial Library for ESP32
-#include <APA102.h>          //RGB LED's Library
-#include <BD37544FS.h>       //Sound processor Library
-#include "Wire.h"            //i2c library
-#include <SparkFunBQ27441.h> //fuel gauge library
-#include <DFRobot_MCP23017.h>
-#include "AiEsp32RotaryEncoder.h"
-#include "displaytestnew_GSLC.h"
+#include "esp_system.h"           // ESP Funkionen
+#include "BM83.h"                 //Bluetooth Module BM83 Library
+#include <SoftwareSerial.h>       //Funktionierende SoftwareSerial Library für ESP32
+#include <APA102.h>               //RGB LED's Library
+#include <BD37544FS.h>            //Sound Prozessor Library
+#include "Wire.h"                 //I2C Standart library
+#include <SparkFunBQ27441.h>      //Fuel Gauge library
+#include <DFRobot_MCP23017.h>     // MCP23017 GPIO Port Expander Library
+#include "AiEsp32RotaryEncoder.h" //Encoder Library für ESP32
+#include "displaytestnew_GSLC.h"  //Guislice Konfigurations Header
 
-DFRobot_MCP23017 mcp(Wire,0x20);
+BD37544FS bd;                     // Sound Processor Haupt-Funktion Initialisierung
+DFRobot_MCP23017 mcp(Wire, 0x20); // MCP23017 Port Expander Initialisierung
 
+// BM83 Uart SoftwareSerial Initialisierung
+SoftwareSerial swSerial(RX_PIN, TX_PIN);
+BM83 bm83(swSerial, TX_IND);
+
+// FreeRTOS Handles
+SemaphoreHandle_t xSemaphore;
+TaskHandle_t xHandle;
+
+//Encoder 1+2 Pins und Initialisierung
 #define ROTARY_ENCODER1_A_PIN 39
 #define ROTARY_ENCODER1_B_PIN 36
 #define ROTARY_ENCODER1_BUTTON_PIN 34
@@ -22,49 +32,33 @@ DFRobot_MCP23017 mcp(Wire,0x20);
 AiEsp32RotaryEncoder rotaryEncoder1 = AiEsp32RotaryEncoder(ROTARY_ENCODER1_A_PIN, ROTARY_ENCODER1_B_PIN, ROTARY_ENCODER1_BUTTON_PIN, -1);
 AiEsp32RotaryEncoder rotaryEncoder2 = AiEsp32RotaryEncoder(ROTARY_ENCODER2_A_PIN, ROTARY_ENCODER2_B_PIN, ROTARY_ENCODER2_BUTTON_PIN, -1);
 
-// Set BATTERY_CAPACITY to the design capacity of your battery.
+// Setzen der gesamten Kapazität des Akkus/der Batterie mithilfe "BATTERY_CAPACITY" in mAh
 const unsigned int BATTERY_CAPACITY = 9000; // e.g. 850mAh battery
 
-BD37544FS bd;
+//BM83 Uart Pins
+#define RX_PIN 16 //SWSerial RX_PIN
+#define TX_PIN 17 //SWSerial TX_PIN
+#define TX_IND 5  //SWSerial TX_IND
 
-#define RX_PIN 16
-#define TX_PIN 17
-#define TX_IND 5
+const int mfbPin = 4; //BM83 "Enable" Pin
 
-const int mfbPin = 4;
+int fuelgauge_init = 0; // Fuel Gauge Init Variable
 
-int fuelgauge_init = 0;
+#define led2Pin 18    // S2 LED Pin
+int buttonState2 = 0; // S2 Button Pin Status Variable
+#define led3Pin 19    // S3 LED Pin
+int buttonState3 = 0; // S3 Button Pin Status Variable
+#define led4Pin 26    // S4 LED Pin
+int buttonState4 = 0; // S4 Button Pin Status Variable
+#define led5Pin 27    // S5 LED Pin
+int buttonState5 = 0; // S5 Button Pin Status Variable
 
-const int button = 0;        //gpio to use to trigger delay
-const int wdtTimeout = 3000; //time in ms to trigger the watchdog
-hw_timer_t *timer = NULL;
+// PWM Einstellungen
+const int freq = 2000;    // Frequenz
+const int ledChannel = 0; // LEDC channel
+const int resolution = 8; // Auflösung
 
-SoftwareSerial swSerial(RX_PIN, TX_PIN);
-BM83 bm83(swSerial, TX_IND);
-
-SemaphoreHandle_t xSemaphore;
-TaskHandle_t xHandle;
-
-// constants won't change. They're used here to set pin numbers:
-
-#define led2Pin 18
-
-int buttonState2 = 0;
-
-#define led3Pin 19   
-int buttonState3 = 0;
-
-
-#define led4Pin 26    
-int buttonState4 = 0;
-
-#define led5Pin 27    
-int buttonState5 = 0;
-
-// setting PWM properties
-const int freq = 2000;
-const int ledChannel = 0;
-const int resolution = 8;
+// Display GUI Initialisierung START
 
 // ------------------------------------------------
 // Program Globals
@@ -72,88 +66,101 @@ const int resolution = 8;
 
 // Save some element references for direct access
 //<Save_References !Start!>
-gslc_tsElemRef* m_pElemToggle2    = NULL;
-gslc_tsElemRef* m_pElemToggle2_3  = NULL;
-gslc_tsElemRef* m_pElemToggle2_3_4= NULL;
-gslc_tsElemRef* m_pElemToggle2_3_4_5= NULL;
-gslc_tsElemRef* m_pElemToggle2_3_4_5_6= NULL;
-gslc_tsElemRef* m_pElemToggle2_8  = NULL;
-gslc_tsElemRef* m_pElemXRingGauge1= NULL;
-gslc_tsElemRef* m_pElemXRingGauge2= NULL;
+gslc_tsElemRef *m_pElemToggle2 = NULL;
+gslc_tsElemRef *m_pElemToggle2_3 = NULL;
+gslc_tsElemRef *m_pElemToggle2_3_4 = NULL;
+gslc_tsElemRef *m_pElemToggle2_3_4_5 = NULL;
+gslc_tsElemRef *m_pElemToggle2_3_4_5_6 = NULL;
+gslc_tsElemRef *m_pElemToggle2_8 = NULL;
+gslc_tsElemRef *m_pElemXRingGauge1 = NULL;
+gslc_tsElemRef *m_pElemXRingGauge2 = NULL;
 //<Save_References !End!>
 
 // Define debug message function
-static int16_t DebugOut(char ch) { if (ch == (char)'\n') Serial.println(""); else Serial.write(ch); return 0; }
-
-
+static int16_t DebugOut(char ch)
+{
+  if (ch == (char)'\n')
+    Serial.println("");
+  else
+    Serial.write(ch);
+  return 0;
+}
 
 // ------------------------------------------------
 // Callback Methods
 // ------------------------------------------------
 // Common Button callback
-bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int16_t nY)
+bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, int16_t nY)
 {
   // Typecast the parameters to match the GUI and element types
-  gslc_tsGui*     pGui     = (gslc_tsGui*)(pvGui);
-  gslc_tsElemRef* pElemRef = (gslc_tsElemRef*)(pvElemRef);
-  gslc_tsElem*    pElem    = gslc_GetElemFromRef(pGui,pElemRef);
+  gslc_tsGui *pGui = (gslc_tsGui *)(pvGui);
+  gslc_tsElemRef *pElemRef = (gslc_tsElemRef *)(pvElemRef);
+  gslc_tsElem *pElem = gslc_GetElemFromRef(pGui, pElemRef);
 
-  if ( eTouch == GSLC_TOUCH_UP_IN ) {
+  if (eTouch == GSLC_TOUCH_UP_IN)
+  {
     // From the element's ID we can determine which button was pressed.
-    switch (pElem->nId) {
-//<Button Enums !Start!>
-      case E_ELEM_BTN1:
+    switch (pElem->nId)
+    {
+      //<Button Enums !Start!>
+    case E_ELEM_BTN1:
 
-        break;
-      case E_ELEM_BTN2:
+      break;
+    case E_ELEM_BTN2:
       bm83.mmiAction(BM83_MMI_STANDBY_ENTERING_PAIRING);
-        break;
-      case E_ELEM_BTN4:
-        break;
-      case E_ELEM_TOGGLE2:
-        // TODO Add code for Toggle button ON/OFF state
-        if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2)) {
-          ;
-        }
-        break;
-      case E_ELEM_TOGGLE3:
-        // TODO Add code for Toggle button ON/OFF state
-        if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3)) {
-          ;
-        }
-        break;
-      case E_ELEM_TOGGLE4:
-        // TODO Add code for Toggle button ON/OFF state
-        if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4)) {
-          ;
-        }
-        break;
-      case E_ELEM_TOGGLE5:
-        // TODO Add code for Toggle button ON/OFF state
-        if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5)) {
-          ;
-        }
-        break;
-      case E_ELEM_TOGGLE6:
-        // TODO Add code for Toggle button ON/OFF state
-        if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5_6)) {
-          ;
-        }
-        break;
-      case E_ELEM_TOGGLE8:
-        // TODO Add code for Toggle button ON/OFF state
-        if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_8)) {
-          ;
-        }
-        break;
-      case E_ELEM_BTN5:
-        break;
-      case E_ELEM_BTN6:
-        break;
-      case E_ELEM_BTN7:
-        break;
+      break;
+    case E_ELEM_BTN4:
+      break;
+    case E_ELEM_TOGGLE2:
+      // TODO Add code for Toggle button ON/OFF state
+      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2))
+      {
+        ;
+      }
+      break;
+    case E_ELEM_TOGGLE3:
+      // TODO Add code for Toggle button ON/OFF state
+      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3))
+      {
+        ;
+      }
+      break;
+    case E_ELEM_TOGGLE4:
+      // TODO Add code for Toggle button ON/OFF state
+      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4))
+      {
+        ;
+      }
+      break;
+    case E_ELEM_TOGGLE5:
+      // TODO Add code for Toggle button ON/OFF state
+      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5))
+      {
+        ;
+      }
+      break;
+    case E_ELEM_TOGGLE6:
+      // TODO Add code for Toggle button ON/OFF state
+      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5_6))
+      {
+        ;
+      }
+      break;
+    case E_ELEM_TOGGLE8:
+      // TODO Add code for Toggle button ON/OFF state
+      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_8))
+      {
+        ;
+      }
+      break;
+    case E_ELEM_BTN5:
+      break;
+    case E_ELEM_BTN6:
+      break;
+    case E_ELEM_BTN7:
+      break;
 
-//<Button Enums !End!>
+      //<Button Enums !End!>
     default:
       break;
     }
@@ -175,8 +182,7 @@ bool CbBtnCommon(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int16_t nX,int1
 //<Tick Callback !Start!>
 //<Tick Callback !End!>
 
-
-
+// Display GUI Initialisierung ENDE
 
 void bm83_loop(void *pvParameters)
 {
@@ -189,58 +195,68 @@ void bm83_loop(void *pvParameters)
   }
 }
 
-
-
-
-
-void mcp23017_buttons(void *pvParameters){
-  while(1){
+void mcp23017_buttons(void *pvParameters)
+{
+  while (1)
+  {
 
     gslc_Update(&m_gui);
-    uint8_t value2 = mcp.digitalRead(/*pin = */mcp.eGPA2);
-    uint8_t value3 = mcp.digitalRead(/*pin = */mcp.eGPA3);
-    uint8_t value4 = mcp.digitalRead(/*pin = */mcp.eGPA4);
-    uint8_t value5 = mcp.digitalRead(/*pin = */mcp.eGPA5);
-  /*Read  level of Group GPIOA pins*/
-  if(value2 == LOW){
+    uint8_t value2 = mcp.digitalRead(/*pin = */ mcp.eGPA2);
+    uint8_t value3 = mcp.digitalRead(/*pin = */ mcp.eGPA3);
+    uint8_t value4 = mcp.digitalRead(/*pin = */ mcp.eGPA4);
+    uint8_t value5 = mcp.digitalRead(/*pin = */ mcp.eGPA5);
+    /*Read  level of Group GPIOA pins*/
+    if (value2 == LOW)
+    {
       Serial.println("Button 2 pressed!");
-    bd.setSelect(0);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
-    bd.setIn_gain(0); // int 0...7 === 0...20 dB
-    bd.setVol_1(0); // int 0...87 === 0...-87 dB
-    bd.setFad_1(0);   // int 0...87 === 0...-87 dB
-    bd.setFad_2(0);   // int 0...87 === 0...-87 dB
-    bd.setBass(0);    // int -7...0...+7 === -14...+14 dB
-    bd.setMidd(0);    // int -7...0...+7 === -14...+14 dB
-    bd.setTreb(0);    // int -7...0...+7 === -14...+14 dB
-    Serial.println("Setup p complete!");
-      delay(200);
-  }else{
+      bd.setSelect(0);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
+      bd.setIn_gain(0); // int 0...7 === 0...20 dB
+      bd.setVol_1(0);   // int 0...87 === 0...-87 dB
+      bd.setFad_1(0);   // int 0...87 === 0...-87 dB
+      bd.setFad_2(0);   // int 0...87 === 0...-87 dB
+      bd.setBass(0);    // int -7...0...+7 === -14...+14 dB
+      bd.setMidd(0);    // int -7...0...+7 === -14...+14 dB
+      bd.setTreb(0);    // int -7...0...+7 === -14...+14 dB
+      Serial.println("Setup p complete!");
+      delay(100);
+    }
+    else
+    {
       //Serial.println("Button release!");
-  }
+    }
 
-  if(value3 == LOW){
+    if (value3 == LOW)
+    {
       Serial.println("Button 3 pressed!");
-      delay(200);
-  }else{
+      delay(100);
+    }
+    else
+    {
       //Serial.println("Button release!");
-  }
+    }
 
-    if(value4 == LOW){
+    if (value4 == LOW)
+    {
       Serial.println("Button 4 pressed!");
-      delay(200);
-  }else{
+      delay(100);
+    }
+    else
+    {
       //Serial.println("Button release!");
-  }
+    }
 
-    if(value5 == LOW){
+    if (value5 == LOW)
+    {
       Serial.println("Button 5 pressed!");
-      delay(200);
-  }else{
+      delay(100);
+    }
+    else
+    {
       //Serial.println("Button release!");
+    }
+    vTaskDelay(50);
   }
-  vTaskDelay(50);
-  }
-  }
+}
 
 void ledtest(void *pvParameters)
 {
@@ -272,7 +288,7 @@ void ledtest(void *pvParameters)
       delay(15);
     }
 
-    vTaskDelay(1);
+    vTaskDelay(100);
   }
 }
 
@@ -313,6 +329,7 @@ void encoder_loop(void *pvParameters)
 
     int16_t encoderValue = rotaryEncoder1.readEncoder();
     int16_t encoderValue2 = rotaryEncoder2.readEncoder();
+
     //if value is changed compared to our last read
     if (encoderDelta != 0)
     {
@@ -324,8 +341,6 @@ void encoder_loop(void *pvParameters)
 
       gslc_ElemXRingGaugeSetVal(&m_gui, m_pElemXRingGauge1, encoderValue);
       bd.setVol_1(encoderValue);
-      vTaskDelay(3);
-      
     }
 
     if (encoderDelta2 != 0)
@@ -335,11 +350,9 @@ void encoder_loop(void *pvParameters)
       Serial.println(encoderValue2);
 
       gslc_ElemXRingGaugeSetVal(&m_gui, m_pElemXRingGauge2, encoderValue2);
-      vTaskDelay(3);
     }
 
-    
-    vTaskDelay(1);
+    vTaskDelay(2);
   }
 }
 void loop() {}
@@ -371,7 +384,7 @@ void read_print_fuelgauge(void *pvParameters)
       Serial.println(toPrint);
     }
 
-    vTaskDelay(1000);
+    vTaskDelay(5000);
   }
 }
 void bm83_setup(void *pvParameters)
@@ -380,12 +393,12 @@ void bm83_setup(void *pvParameters)
   //BM83 start routine (required)1
   pinMode(mfbPin, OUTPUT);    // sets the MFB Pin 4 as output
   digitalWrite(mfbPin, HIGH); // sets the MFB Pin 4 "High" to power on BM83 over BAT_IN
-  vTaskDelay(10);
+  Delay(10);
   bm83.powerOn(); // Sends "power on" command over UART to BM83
 
   digitalWrite(mfbPin, LOW); // sets the MFB Pin 4 "LOW" (no longer needed after power on process)
   Serial.println("BM83 Setup complete...");
-  vTaskDelay(100);
+
   vTaskDelete(NULL);
 }
 
@@ -394,14 +407,12 @@ void sound_proc_setup(void *pvParameters)
   while (1)
   {
 
-
     if (buttonState5 == HIGH)
     {
-  
 
       Serial.println("Sound p Setup complete...");
     }
-    vTaskDelay(10);
+    vTaskDelete(NULL);
   }
 }
 
@@ -418,16 +429,18 @@ void setup()
   InitGUIslice_gen();
 
   // possible use of "CONFIG_SYSTEM_EVENT_TASK_STACK_SIZE"
-  // xTaskCreatePinnedToCore Core Priority Auswahl
-  
-  xTaskCreatePinnedToCore(bm83_setup, "bm83_setup", 4000, NULL, 3, &xHandle,0);
+  // xTaskCreatePinnedToCore Core Auswahl
+
+  // Setup Tasks
+  xTaskCreatePinnedToCore(bm83_setup, "bm83_setup", 4000, NULL, 3, &xHandle, 0);
+  xTaskCreatePinnedToCore(sound_proc_setup, "sound_proc_setup", 2048, NULL, 3, &xHandle, 0);
+
+  //Loop Tasks
   xTaskCreatePinnedToCore(bm83_loop, "bm83_loop", 4000, NULL, 2, &xHandle, 1);
   xTaskCreatePinnedToCore(read_print_fuelgauge, "read_print_fuelgauge", 2048, NULL, 2, &xHandle, 1);
-  xTaskCreatePinnedToCore(sound_proc_setup, "sound_proc_setup", 2048, NULL, 3, &xHandle, 0);
   xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 4096, NULL, 1, &xHandle, 1);
   xTaskCreatePinnedToCore(ledtest, "ledtest", 4096, NULL, 1, &xHandle, 1);
   xTaskCreatePinnedToCore(mcp23017_buttons, "mcp23017_buttons", 4096, NULL, 3, &xHandle, 1);
-
 
   rotaryEncoder1.begin();
   rotaryEncoder1.setup([] { rotaryEncoder1.readEncoder_ISR(); });
@@ -439,29 +452,26 @@ void setup()
 
   // initialize the pushbuttons and leds as inputs | outputs:
 
-
-
-  while(mcp.begin() != 0){
-    Serial.println("Initialization of the chip failed, please confirm that the chip connection is correct!");
-    delay(1000);
+  while (mcp.begin() != 0)
+  {
+    Serial.println("Fehler: Initialisierung des Port Expanders(MCP23017) fehlgeschlagen, bitte überprüfen Sie die Verbinungen zum IC!");
   }
 
-  mcp.pinMode(/*pin = */mcp.eGPA2, /*mode = */INPUT);
-  mcp.pinMode(/*pin = */mcp.eGPA3, /*mode = */INPUT);
-  mcp.pinMode(/*pin = */mcp.eGPA4, /*mode = */INPUT);
-  mcp.pinMode(/*pin = */mcp.eGPA5, /*mode = */INPUT);
+  mcp.pinMode(/*pin = */ mcp.eGPA2, /*mode = */ INPUT);
+  mcp.pinMode(/*pin = */ mcp.eGPA3, /*mode = */ INPUT);
+  mcp.pinMode(/*pin = */ mcp.eGPA4, /*mode = */ INPUT);
+  mcp.pinMode(/*pin = */ mcp.eGPA5, /*mode = */ INPUT);
 
   // Use lipo.begin() to initialize the BQ27441-G1A and confirm that it's
   // connected and communicating.
   if (!lipo.begin()) // begin() will return true if communication is successful
   {
     //  If communication fails, print an error message and loop forever.
-    Serial.println("Error: Unable to communicate with BQ27441.");
-    Serial.println("  Check wiring and try again.");
+    Serial.println("Fehler: Initialisierung des Ladechips(BQ27441-G1A) fehlgeschlagen, bitte überprüfen Sie die Verbinungen zum IC!");
     while (1)
       ;
   }
-  Serial.println("Connected to BQ27441!");
+  Serial.println("Verbindung zum Ladechip(BQ27441-G1A) erfolgreich");
   int fuelgauge_init = 1;
 
   // Uset lipo.setCapacity(BATTERY_CAPACITY) to set the design capacity
