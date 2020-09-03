@@ -12,10 +12,6 @@
 BD37544FS bd;                     // Sound Processor Haupt-Funktion Initialisierung
 DFRobot_MCP23017 mcp(Wire, 0x20); // MCP23017 Port Expander Initialisierung
 
-// BM83 Uart SoftwareSerial Initialisierung
-SoftwareSerial swSerial(RX_PIN, TX_PIN);
-BM83 bm83(swSerial, TX_IND);
-
 // FreeRTOS Handles
 SemaphoreHandle_t xSemaphore;
 TaskHandle_t xHandle;
@@ -44,6 +40,10 @@ const int mfbPin = 4; //BM83 "Enable" Pin
 
 int fuelgauge_init = 0; // Fuel Gauge Init Variable
 
+// BM83 Uart SoftwareSerial Initialisierung
+SoftwareSerial swSerial(RX_PIN, TX_PIN);
+BM83 bm83(swSerial, TX_IND);
+
 #define led2Pin 18    // S2 LED Pin
 int buttonState2 = 0; // S2 Button Pin Status Variable
 #define led3Pin 19    // S3 LED Pin
@@ -52,11 +52,6 @@ int buttonState3 = 0; // S3 Button Pin Status Variable
 int buttonState4 = 0; // S4 Button Pin Status Variable
 #define led5Pin 27    // S5 LED Pin
 int buttonState5 = 0; // S5 Button Pin Status Variable
-
-// PWM Einstellungen
-const int freq = 2000;    // Frequenz
-const int ledChannel = 0; // LEDC channel
-const int resolution = 8; // Auflösung
 
 // Display GUI Initialisierung START
 
@@ -74,6 +69,9 @@ gslc_tsElemRef *m_pElemToggle2_3_4_5_6 = NULL;
 gslc_tsElemRef *m_pElemToggle2_8 = NULL;
 gslc_tsElemRef *m_pElemXRingGauge1 = NULL;
 gslc_tsElemRef *m_pElemXRingGauge2 = NULL;
+gslc_tsElemRef* m_pElemListbox    = NULL;
+gslc_tsElemRef* m_pElemSel        = NULL;
+gslc_tsElemRef* m_pListSlider1    = NULL;
 //<Save_References !End!>
 
 // Define debug message function
@@ -120,30 +118,30 @@ bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       break;
     case E_ELEM_TOGGLE3:
       // TODO Add code for Toggle button ON/OFF state
-      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3))
+      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3) == 1)
       {
-        ;
+        ledcWrite(0, 1024);
       }
       break;
     case E_ELEM_TOGGLE4:
       // TODO Add code for Toggle button ON/OFF state
-      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4))
+      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4) == 1)
       {
-        ;
+        ledcWrite(1, 1024);
       }
       break;
     case E_ELEM_TOGGLE5:
       // TODO Add code for Toggle button ON/OFF state
-      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5))
+      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5) == 1)
       {
-        ;
+        ledcWrite(2, 1024);
       }
       break;
     case E_ELEM_TOGGLE6:
       // TODO Add code for Toggle button ON/OFF state
-      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5_6))
+      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5_6) == 1)
       {
-        ;
+        ledcWrite(3, 1024);
       }
       break;
     case E_ELEM_TOGGLE8:
@@ -152,6 +150,7 @@ bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       {
         ;
       }
+
       break;
     case E_ELEM_BTN5:
       break;
@@ -208,7 +207,8 @@ void mcp23017_buttons(void *pvParameters)
     /*Read  level of Group GPIOA pins*/
     if (value2 == LOW)
     {
-      Serial.println("Button 2 pressed. Condiguring Sound Processor!");
+      Serial.println("Button 2 pressed. Configuring Sound Processor!");
+
       bd.setSelect(0);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
       bd.setIn_gain(0); // int 0...7 === 0...20 dB
       bd.setVol_1(0);   // int 0...87 === 0...-87 dB
@@ -218,7 +218,15 @@ void mcp23017_buttons(void *pvParameters)
       bd.setMidd(0);    // int -7...0...+7 === -14...+14 dB
       bd.setTreb(0);    // int -7...0...+7 === -14...+14 dB
       Serial.println("Setup p complete!");
-      delay(100);
+
+      ledcWrite(0, 1024);
+      delay(3);
+      ledcWrite(0, 0);
+      delay(3);
+      ledcWrite(0, 1024);
+      delay(3);
+      ledcWrite(0, 0);
+      delay(200);
     }
     else
     {
@@ -228,8 +236,17 @@ void mcp23017_buttons(void *pvParameters)
     if (value3 == LOW)
     {
       Serial.println("Button 3 pressed!");
-      delay(100);
+
+      ledcWrite(1, 1024);
+      delay(3);
+      ledcWrite(1, 0);
+      delay(3);
+      ledcWrite(1, 1024);
+      delay(3);
+      ledcWrite(1, 0);
+      delay(200);
     }
+
     else
     {
       //Serial.println("Button release!");
@@ -238,7 +255,15 @@ void mcp23017_buttons(void *pvParameters)
     if (value4 == LOW)
     {
       Serial.println("Button 4 pressed!");
-      delay(100);
+
+      ledcWrite(2, 1024);
+      delay(3);
+      ledcWrite(2, 0);
+      delay(3);
+      ledcWrite(2, 1024);
+      delay(3);
+      ledcWrite(2, 0);
+      delay(200);
     }
     else
     {
@@ -248,47 +273,21 @@ void mcp23017_buttons(void *pvParameters)
     if (value5 == LOW)
     {
       Serial.println("Button 5 pressed!");
-      delay(100);
+
+      ledcWrite(3, 1024);
+      delay(3);
+      ledcWrite(3, 0);
+      delay(3);
+      ledcWrite(3, 1024);
+      delay(3);
+      ledcWrite(3, 0);
+      delay(200);
     }
     else
     {
       //Serial.println("Button release!");
     }
     vTaskDelay(50);
-  }
-}
-
-void ledtest(void *pvParameters)
-{
-  while (1)
-  {
-
-    // configure LED PWM functionalitites
-    ledcSetup(ledChannel, freq, resolution);
-
-    // attach the channel to the GPIO to be controlled
-    ledcAttachPin(led2Pin, ledChannel);
-    ledcAttachPin(led3Pin, ledChannel);
-    ledcAttachPin(led4Pin, ledChannel);
-    ledcAttachPin(led5Pin, ledChannel);
-
-    // increase the LED brightness
-    for (int dutyCycle = 0; dutyCycle <= 255; dutyCycle++)
-    {
-      // changing the LED brightness with PWM
-      ledcWrite(ledChannel, dutyCycle);
-      delay(15);
-    }
-
-    // decrease the LED brightness
-    for (int dutyCycle = 255; dutyCycle >= 0; dutyCycle--)
-    {
-      // changing the LED brightness with PWM
-      ledcWrite(ledChannel, dutyCycle);
-      delay(15);
-    }
-
-    vTaskDelay(100);
   }
 }
 
@@ -402,13 +401,13 @@ void bm83_setup(void *pvParameters)
   //BM83 start routine (required)1
   pinMode(mfbPin, OUTPUT);    // sets the MFB Pin 4 as output
   digitalWrite(mfbPin, HIGH); // sets the MFB Pin 4 "High" to power on BM83 over BAT_IN
-  Delay(10);
+  delay(10);
   bm83.powerOn(); // Sends "power on" command over UART to BM83
 
   digitalWrite(mfbPin, LOW); // sets the MFB Pin 4 "LOW" (no longer needed after power on process)
   Serial.println("bm83_setup: BM83 Setup complete...");
   xSemaphoreGive(xSemaphore);
-  Serial.println("bm83_setup: BM83 Setup complete...returning Semaphore");
+  Serial.println("bm83_setup: Returning Semaphore...");
   vTaskDelete(NULL);
 }
 
@@ -454,7 +453,6 @@ void setup()
   xTaskCreatePinnedToCore(bm83_loop, "bm83_loop", 4000, NULL, 2, &xHandle, 1);
   xTaskCreatePinnedToCore(read_print_fuelgauge, "read_print_fuelgauge", 2048, NULL, 2, &xHandle, 1);
   xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 4096, NULL, 1, &xHandle, 1);
-  xTaskCreatePinnedToCore(ledtest, "ledtest", 4096, NULL, 1, &xHandle, 1);
   xTaskCreatePinnedToCore(mcp23017_buttons, "mcp23017_buttons", 4096, NULL, 3, &xHandle, 1);
 
   rotaryEncoder1.begin();
@@ -469,7 +467,7 @@ void setup()
 
   while (mcp.begin() != 0)
   {
-    Serial.println("Fehler: Initialisierung des Port Expanders(MCP23017) fehlgeschlagen, bitte überprüfen Sie die Verbinungen zum IC!");
+    Serial.println("Fehler: Initialisierung des Port Expanders(MCP23017) fehlgeschlagen, bitte ueberpruefen Sie die Verbinungen zum IC!");
   }
 
   mcp.pinMode(/*pin = */ mcp.eGPA2, /*mode = */ INPUT);
@@ -477,12 +475,27 @@ void setup()
   mcp.pinMode(/*pin = */ mcp.eGPA4, /*mode = */ INPUT);
   mcp.pinMode(/*pin = */ mcp.eGPA5, /*mode = */ INPUT);
 
+  // Konfiguration der PWM Channels
+  for (int i = 0; i < 4; i++)
+  {
+    ledcSetup(i, 2000, 8); //2 kHz , 8 bit
+  }
+  ledcAttachPin(led2Pin, 0);
+  ledcAttachPin(led3Pin, 1);
+  ledcAttachPin(led4Pin, 2);
+  ledcAttachPin(led5Pin, 3);
+
+  ledcWrite(0, 0); // 0 = LED On ; 1024 = LED Off
+  ledcWrite(1, 0);
+  ledcWrite(2, 0);
+  ledcWrite(3, 0);
+
   // Use lipo.begin() to initialize the BQ27441-G1A and confirm that it's
   // connected and communicating.
   if (!lipo.begin()) // begin() will return true if communication is successful
   {
     //  If communication fails, print an error message and loop forever.
-    Serial.println("Fehler: Initialisierung des Ladechips(BQ27441-G1A) fehlgeschlagen, bitte überprüfen Sie die Verbinungen zum IC!");
+    Serial.println("Fehler: Initialisierung des Ladechips(BQ27441-G1A) fehlgeschlagen, bitte ueberpruefen Sie die Verbinungen zum IC!");
     while (1)
       ;
   }
