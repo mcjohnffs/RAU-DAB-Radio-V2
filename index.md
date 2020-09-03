@@ -23,9 +23,9 @@ Syntax highlighted code block
 
 **Bold** and _Italic_ and `Code` text
 
-https://kaiakz.github.io/walv/index.html
-https://docs.lvgl.io/latest/en/html/porting/indev.html#encoder
-https://github.com/lvgl/lv_arduino/blob/master/examples/ESP32_TFT_eSPI/ESP32_TFT_eSPI.ino
+(https://kaiakz.github.io/walv/index.html)
+(https://docs.lvgl.io/latest/en/html/porting/indev.html#encoder)
+(https://github.com/lvgl/lv_arduino/blob/master/examples/ESP32_TFT_eSPI/ESP32_TFT_eSPI.ino)
 
 
 [Link](url) and ![Image](src)
