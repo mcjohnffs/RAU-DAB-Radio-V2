@@ -7,7 +7,8 @@
 #include <SparkFunBQ27441.h>      //Fuel Gauge library
 #include <DFRobot_MCP23017.h>     // MCP23017 GPIO Port Expander Library
 #include "AiEsp32RotaryEncoder.h" //Encoder Library für ESP32
-#include "displaytestnew_GSLC.h"  //Guislice Konfigurations Header
+#include <lvgl.h>
+#include <TFT_eSPI.h>
 
 BD37544FS bd;                     // Sound Processor Haupt-Funktion Initialisierung
 DFRobot_MCP23017 mcp(Wire, 0x20); // MCP23017 Port Expander Initialisierung
@@ -28,7 +29,7 @@ TaskHandle_t xHandle;
 AiEsp32RotaryEncoder rotaryEncoder1 = AiEsp32RotaryEncoder(ROTARY_ENCODER1_A_PIN, ROTARY_ENCODER1_B_PIN, ROTARY_ENCODER1_BUTTON_PIN, -1);
 AiEsp32RotaryEncoder rotaryEncoder2 = AiEsp32RotaryEncoder(ROTARY_ENCODER2_A_PIN, ROTARY_ENCODER2_B_PIN, ROTARY_ENCODER2_BUTTON_PIN, -1);
 
-// Setzen der gesamten Kapazität des Akkus/der Batterie mithilfe "BATTERY_CAPACITY" in mAh
+// Definieren der gesamten Kapazität des Akkus/der Batterie mithilfe "BATTERY_CAPACITY" in mAh
 const unsigned int BATTERY_CAPACITY = 9000; // e.g. 850mAh battery
 
 //BM83 Uart Pins
@@ -36,7 +37,7 @@ const unsigned int BATTERY_CAPACITY = 9000; // e.g. 850mAh battery
 #define TX_PIN 17 //SWSerial TX_PIN
 #define TX_IND 5  //SWSerial TX_IND
 
-const int mfbPin = 4; //BM83 "Enable" Pin
+const int mfbPin = 4; //BM83 "Power On" Pin
 
 int fuelgauge_init = 0; // Fuel Gauge Init Variable
 
@@ -53,135 +54,49 @@ int buttonState4 = 0; // S4 Button Pin Status Variable
 #define led5Pin 27    // S5 LED Pin
 int buttonState5 = 0; // S5 Button Pin Status Variable
 
-// Display GUI Initialisierung START
+TFT_eSPI tft = TFT_eSPI(); /* TFT instance */
+static lv_disp_buf_t disp_buf;
+static lv_color_t buf[LV_HOR_RES_MAX * 10];
 
-// ------------------------------------------------
-// Program Globals
-// ------------------------------------------------
-
-// Save some element references for direct access
-//<Save_References !Start!>
-gslc_tsElemRef *m_pElemToggle2 = NULL;
-gslc_tsElemRef *m_pElemToggle2_3 = NULL;
-gslc_tsElemRef *m_pElemToggle2_3_4 = NULL;
-gslc_tsElemRef *m_pElemToggle2_3_4_5 = NULL;
-gslc_tsElemRef *m_pElemToggle2_3_4_5_6 = NULL;
-gslc_tsElemRef *m_pElemToggle2_8 = NULL;
-gslc_tsElemRef *m_pElemXRingGauge1 = NULL;
-gslc_tsElemRef *m_pElemXRingGauge2 = NULL;
-gslc_tsElemRef* m_pElemListbox    = NULL;
-gslc_tsElemRef* m_pElemSel        = NULL;
-gslc_tsElemRef* m_pListSlider1    = NULL;
-//<Save_References !End!>
-
-// Define debug message function
-static int16_t DebugOut(char ch)
+#if USE_LV_LOG != 0
+/* Serial debugging */
+void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *dsc)
 {
-  if (ch == (char)'\n')
-    Serial.println("");
-  else
-    Serial.write(ch);
-  return 0;
+
+  Serial.printf("%s@%d->%s\r\n", file, line, dsc);
+  Serial.flush();
+}
+#endif
+
+/* Display flushing */
+void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
+{
+  uint32_t w = (area->x2 - area->x1 + 1);
+  uint32_t h = (area->y2 - area->y1 + 1);
+
+  tft.startWrite();
+  tft.setAddrWindow(area->x1, area->y1, w, h);
+  tft.pushColors(&color_p->full, w * h, true);
+  tft.endWrite();
+
+  lv_disp_flush_ready(disp);
 }
 
-// ------------------------------------------------
-// Callback Methods
-// ------------------------------------------------
-// Common Button callback
-bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, int16_t nY)
+/* Reading input device (simulated encoder here) */
+bool read_encoder(lv_indev_drv_t *indev, lv_indev_data_t *data)
 {
-  // Typecast the parameters to match the GUI and element types
-  gslc_tsGui *pGui = (gslc_tsGui *)(pvGui);
-  gslc_tsElemRef *pElemRef = (gslc_tsElemRef *)(pvElemRef);
-  gslc_tsElem *pElem = gslc_GetElemFromRef(pGui, pElemRef);
+  static int32_t last_diff = 0;
+  int32_t diff = 0;                   /* Dummy - no movement */
+  int btn_state = LV_INDEV_STATE_REL; /* Dummy - no press */
 
-  if (eTouch == GSLC_TOUCH_UP_IN)
-  {
-    // From the element's ID we can determine which button was pressed.
-    switch (pElem->nId)
-    {
-      //<Button Enums !Start!>
-    case E_ELEM_BTN1:
+  data->enc_diff = diff - last_diff;
+  ;
+  data->state = btn_state;
 
-      break;
-    case E_ELEM_BTN2:
-      bm83.mmiAction(BM83_MMI_STANDBY_ENTERING_PAIRING);
-      break;
-    case E_ELEM_BTN4:
-      break;
-    case E_ELEM_TOGGLE2:
-      // TODO Add code for Toggle button ON/OFF state
-      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2))
-      {
-        ;
-      }
-      break;
-    case E_ELEM_TOGGLE3:
-      // TODO Add code for Toggle button ON/OFF state
-      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3) == 1)
-      {
-        ledcWrite(0, 1024);
-      }
-      break;
-    case E_ELEM_TOGGLE4:
-      // TODO Add code for Toggle button ON/OFF state
-      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4) == 1)
-      {
-        ledcWrite(1, 1024);
-      }
-      break;
-    case E_ELEM_TOGGLE5:
-      // TODO Add code for Toggle button ON/OFF state
-      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5) == 1)
-      {
-        ledcWrite(2, 1024);
-      }
-      break;
-    case E_ELEM_TOGGLE6:
-      // TODO Add code for Toggle button ON/OFF state
-      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5_6) == 1)
-      {
-        ledcWrite(3, 1024);
-      }
-      break;
-    case E_ELEM_TOGGLE8:
-      // TODO Add code for Toggle button ON/OFF state
-      if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_8))
-      {
-        ;
-      }
+  last_diff = diff;
 
-      break;
-    case E_ELEM_BTN5:
-      break;
-    case E_ELEM_BTN6:
-      break;
-    case E_ELEM_BTN7:
-      break;
-
-      //<Button Enums !End!>
-    default:
-      break;
-    }
-  }
-  return true;
+  return false;
 }
-//<Checkbox Callback !Start!>
-//<Checkbox Callback !End!>
-//<Keypad Callback !Start!>
-//<Keypad Callback !End!>
-//<Spinner Callback !Start!>
-//<Spinner Callback !End!>
-//<Listbox Callback !Start!>
-//<Listbox Callback !End!>
-//<Draw Callback !Start!>
-//<Draw Callback !End!>
-//<Slider Callback !Start!>
-//<Slider Callback !End!>
-//<Tick Callback !Start!>
-//<Tick Callback !End!>
-
-// Display GUI Initialisierung ENDE
 
 void bm83_loop(void *pvParameters)
 {
@@ -199,12 +114,11 @@ void mcp23017_buttons(void *pvParameters)
   while (1)
   {
 
-    gslc_Update(&m_gui);
     uint8_t value2 = mcp.digitalRead(/*pin = */ mcp.eGPA2);
     uint8_t value3 = mcp.digitalRead(/*pin = */ mcp.eGPA3);
     uint8_t value4 = mcp.digitalRead(/*pin = */ mcp.eGPA4);
     uint8_t value5 = mcp.digitalRead(/*pin = */ mcp.eGPA5);
-    /*Read  level of Group GPIOA pins*/
+
     if (value2 == LOW)
     {
       Serial.println("Button 2 pressed. Configuring Sound Processor!");
@@ -338,7 +252,6 @@ void encoder_loop(void *pvParameters)
       Serial.print("Value 1:  ");
       Serial.println(encoderValue);
 
-      gslc_ElemXRingGaugeSetVal(&m_gui, m_pElemXRingGauge1, encoderValue);
       bd.setVol_1(encoderValue);
     }
 
@@ -347,14 +260,16 @@ void encoder_loop(void *pvParameters)
 
       Serial.print("Value 2: ");
       Serial.println(encoderValue2);
-
-      gslc_ElemXRingGaugeSetVal(&m_gui, m_pElemXRingGauge2, encoderValue2);
     }
 
     vTaskDelay(2);
   }
 }
-void loop() {}
+void loop()
+{
+  lv_task_handler(); /* let the GUI do its work */
+  delay(5);
+}
 
 void read_print_fuelgauge(void *pvParameters)
 {
@@ -437,9 +352,6 @@ void setup()
   Serial.println();
   Serial.println("running setup");
 
-  gslc_InitDebug(&DebugOut);
-  InitGUIslice_gen();
-
   // possible use of "CONFIG_SYSTEM_EVENT_TASK_STACK_SIZE"
   // xTaskCreatePinnedToCore Core Auswahl
 
@@ -455,6 +367,51 @@ void setup()
   xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 4096, NULL, 1, &xHandle, 1);
   xTaskCreatePinnedToCore(mcp23017_buttons, "mcp23017_buttons", 4096, NULL, 3, &xHandle, 1);
 
+  lv_init();
+
+#if USE_LV_LOG != 0
+  lv_log_register_print_cb(my_print); /* register print function for debugging */
+#endif
+
+  tft.begin();        /* TFT init */
+  tft.setRotation(1); /* Landscape orientation */
+
+  lv_disp_buf_init(&disp_buf, buf, NULL, LV_HOR_RES_MAX * 10);
+
+  /*Initialize the display*/
+  lv_disp_drv_t disp_drv;
+  lv_disp_drv_init(&disp_drv);
+  disp_drv.hor_res = 320;
+  disp_drv.ver_res = 240;
+  disp_drv.flush_cb = my_disp_flush;
+  disp_drv.buffer = &disp_buf;
+  lv_disp_drv_register(&disp_drv);
+
+  /*Initialize the (dummy) input device driver*/
+  lv_indev_drv_t indev_drv;
+  lv_indev_drv_init(&indev_drv);
+  indev_drv.type = LV_INDEV_TYPE_ENCODER;
+  indev_drv.read_cb = read_encoder;
+  lv_indev_drv_register(&indev_drv);
+
+  lv_obj_t *page0 = lv_page_create(screen, NULL);
+  lv_obj_set_width(page0, 320);
+  lv_obj_set_height(page0, 240);
+  lv_obj_set_x(page0, 0);
+  lv_obj_set_y(page0, 0);
+  lv_obj_set_drag(page0, false);
+  lv_obj_t *sw1 = lv_sw_create(page0, NULL);
+  lv_obj_set_x(sw1, 231);
+  lv_obj_set_y(sw1, 178);
+  lv_obj_t *gauge3 = lv_gauge_create(page0, NULL);
+  lv_obj_set_x(gauge3, 15);
+  lv_obj_set_y(gauge3, 25);
+  lv_obj_set_width(gauge3, 100);
+  lv_obj_set_height(gauge3, 100);
+  lv_obj_t *bar4 = lv_bar_create(page0, NULL);
+  lv_obj_set_x(bar4, 13);
+  lv_obj_set_y(bar4, 173);
+
   rotaryEncoder1.begin();
   rotaryEncoder1.setup([] { rotaryEncoder1.readEncoder_ISR(); });
   rotaryEncoder1.setBoundaries(0, 20, false);
@@ -467,7 +424,7 @@ void setup()
 
   while (mcp.begin() != 0)
   {
-    Serial.println("Fehler: Initialisierung des Port Expanders(MCP23017) fehlgeschlagen, bitte ueberpruefen Sie die Verbinungen zum IC!");
+    Serial.println("Fehler: Initialisierung des Port Expanders(MCP23017) fehlgeschlagen, bitte ueberpruefen Sie die Verbindungen zum IC!");
   }
 
   mcp.pinMode(/*pin = */ mcp.eGPA2, /*mode = */ INPUT);
@@ -495,7 +452,7 @@ void setup()
   if (!lipo.begin()) // begin() will return true if communication is successful
   {
     //  If communication fails, print an error message and loop forever.
-    Serial.println("Fehler: Initialisierung des Ladechips(BQ27441-G1A) fehlgeschlagen, bitte ueberpruefen Sie die Verbinungen zum IC!");
+    Serial.println("Fehler: Initialisierung des Ladechips(BQ27441-G1A) fehlgeschlagen, bitte ueberpruefen Sie die Verbindungen zum IC!");
     while (1)
       ;
   }
