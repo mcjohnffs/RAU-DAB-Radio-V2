@@ -1,4 +1,15 @@
-#include "esp_system.h"           // ESP Funkionen
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_freertos_hooks.h"
+#include "freertos/semphr.h"
+#include "esp_system.h"
+#include "driver/gpio.h"
+
 #include "BM83.h"                 //Bluetooth Module BM83 Library
 #include <SoftwareSerial.h>       //Funktionierende SoftwareSerial Library für ESP32
 #include <APA102.h>               //RGB LED's Library
@@ -7,14 +18,27 @@
 #include <SparkFunBQ27441.h>      //Fuel Gauge library
 #include <DFRobot_MCP23017.h>     // MCP23017 GPIO Port Expander Library
 #include "AiEsp32RotaryEncoder.h" //Encoder Library für ESP32
-#include <lvgl.h>
-#include <TFT_eSPI.h>
+
+/* Littlevgl specific */
+#include <lvgl_main.h>
+
+/*********************
+ *      DEFINES
+ *********************/
+#define TAG "demo"
+
+/**********************
+ *  STATIC PROTOTYPES
+ **********************/
+static void IRAM_ATTR lv_tick_task(void *arg);
+void guiTask();
 
 BD37544FS bd;                     // Sound Processor Haupt-Funktion Initialisierung
 DFRobot_MCP23017 mcp(Wire, 0x20); // MCP23017 Port Expander Initialisierung
 
 // FreeRTOS Handles
 SemaphoreHandle_t xSemaphore;
+SemaphoreHandle_t xGuiSemaphore;
 TaskHandle_t xHandle;
 
 //Encoder 1+2 Pins und Initialisierung
@@ -54,48 +78,118 @@ int buttonState4 = 0; // S4 Button Pin Status Variable
 #define led5Pin 27    // S5 LED Pin
 int buttonState5 = 0; // S5 Button Pin Status Variable
 
-TFT_eSPI tft = TFT_eSPI(); /* TFT instance */
-static lv_disp_buf_t disp_buf;
-static lv_color_t buf[LV_HOR_RES_MAX * 10];
+uint32_t *newencodervalue1 = 0;
 
-#if USE_LV_LOG != 0
-/* Serial debugging */
-void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *dsc)
+lv_obj_t *bar1;
+lv_obj_t *lmeter;
+lv_obj_t *sw1;
+lv_obj_t *sw2;
+lv_obj_t *list1;
+lv_obj_t *list_btn;
+
+
+void guiTask(void *pvParameters)
 {
+  xGuiSemaphore = xSemaphoreCreateMutex();
 
-  Serial.printf("%s@%d->%s\r\n", file, line, dsc);
-  Serial.flush();
-}
+  Serial.println("INIT");
+  lv_init();
+
+  lvgl_driver_init();
+
+  static lv_color_t buf1[DISP_BUF_SIZE];
+  static lv_color_t buf2[DISP_BUF_SIZE];
+  static lv_disp_buf_t disp_buf;
+  lv_disp_buf_init(&disp_buf, buf1, buf2, DISP_BUF_SIZE);
+
+  lv_disp_drv_t disp_drv;
+  lv_disp_drv_init(&disp_drv);
+  disp_drv.flush_cb = disp_driver_flush;
+
+  disp_drv.buffer = &disp_buf;
+  lv_disp_drv_register(&disp_drv);
+
+#if CONFIG_LVGL_TOUCH_CONTROLLER != TOUCH_CONTROLLER_NONE
+  lv_indev_drv_t indev_drv;
+  lv_indev_drv_init(&indev_drv);
+  indev_drv.read_cb = touch_driver_read;
+  indev_drv.type = LV_INDEV_TYPE_POINTER;
+  lv_indev_drv_register(&indev_drv);
 #endif
+  esp_timer_create_args_t periodic_timer_args;
+  periodic_timer_args.callback = &lv_tick_task;
+  periodic_timer_args.name = "periodic_gui";
 
-/* Display flushing */
-void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
-{
-  uint32_t w = (area->x2 - area->x1 + 1);
-  uint32_t h = (area->y2 - area->y1 + 1);
+  esp_timer_handle_t periodic_timer;
+  ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
+  //On ESP32 it's better to create a periodic task instead of esp_register_freertos_tick_hook
+  ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1 * 1000)); //1ms (expressed as microseconds)
 
-  tft.startWrite();
-  tft.setAddrWindow(area->x1, area->y1, w, h);
-  tft.pushColors(&color_p->full, w * h, true);
-  tft.endWrite();
+  lmeter = lv_linemeter_create(lv_scr_act(), NULL);
+  lv_linemeter_set_range(lmeter, 0, 20);   /*Set the range*/
+  lv_linemeter_set_value(lmeter, 0);       /*Set the current value*/
+  lv_linemeter_set_scale(lmeter, 360, 20); /*Set the angle and number of lines*/
+  lv_obj_set_size(lmeter, 100, 100);
+  lv_obj_align(lmeter, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
-  lv_disp_flush_ready(disp);
+  bar1 = lv_bar_create(lv_scr_act(), NULL);
+  lv_obj_set_size(bar1, 100, 10);
+  lv_obj_align(bar1, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
+  lv_bar_set_anim_time(bar1, 2000);
+  lv_bar_set_range(bar1, 0, 20);
+  lv_bar_set_value(bar1, 0, LV_ANIM_ON);
+
+  /*Create a switch and apply the styles*/
+  sw1 = lv_switch_create(lv_scr_act(), NULL);
+  lv_obj_align(sw1, NULL, LV_ALIGN_CENTER, 0, -50);
+  lv_obj_set_event_cb(sw1, event_handler);
+
+  /*Copy the first switch and turn it ON*/
+  sw2 = lv_switch_create(lv_scr_act(), sw1);
+  lv_switch_on(sw2, LV_ANIM_ON);
+  lv_obj_align(sw2, NULL, LV_ALIGN_CENTER, 0, 50);
+
+    /*Create a list*/
+    list1 = lv_list_create(lv_scr_act(), NULL);
+    lv_obj_set_size(list1, 160, 200);
+    lv_obj_align(list1, NULL, LV_ALIGN_CENTER, 0, 0);
+
+    /*Add buttons to the list*/
+    
+
+    list_btn = lv_list_add_btn(list1, LV_SYMBOL_FILE, "New");
+    lv_obj_set_event_cb(list_btn, event_handler);
+
+    list_btn = lv_list_add_btn(list1, LV_SYMBOL_DIRECTORY, "Open");
+    lv_obj_set_event_cb(list_btn, event_handler);
+
+    list_btn = lv_list_add_btn(list1, LV_SYMBOL_CLOSE, "Delete");
+    lv_obj_set_event_cb(list_btn, event_handler);
+
+    list_btn = lv_list_add_btn(list1, LV_SYMBOL_EDIT, "Edit");
+    lv_obj_set_event_cb(list_btn, event_handler);
+
+  while (1)
+  {
+    vTaskDelay(1);
+    //Try to lock the semaphore, if success, call lvgl stuff
+    if (xSemaphoreTake(xGuiSemaphore, (TickType_t)10) == pdTRUE)
+    {
+      lv_task_handler();
+      xSemaphoreGive(xGuiSemaphore);
+    }
+  }
+
+  //A task should NEVER return
+  vTaskDelete(NULL);
 }
 
-/* Reading input device (simulated encoder here) */
-bool read_encoder(lv_indev_drv_t *indev, lv_indev_data_t *data)
+static void event_handler(lv_obj_t *obj, lv_event_t event)
 {
-  static int32_t last_diff = 0;
-  int32_t diff = 0;                   /* Dummy - no movement */
-  int btn_state = LV_INDEV_STATE_REL; /* Dummy - no press */
-
-  data->enc_diff = diff - last_diff;
-  ;
-  data->state = btn_state;
-
-  last_diff = diff;
-
-  return false;
+  if (event == LV_EVENT_CLICKED)
+  {
+    printf("Clicked: %s\n", lv_list_get_btn_text(obj));
+  }
 }
 
 void bm83_loop(void *pvParameters)
@@ -239,8 +333,7 @@ void encoder_loop(void *pvParameters)
       //Additionally often we only want if something changed
       //example: when using rotary encoder to set termostat temperature, or sound volume etc
     }
-
-    int16_t encoderValue = rotaryEncoder1.readEncoder();
+    uint32_t encoderValue = rotaryEncoder1.readEncoder();
     int16_t encoderValue2 = rotaryEncoder2.readEncoder();
 
     //if value is changed compared to our last read
@@ -252,6 +345,8 @@ void encoder_loop(void *pvParameters)
       Serial.print("Value 1:  ");
       Serial.println(encoderValue);
 
+      lv_linemeter_set_value(lmeter, encoderValue);
+
       bd.setVol_1(encoderValue);
     }
 
@@ -260,6 +355,7 @@ void encoder_loop(void *pvParameters)
 
       Serial.print("Value 2: ");
       Serial.println(encoderValue2);
+      lv_bar_set_value(bar1, encoderValue2, LV_ANIM_ON);
     }
 
     vTaskDelay(2);
@@ -267,8 +363,14 @@ void encoder_loop(void *pvParameters)
 }
 void loop()
 {
-  lv_task_handler(); /* let the GUI do its work */
-  delay(5);
+  vTaskDelay(100);
+}
+
+static void IRAM_ATTR lv_tick_task(void *arg)
+{
+  (void)arg;
+
+  lv_tick_inc(portTICK_RATE_MS); //Take note it is 1ms
 }
 
 void read_print_fuelgauge(void *pvParameters)
@@ -317,7 +419,7 @@ void bm83_setup(void *pvParameters)
   pinMode(mfbPin, OUTPUT);    // sets the MFB Pin 4 as output
   digitalWrite(mfbPin, HIGH); // sets the MFB Pin 4 "High" to power on BM83 over BAT_IN
   delay(10);
-  bm83.powerOn(); // Sends "power on" command over UART to BM83
+  //bm83.powerOn(); // Sends "power on" command over UART to BM83
 
   digitalWrite(mfbPin, LOW); // sets the MFB Pin 4 "LOW" (no longer needed after power on process)
   Serial.println("bm83_setup: BM83 Setup complete...");
@@ -349,7 +451,6 @@ void setup()
   swSerial.begin(115200);
 
   Serial.begin(9600);
-  Serial.println();
   Serial.println("running setup");
 
   // possible use of "CONFIG_SYSTEM_EVENT_TASK_STACK_SIZE"
@@ -358,6 +459,8 @@ void setup()
   xSemaphore = xSemaphoreCreateBinary();
 
   // Setup Tasks
+
+  xTaskCreatePinnedToCore(guiTask, "gui", 4096 * 4, NULL, 4, NULL, 1);
   xTaskCreatePinnedToCore(bm83_setup, "bm83_setup", 4000, NULL, 3, &xHandle, 0);
   xTaskCreatePinnedToCore(sound_proc_setup, "sound_proc_setup", 2048, NULL, 3, &xHandle, 0);
 
@@ -366,51 +469,6 @@ void setup()
   xTaskCreatePinnedToCore(read_print_fuelgauge, "read_print_fuelgauge", 2048, NULL, 2, &xHandle, 1);
   xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 4096, NULL, 1, &xHandle, 1);
   xTaskCreatePinnedToCore(mcp23017_buttons, "mcp23017_buttons", 4096, NULL, 3, &xHandle, 1);
-
-  lv_init();
-
-#if USE_LV_LOG != 0
-  lv_log_register_print_cb(my_print); /* register print function for debugging */
-#endif
-
-  tft.begin();        /* TFT init */
-  tft.setRotation(1); /* Landscape orientation */
-
-  lv_disp_buf_init(&disp_buf, buf, NULL, LV_HOR_RES_MAX * 10);
-
-  /*Initialize the display*/
-  lv_disp_drv_t disp_drv;
-  lv_disp_drv_init(&disp_drv);
-  disp_drv.hor_res = 320;
-  disp_drv.ver_res = 240;
-  disp_drv.flush_cb = my_disp_flush;
-  disp_drv.buffer = &disp_buf;
-  lv_disp_drv_register(&disp_drv);
-
-  /*Initialize the (dummy) input device driver*/
-  lv_indev_drv_t indev_drv;
-  lv_indev_drv_init(&indev_drv);
-  indev_drv.type = LV_INDEV_TYPE_ENCODER;
-  indev_drv.read_cb = read_encoder;
-  lv_indev_drv_register(&indev_drv);
-
-  lv_obj_t *page0 = lv_page_create(screen, NULL);
-  lv_obj_set_width(page0, 320);
-  lv_obj_set_height(page0, 240);
-  lv_obj_set_x(page0, 0);
-  lv_obj_set_y(page0, 0);
-  lv_obj_set_drag(page0, false);
-  lv_obj_t *sw1 = lv_sw_create(page0, NULL);
-  lv_obj_set_x(sw1, 231);
-  lv_obj_set_y(sw1, 178);
-  lv_obj_t *gauge3 = lv_gauge_create(page0, NULL);
-  lv_obj_set_x(gauge3, 15);
-  lv_obj_set_y(gauge3, 25);
-  lv_obj_set_width(gauge3, 100);
-  lv_obj_set_height(gauge3, 100);
-  lv_obj_t *bar4 = lv_bar_create(page0, NULL);
-  lv_obj_set_x(bar4, 13);
-  lv_obj_set_y(bar4, 173);
 
   rotaryEncoder1.begin();
   rotaryEncoder1.setup([] { rotaryEncoder1.readEncoder_ISR(); });
