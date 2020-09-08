@@ -23,6 +23,7 @@
 // Include extended elements
 #include "elem/XCheckbox.h"
 #include "elem/XRingGauge.h"
+#include "elem/XTextbox.h"
 #include "elem/XTogglebtn.h"
 //<Includes !End!>
 
@@ -47,16 +48,18 @@
 // Enumerations for pages, elements, fonts, images
 // ------------------------------------------------
 //<Enum !Start!>
-enum {E_PG_MAIN,E_PG2};
-enum {E_ELEM_BTN1,E_ELEM_BTN2,E_ELEM_BTN4,E_ELEM_BTN5,E_ELEM_BTN6
-      ,E_ELEM_BTN7,E_ELEM_CHECK1,E_ELEM_CHECK2,E_ELEM_CHECK3
-      ,E_ELEM_CHECK4,E_ELEM_RINGGAUGE1,E_ELEM_RINGGAUGE2,E_ELEM_TEXT1
-      ,E_ELEM_TEXT10,E_ELEM_TEXT11,E_ELEM_TEXT12,E_ELEM_TEXT13
-      ,E_ELEM_TEXT2,E_ELEM_TEXT4,E_ELEM_TEXT5,E_ELEM_TEXT6,E_ELEM_TEXT7
-      ,E_ELEM_TEXT8,E_ELEM_TEXT9,E_ELEM_TOGGLE2,E_ELEM_TOGGLE3
+enum {E_PG_MAIN,E_PG2,E_PG3};
+enum {E_ELEM_BTN1,E_ELEM_BTN10,E_ELEM_BTN11,E_ELEM_BTN2,E_ELEM_BTN4
+      ,E_ELEM_BTN5,E_ELEM_BTN6,E_ELEM_BTN7,E_ELEM_BTN8,E_ELEM_BTN9
+      ,E_ELEM_CHECK1,E_ELEM_CHECK2,E_ELEM_CHECK3,E_ELEM_CHECK4
+      ,E_ELEM_RINGGAUGE1,E_ELEM_RINGGAUGE2,E_ELEM_TEXT1,E_ELEM_TEXT10
+      ,E_ELEM_TEXT11,E_ELEM_TEXT12,E_ELEM_TEXT13,E_ELEM_TEXT14
+      ,E_ELEM_TEXT16,E_ELEM_TEXT2,E_ELEM_TEXT4,E_ELEM_TEXT5
+      ,E_ELEM_TEXT6,E_ELEM_TEXT7,E_ELEM_TEXT8,E_ELEM_TEXT9
+      ,E_ELEM_TEXTBOX3,E_ELEM_TOGGLE10,E_ELEM_TOGGLE2,E_ELEM_TOGGLE3
       ,E_ELEM_TOGGLE4,E_ELEM_TOGGLE5,E_ELEM_TOGGLE6,E_ELEM_TOGGLE8};
 // Must use separate enum for fonts with MAX_FONT at end to use gslc_FontSet.
-enum {E_TI_5X8PT7B,MAX_FONT};
+enum {E_TI_10X16PT7B,E_TI_5X8PT7B,MAX_FONT};
 //<Enum !End!>
 
 // ------------------------------------------------
@@ -67,13 +70,16 @@ enum {E_TI_5X8PT7B,MAX_FONT};
 // Define the maximum number of elements and pages
 // ------------------------------------------------
 //<ElementDefines !Start!>
-#define MAX_PAGE                2
+#define MAX_PAGE                3
 
 #define MAX_ELEM_PG_MAIN 27 // # Elems total on page
 #define MAX_ELEM_PG_MAIN_RAM MAX_ELEM_PG_MAIN // # Elems in RAM
 
-#define MAX_ELEM_PG2 3 // # Elems total on page
+#define MAX_ELEM_PG2 8 // # Elems total on page
 #define MAX_ELEM_PG2_RAM MAX_ELEM_PG2 // # Elems in RAM
+
+#define MAX_ELEM_PG3 3 // # Elems total on page
+#define MAX_ELEM_PG3_RAM MAX_ELEM_PG3 // # Elems in RAM
 //<ElementDefines !End!>
 
 // ------------------------------------------------
@@ -89,6 +95,8 @@ gslc_tsElem                     m_asPage1Elem[MAX_ELEM_PG_MAIN_RAM];
 gslc_tsElemRef                  m_asPage1ElemRef[MAX_ELEM_PG_MAIN];
 gslc_tsElem                     m_asPage2Elem[MAX_ELEM_PG2_RAM];
 gslc_tsElemRef                  m_asPage2ElemRef[MAX_ELEM_PG2];
+gslc_tsElem                     m_asPage3Elem[MAX_ELEM_PG3_RAM];
+gslc_tsElemRef                  m_asPage3ElemRef[MAX_ELEM_PG3];
 gslc_tsXRingGauge               m_sXRingGauge1;
 gslc_tsXRingGauge               m_sXRingGauge2;
 gslc_tsXTogglebtn               m_asXToggle2;
@@ -101,6 +109,9 @@ gslc_tsXCheckbox                m_asXCheck1;
 gslc_tsXCheckbox                m_asXCheck2;
 gslc_tsXCheckbox                m_asXCheck3;
 gslc_tsXCheckbox                m_asXCheck4;
+gslc_tsXTogglebtn               m_asXToggle10;
+gslc_tsXTextbox                 m_sTextbox3;
+char                            m_acTextboxBuf3[120]; // NRows=6 NCols=20
 
 #define MAX_STR                 100
 
@@ -112,14 +123,17 @@ gslc_tsXCheckbox                m_asXCheck4;
 
 // Element References for direct access
 //<Extern_References !Start!>
+extern gslc_tsElemRef* m_pElemTextbox3;
 extern gslc_tsElemRef* m_pElemToggle2;
 extern gslc_tsElemRef* m_pElemToggle2_3;
 extern gslc_tsElemRef* m_pElemToggle2_3_4;
 extern gslc_tsElemRef* m_pElemToggle2_3_4_5;
 extern gslc_tsElemRef* m_pElemToggle2_3_4_5_6;
 extern gslc_tsElemRef* m_pElemToggle2_8;
+extern gslc_tsElemRef* m_pElemToggle2_8_9_10;
 extern gslc_tsElemRef* m_pElemXRingGauge1;
 extern gslc_tsElemRef* m_pElemXRingGauge2;
+extern gslc_tsElemRef* m_pTextSlider3;
 //<Extern_References !End!>
 
 // Define debug message function
@@ -150,12 +164,14 @@ void InitGUIslice_gen()
   // Load Fonts
   // ------------------------------------------------
 //<Load_Fonts !Start!>
+    if (!gslc_FontSet(&m_gui,E_TI_10X16PT7B,GSLC_FONTREF_PTR,NULL,2)) { return; }
     if (!gslc_FontSet(&m_gui,E_TI_5X8PT7B,GSLC_FONTREF_PTR,NULL,1)) { return; }
 //<Load_Fonts !End!>
 
 //<InitGUI !Start!>
   gslc_PageAdd(&m_gui,E_PG_MAIN,m_asPage1Elem,MAX_ELEM_PG_MAIN_RAM,m_asPage1ElemRef,MAX_ELEM_PG_MAIN);
   gslc_PageAdd(&m_gui,E_PG2,m_asPage2Elem,MAX_ELEM_PG2_RAM,m_asPage2ElemRef,MAX_ELEM_PG2);
+  gslc_PageAdd(&m_gui,E_PG3,m_asPage3Elem,MAX_ELEM_PG3_RAM,m_asPage3ElemRef,MAX_ELEM_PG3);
 
   // NOTE: The current page defaults to the first page added. Here we explicitly
   //       ensure that the main page is the correct page no matter the add order.
@@ -312,6 +328,49 @@ void InitGUIslice_gen()
   
   // create E_ELEM_BTN7 button with text label
   pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN7,E_PG2,
+    (gslc_tsRect){160,190,70,40},(char*)"Back",0,E_TI_5X8PT7B,&CbBtnCommon);
+  
+  // Create E_ELEM_TEXT14 text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT14,E_PG2,(gslc_tsRect){15,5,108,10},
+    (char*)"Charger Board Data",0,E_TI_5X8PT7B);
+  
+  // Create E_ELEM_TEXT16 text label
+  pElemRef = gslc_ElemCreateTxt(&m_gui,E_ELEM_TEXT16,E_PG2,(gslc_tsRect){227,12,66,10},
+    (char*)"All LEDs on",0,E_TI_5X8PT7B);
+  
+  // Create toggle button E_ELEM_TOGGLE10
+  pElemRef = gslc_ElemXTogglebtnCreate(&m_gui,E_ELEM_TOGGLE10,E_PG2,&m_asXToggle10,
+    (gslc_tsRect){233,30,35,20},GSLC_COL_GRAY,GSLC_COL_BLUE_DK1,GSLC_COL_GRAY_LT3,
+    false,false,&CbBtnCommon);
+  m_pElemToggle2_8_9_10 = pElemRef;
+  
+  // create E_ELEM_BTN11 button with text label
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN11,E_PG2,
+    (gslc_tsRect){235,190,70,40},(char*)"Next Page",0,E_TI_5X8PT7B,&CbBtnCommon);
+   
+  // Create textbox
+  pElemRef = gslc_ElemXTextboxCreate(&m_gui,E_ELEM_TEXTBOX3,E_PG2,&m_sTextbox3,
+    (gslc_tsRect){10,20,200,111},E_TI_10X16PT7B,
+    (char*)&m_acTextboxBuf3,6,20);
+  gslc_ElemXTextboxWrapSet(&m_gui,pElemRef,true);
+  gslc_ElemSetTxtCol(&m_gui,pElemRef,GSLC_COL_YELLOW);
+  gslc_ElemSetCol(&m_gui,pElemRef,GSLC_COL_GRAY,GSLC_COL_BLACK,GSLC_COL_BLACK);
+  m_pElemTextbox3 = pElemRef;
+
+  // -----------------------------------
+  // PAGE: E_PG3
+  
+  
+  // create E_ELEM_BTN8 button with text label
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN8,E_PG3,
+    (gslc_tsRect){10,190,70,40},(char*)"Settings",0,E_TI_5X8PT7B,&CbBtnCommon);
+  
+  // create E_ELEM_BTN9 button with text label
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN9,E_PG3,
+    (gslc_tsRect){85,190,70,40},(char*)"Bluetooth",0,E_TI_5X8PT7B,&CbBtnCommon);
+  
+  // create E_ELEM_BTN10 button with text label
+  pElemRef = gslc_ElemCreateBtnTxt(&m_gui,E_ELEM_BTN10,E_PG3,
     (gslc_tsRect){160,190,70,40},(char*)"Back",0,E_TI_5X8PT7B,&CbBtnCommon);
 //<InitGUI !End!>
 
