@@ -1,7 +1,6 @@
 #include "esp_system.h"           // ESP Funkionen
 #include "BM83.h"                 //Bluetooth Module BM83 Library
 #include <SoftwareSerial.h>       //Funktionierende SoftwareSerial Library für ESP32
-#include <APA102.h>               //RGB LED's Library
 #include <BD37544FS.h>            //Sound Prozessor Library
 #include "Wire.h"                 //I2C Standart library
 #include <SparkFunBQ27441.h>      //Fuel Gauge library
@@ -16,7 +15,7 @@ DFRobot_MCP23017 mcp(Wire, 0x20); // MCP23017 Port Expander Initialisierung
 SemaphoreHandle_t xSemaphore;
 TaskHandle_t xHandle;
 
-//Encoder 1+2 Pins und Initialisierung
+//Encoder 1+2 - Pins und Initialisierung
 #define ROTARY_ENCODER1_A_PIN 39
 #define ROTARY_ENCODER1_B_PIN 36
 #define ROTARY_ENCODER1_BUTTON_PIN 34
@@ -74,7 +73,7 @@ gslc_tsElemRef *m_pElemXRingGauge2 = NULL;
 gslc_tsElemRef *m_pTextSlider3 = NULL;
 //<Save_References !End!>
 
-// Define debug message function
+// Message Debug Funktion
 static int16_t DebugOut(char ch)
 {
   if (ch == (char)'\n')
@@ -85,7 +84,7 @@ static int16_t DebugOut(char ch)
 }
 
 // ------------------------------------------------
-// Callback Methods
+// Callback Methoden
 // ------------------------------------------------
 // Common Button callback
 bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, int16_t nY)
@@ -97,7 +96,7 @@ bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
 
   if (eTouch == GSLC_TOUCH_UP_IN)
   {
-    // From the element's ID we can determine which button was pressed.
+    // Mithilfe von element's ID können wir übeprüfen welcher Button gedrückt worden ist
     switch (pElem->nId)
     {
       //<Button Enums !Start!>
@@ -112,14 +111,12 @@ bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       gslc_SetPageCur(&m_gui, E_PG2);
       break;
     case E_ELEM_TOGGLE2:
-      // TODO Add code for Toggle button ON/OFF state
       if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2))
       {
         ;
       }
       break;
     case E_ELEM_TOGGLE3:
-      // TODO Add code for Toggle button ON/OFF state
       if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3) == 1)
       {
         ledcWrite(0, 1024);
@@ -127,7 +124,6 @@ bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       ledcWrite(0, 0);
       break;
     case E_ELEM_TOGGLE4:
-      // TODO Add code for Toggle button ON/OFF state
       if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4) == 1)
       {
         ledcWrite(1, 1024);
@@ -135,7 +131,6 @@ bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       ledcWrite(1, 0);
       break;
     case E_ELEM_TOGGLE5:
-      // TODO Add code for Toggle button ON/OFF state
       if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5) == 1)
       {
         ledcWrite(2, 1024);
@@ -143,7 +138,6 @@ bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       ledcWrite(2, 0);
       break;
     case E_ELEM_TOGGLE6:
-      // TODO Add code for Toggle button ON/OFF state
       if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_3_4_5_6) == 1)
       {
         ledcWrite(3, 1024);
@@ -151,7 +145,6 @@ bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       ledcWrite(3, 0);
       break;
     case E_ELEM_TOGGLE8:
-      // TODO Add code for Toggle button ON/OFF state
       if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_8))
       {
         ;
@@ -166,7 +159,6 @@ bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
       gslc_SetPageCur(&m_gui, E_PG_MAIN);
       break;
     case E_ELEM_TOGGLE10:
-      // TODO Add code for Toggle button ON/OFF state
       if (gslc_ElemXTogglebtnGetState(&m_gui, m_pElemToggle2_8_9_10))
       {
 
@@ -204,20 +196,12 @@ bool CbBtnCommon(void *pvGui, void *pvElemRef, gslc_teTouch eTouch, int16_t nX, 
 //<Keypad Callback !End!>
 //<Spinner Callback !Start!>
 //<Spinner Callback !End!>
-
 //<Listbox Enums !Start!>
-
 //<Listbox Enums !End!>
-
 //<Draw Callback !Start!>
 //<Draw Callback !End!>
-
-// Callback function for when a slider's position has been updated
-
 //<Slider Enums !Start!>
-
 //<Slider Enums !End!>
-
 //<Tick Callback !Start!>
 //<Tick Callback !End!>
 
@@ -239,11 +223,12 @@ void mcp23017_buttons(void *pvParameters)
   while (1)
   {
     gslc_Update(&m_gui);
+
     uint8_t value2 = mcp.digitalRead(/*pin = */ mcp.eGPA2);
     uint8_t value3 = mcp.digitalRead(/*pin = */ mcp.eGPA3);
     uint8_t value4 = mcp.digitalRead(/*pin = */ mcp.eGPA4);
     uint8_t value5 = mcp.digitalRead(/*pin = */ mcp.eGPA5);
-    /*Read  level of Group GPIOA pins*/
+
     if (value2 == LOW)
     {
       Serial.println("Button 2 pressed. Configuring Sound Processor!");
@@ -406,7 +391,7 @@ void read_print_fuelgauge(void *pvParameters)
       xSemaphoreTake(xSemaphore, 30);
     Serial.println("read_print_fuelgauge: Using Semaphore to read Charger Board Values....");
 
-    // Read battery stats from the BQ27441-G1A
+    // Auslesen der Daten des LiPo Charger IC's - BQ27441-G1A
     unsigned int soc = lipo.soc();                   // Read state-of-charge (%)
     unsigned int volts = lipo.voltage();             // Read battery voltage (mV)
     int current = lipo.current(AVG);                 // Read average current (mA)
@@ -415,14 +400,14 @@ void read_print_fuelgauge(void *pvParameters)
     int power = lipo.power();                        // Read average power draw (mW)
     int health = lipo.soh();                         // Read state-of-health (%)
 
-    // Now print out those values:
-    String toPrint = String(soc) + "% | ";
-    toPrint += String(volts) + " mV | ";
-    toPrint += String(current) + " mA | ";
-    toPrint += String(capacity) + " / ";
-    toPrint += String(fullCapacity) + " mAh | ";
-    toPrint += String(power) + " mW | ";
-    toPrint += String(health) + "%";
+    // Multiple Chars zu einem String hinzufügen
+    //String toPrint = String(soc) + "% | ";
+    //toPrint += String(volts) + " mV | ";
+    //toPrint += String(current) + " mA | ";
+    //toPrint += String(capacity) + " / ";
+    //toPrint += String(fullCapacity) + " mAh | ";
+    //toPrint += String(power) + " mW | ";
+    //toPrint += String(health) + "%";
 
     char str1[20];
     char str2[20];
@@ -458,7 +443,9 @@ void bm83_setup(void *pvParameters)
   Serial.println("bm83_setup: Using Semaphore");
 
   Serial.println("Setting up BM83");
-  //BM83 start routine (required)1
+
+  //BM83 start routine (required)
+
   pinMode(mfbPin, OUTPUT);    // sets the MFB Pin 4 as output
   digitalWrite(mfbPin, HIGH); // sets the MFB Pin 4 "High" to power on BM83 over BAT_IN
   delay(10);
@@ -497,7 +484,7 @@ void setup()
   xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 4096, NULL, 3, &xHandle, 1);
   xTaskCreatePinnedToCore(mcp23017_buttons, "mcp23017_buttons", 4096, NULL, 4, &xHandle, 1);
 
-    // Konfiguration der PWM Channels
+  // Konfiguration der PWM Channels
   for (int i = 0; i < 4; i++)
   {
     ledcSetup(i, 2000, 8); //2 kHz , 8 bit
@@ -520,7 +507,7 @@ void setup()
   rotaryEncoder2.setup([] { rotaryEncoder2.readEncoder_ISR(); });
   rotaryEncoder2.setBoundaries(0, 20, false);
 
-  // initialize the pushbuttons and leds as inputs | outputs:
+  // Initialisierung der Buttons als Inputs
 
   while (mcp.begin() != 0)
   {
@@ -534,9 +521,8 @@ void setup()
 
 
 
-  // Use lipo.begin() to initialize the BQ27441-G1A and confirm that it's
-  // connected and communicating.
-  if (!lipo.begin()) // begin() will return true if communication is successful
+  // Initialisierung des Charger-Boards mithilfe lipo.begin()
+  if (!lipo.begin()) // begin() = true wenn Verbindung zum IC erfolgreich war
   {
     //  If communication fails, print an error message and loop forever.
     Serial.println("Fehler: Initialisierung des Ladechips(BQ27441-G1A) fehlgeschlagen, bitte ueberpruefen Sie die Verbinungen zum IC!");
