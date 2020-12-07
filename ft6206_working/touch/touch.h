@@ -29,18 +29,19 @@ bool my_touchpad_read(lv_indev_drv_t * indev_driver, lv_indev_data_t * data)
 
     touchX = p.y;
     touchY = p.x;
-    touchY = 320-touchY;
+    touchY = 240-touchY; //320 instead of 240 for rotation 0 ???
+    
 
     // rotate coordinate system
-    // flip it around to match the screen.
-    uint16_t swapped_touchX = touchY;
-    touchY = touchX;
-    touchX = swapped_touchX;
-    touchX = map(touchX, 0, 320, 320, 0);
+    // flip it around to match the screen. only on rotation 0!!!!
+    //uint16_t swapped_touchX = touchY;
+    //touchY = touchX;
+    //touchX = swapped_touchX;
+    //touchX = map(touchX, 0, 320, 320, 0);
     // touchY = map(touchY, 0, 320, 320, 0);
 
-    // if ((touchX != oldTouchX) || (touchY != oldTouchY))
-    // {
+    // if ((touchX != oldTouchX) || (touchY != oldTouchY)) //no need
+    // { //no need
     oldTouchY = touchY;
     oldTouchX = touchX;
     data->state = LV_INDEV_STATE_PR; 

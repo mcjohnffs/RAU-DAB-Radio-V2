@@ -85,23 +85,21 @@ void setup()
     indev_drv.read_cb = my_touchpad_read;
     lv_indev_drv_register(&indev_drv);
 
-lv_obj_t * label0 = lv_label_create(lv_scr_act(), NULL);
-lv_obj_set_x(label0, 241);
-lv_obj_set_y(label0, 183);
-lv_obj_t * gauge1 = lv_gauge_create(lv_scr_act(), NULL);
-lv_obj_set_x(gauge1, 25);
-lv_obj_set_y(gauge1, 21);
-lv_obj_set_width(gauge1, 100);
-lv_obj_set_height(gauge1, 100);
-lv_obj_t * cb5 = lv_checkbox_create(lv_scr_act(), NULL);
-lv_obj_set_x(cb5, 182);
-lv_obj_set_y(cb5, 30);
-lv_obj_t * btn6 = lv_btn_create(lv_scr_act(), NULL);
-lv_obj_set_x(btn6, 188);
-lv_obj_set_y(btn6, 78);
-lv_obj_t * arc7 = lv_arc_create(lv_scr_act(), NULL);
-lv_obj_set_x(arc7, 36);
-lv_obj_set_y(arc7, 141);
+
+lv_obj_t * btn0 = lv_btn_create(lv_scr_act(), NULL);
+lv_obj_set_x(btn0, 15);
+lv_obj_set_y(btn0, 117);
+lv_obj_t * btn1 = lv_btn_create(lv_scr_act(), NULL);
+lv_obj_set_x(btn1, 181);
+lv_obj_set_y(btn1, 14);
+lv_obj_t * btn2 = lv_btn_create(lv_scr_act(), NULL);
+lv_obj_set_x(btn2, 14);
+lv_obj_set_y(btn2, 17);
+lv_obj_t * btn3 = lv_btn_create(lv_scr_act(), NULL);
+lv_obj_set_x(btn3, 177);
+lv_obj_set_y(btn3, 141);
+lv_obj_set_width(btn3, 50);
+lv_obj_set_height(btn3, 30);
 
 
 
