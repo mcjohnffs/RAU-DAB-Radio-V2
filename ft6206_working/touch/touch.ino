@@ -14,6 +14,7 @@ static lv_color_t buf_2[LV_HOR_RES_MAX * BUFFER_MULTIPLIER];
 /* Serial debugging */
 
 
+lv_obj_t *bar1;
 
 
 void my_print(lv_log_level_t level, const char * file, uint32_t line, const char * dsc)
@@ -85,25 +86,25 @@ void setup()
     indev_drv.read_cb = my_touchpad_read;
     lv_indev_drv_register(&indev_drv);
 
+    /*Describe the color for the needles*/
+    static lv_color_t needle_colors[3];
+    needle_colors[0] = LV_COLOR_BLUE;
+    needle_colors[1] = LV_COLOR_ORANGE;
+    needle_colors[2] = LV_COLOR_PURPLE;
 
-lv_obj_t * btn0 = lv_btn_create(lv_scr_act(), NULL);
-lv_obj_set_x(btn0, 15);
-lv_obj_set_y(btn0, 117);
-lv_obj_t * btn1 = lv_btn_create(lv_scr_act(), NULL);
-lv_obj_set_x(btn1, 181);
-lv_obj_set_y(btn1, 14);
-lv_obj_t * btn2 = lv_btn_create(lv_scr_act(), NULL);
-lv_obj_set_x(btn2, 14);
-lv_obj_set_y(btn2, 17);
-lv_obj_t * btn3 = lv_btn_create(lv_scr_act(), NULL);
-lv_obj_set_x(btn3, 177);
-lv_obj_set_y(btn3, 141);
-lv_obj_set_width(btn3, 50);
-lv_obj_set_height(btn3, 30);
-
+    bar1 = lv_bar_create(lv_scr_act(), NULL);
+  lv_obj_set_size(bar1, 100, 10);
+  lv_obj_align(bar1, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
+  lv_bar_set_anim_time(bar1, 2000);
+  lv_bar_set_range(bar1, 0, 20);
+  lv_bar_set_value(bar1, 0, LV_ANIM_ON);
 
 
 }
+
+
+
+
 
 
 
@@ -111,5 +112,8 @@ void loop()
 {
 
     lv_task_handler(); /* let the GUI do its work */
+    lv_gauge_set_value(gauge1, 2, 5);
+    lv_gauge_set_value(gauge1, 2, 10);
+    lv_gauge_set_value(gauge1, 2, 100);
     delay(5);
 }
