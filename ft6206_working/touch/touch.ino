@@ -112,8 +112,6 @@ void loop()
 {
 
     lv_task_handler(); /* let the GUI do its work */
-    lv_gauge_set_value(gauge1, 2, 5);
-    lv_gauge_set_value(gauge1, 2, 10);
-    lv_gauge_set_value(gauge1, 2, 100);
+
     delay(5);
 }
