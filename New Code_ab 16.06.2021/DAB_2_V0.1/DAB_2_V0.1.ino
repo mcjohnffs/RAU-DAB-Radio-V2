@@ -2,9 +2,13 @@
 #include <TFT_eSPI.h>
 #include "touch.h"
 #include <Wire.h>
+#include <PCA9634.h>
+
 //#include <MCP23017.h>
 
 #define BUFFER_MULTIPLIER 35
+
+PCA9634 ledDriver(0x15, 4);
 
 //MCP23017 mcp = MCP23017(0x20);
 
@@ -70,15 +74,14 @@ void setup()
 {
 
   Wire.begin();
-  Wire.setClock(100000);
 
   Serial.begin(115200);
   while (!Serial)
     ;
   // Serial.println("\nI2C Scanner");
-  delay(10000);
   //mcp.init();
 
+  
 
   lv_init();
 
@@ -88,11 +91,9 @@ void setup()
 
   // TFT initialization ===========================
   tft.begin();
-  tft.setRotation(1);
+  tft.setRotation(3);
   // ===============================================
 
-  pinMode(23, OUTPUT);
-  digitalWrite(23, HIGH);
 
   // Touch device initialization =================
   if (!touch.begin(150))
@@ -106,6 +107,15 @@ void setup()
     Serial.println("FT6206 touchscreen controller connected!");
   }
   // ===============================================
+
+  ledDriver.begin();
+
+  
+  ledDriver.allOff();
+  delay(2);
+
+  
+
 
   lv_disp_buf_init(&disp_buf, buf_1, buf_2, LV_HOR_RES_MAX * 10);
 
