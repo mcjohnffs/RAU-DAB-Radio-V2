@@ -3,13 +3,13 @@
 #include "touch.h"
 #include <Wire.h>
 #include <PCA9634.h>
-#include "Adafruit_MCP23017.h"
+#include <MCP23017.h>
 
 #define BUFFER_MULTIPLIER 35
 
 PCA9634 ledDriver(0x15, 4);
 
-Adafruit_MCP23017 mcp;
+MCP23017 mcp = MCP23017(0x20);
 
 
 
@@ -33,6 +33,9 @@ lv_chart_series_t *ser8;
 
 uint8_t conf;
 int i;
+
+int x = 0;
+int y = 0;
 
 TFT_eSPI tft = TFT_eSPI(); /* TFT instance */
 static lv_disp_buf_t disp_buf;
@@ -89,8 +92,10 @@ void setup()
   while (!Serial)
     ;
 
-  mcp.begin(0x20);
+  mcp.init();
 
+  mcp.portMode(MCP23017Port::A, 0b11111111);
+  
   
 
   lv_init();
@@ -117,7 +122,7 @@ void setup()
   }
   // ===============================================
 
-mcp.pinMode(1, INPUT);
+
 
   ledDriver.begin();
 
@@ -147,10 +152,10 @@ mcp.pinMode(1, INPUT);
   lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
 
   /*Add 3 tabs (the tabs are page (lv_page) and can be scrolled*/
-  tab1 = lv_tabview_add_tab(tabview, "Tab 1");
-  tab2 = lv_tabview_add_tab(tabview, "Tab 2");
-  tab3 = lv_tabview_add_tab(tabview, "Tab 3");
-  tab4 = lv_tabview_add_tab(tabview, "Tab 4");
+  tab1 = lv_tabview_add_tab(tabview, "Main");
+  tab2 = lv_tabview_add_tab(tabview, "Volume");
+  tab3 = lv_tabview_add_tab(tabview, "Connections");
+  tab4 = lv_tabview_add_tab(tabview, "Options");
 
   /*Add content to the tabs*/
   lv_obj_t *label = lv_label_create(tab1, NULL);
@@ -230,14 +235,69 @@ void loop()
 
   /* let the GUI do its work */
   //read_mcp();
-  int x = 0;
-  x = mcp.digitalRead(1);
-  Serial.println(x);
   
-  if (mcp.digitalRead(1) == 0 bh){
+  /*x = mcp.digitalRead(1);
+  Serial.println("SW2:");
+  Serial.println(x);
+
+  
+  y = mcp.digitalRead(2);
+  Serial.println("SW3:");
+  Serial.println(y);
+  */
+  if (x == 1){
 
     lv_tabview_set_tab_act(tabview, 0, LV_ANIM_ON);
   }
+
+  else if (y == 1)
+  {
+    lv_tabview_set_tab_act(tabview, 1, LV_ANIM_ON);
+  }
+  
+  uint8_t conf = mcp.readRegister(MCP23017Register::GPIO_A);
+	Serial.print("GPIO_A : ");
+	Serial.print(conf, BIN);
+	Serial.println();
+
+  
+for (i = 7; i >= 0; i--)
+  {
+
+    if (bitRead(conf, i) == 1)
+    {
+
+      switch (i)
+      {
+
+      case 4:
+        lv_tabview_set_tab_act(tabview, 3, LV_ANIM_ON);
+        Serial.println("Case 4 = SW 5");
+        break;
+      case 3:
+        lv_tabview_set_tab_act(tabview, 2, LV_ANIM_ON);
+        Serial.println("Case 3 = SW 4");
+        break;
+      case 2:
+        lv_tabview_set_tab_act(tabview, 1, LV_ANIM_ON);
+        Serial.println("Case 2 = SW 3");
+        break;
+      case 1:
+        lv_tabview_set_tab_act(tabview, 0, LV_ANIM_ON);
+        Serial.println("Case 1 = SW 2");
+        break;
+      case 0:
+        
+        Serial.println("Case 0 = On/Off");
+        break;
+      default:
+
+        break;
+      }
+    }
+    
+  }
+
   lv_task_handler();
   
   delay(5);
