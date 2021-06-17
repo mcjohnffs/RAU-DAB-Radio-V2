@@ -3,30 +3,23 @@
 #include "touch.h"
 #include <Wire.h>
 #include <PCA9634.h>
-
-//#include <MCP23017.h>
+#include "Adafruit_MCP23017.h"
 
 #define BUFFER_MULTIPLIER 35
 
 PCA9634 ledDriver(0x15, 4);
 
-//MCP23017 mcp = MCP23017(0x20);
+Adafruit_MCP23017 mcp;
+
+
 
 lv_obj_t *tabview;
 lv_obj_t *tab1;
 lv_obj_t *tab2;
 lv_obj_t *tab3;
 lv_obj_t *tab4;
-lv_obj_t *tab5;
 
 lv_obj_t *led1;
-lv_obj_t *led2;
-lv_obj_t *led3;
-lv_obj_t *led4;
-lv_obj_t *led5;
-lv_obj_t *led6;
-lv_obj_t *led7;
-lv_obj_t *led8;
 
 lv_obj_t *chart;
 lv_chart_series_t *ser1;
@@ -76,10 +69,27 @@ void setup()
   Wire.begin();
 
   Serial.begin(115200);
+
+  xTaskCreate(
+      taskOne,   /* Task function. */
+      "TaskOne", /* String with name of task. */
+      15000,     /* Stack size in bytes. */
+      NULL,      /* Parameter passed as input of the task */
+      1,         /* Priority of the task. */
+      NULL);     /* Task handle. */
+
+  xTaskCreate(
+      taskTwo,   /* Task function. */
+      "TaskTwo", /* String with name of task. */
+      15000,     /* Stack size in bytes. */
+      NULL,      /* Parameter passed as input of the task */
+      1,         /* Priority of the task. */
+      NULL);     /* Task handle. */
+
   while (!Serial)
     ;
-  // Serial.println("\nI2C Scanner");
-  //mcp.init();
+
+  mcp.begin(0x20);
 
   
 
@@ -94,7 +104,6 @@ void setup()
   tft.setRotation(3);
   // ===============================================
 
-
   // Touch device initialization =================
   if (!touch.begin(150))
   {
@@ -108,14 +117,11 @@ void setup()
   }
   // ===============================================
 
+mcp.pinMode(1, INPUT);
+
   ledDriver.begin();
 
-  
   ledDriver.allOff();
-  delay(2);
-
-  
-
 
   lv_disp_buf_init(&disp_buf, buf_1, buf_2, LV_HOR_RES_MAX * 10);
 
@@ -138,13 +144,13 @@ void setup()
   // ===============================================
 
   tabview = lv_tabview_create(lv_scr_act(), NULL);
+  lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
 
   /*Add 3 tabs (the tabs are page (lv_page) and can be scrolled*/
   tab1 = lv_tabview_add_tab(tabview, "Tab 1");
   tab2 = lv_tabview_add_tab(tabview, "Tab 2");
   tab3 = lv_tabview_add_tab(tabview, "Tab 3");
   tab4 = lv_tabview_add_tab(tabview, "Tab 4");
-  tab5 = lv_tabview_add_tab(tabview, "Tab 5");
 
   /*Add content to the tabs*/
   lv_obj_t *label = lv_label_create(tab1, NULL);
@@ -155,41 +161,6 @@ void setup()
   lv_obj_align(led1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 40);
   lv_led_off(led1);
 
-  led2 = lv_led_create(tab1, NULL);
-  lv_obj_set_size(led2, 30, 30);
-  lv_obj_align(led2, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 40);
-  lv_led_off(led2);
-
-  led3 = lv_led_create(tab1, NULL);
-  lv_obj_set_size(led3, 30, 30);
-  lv_obj_align(led3, NULL, LV_ALIGN_IN_TOP_LEFT, 80, 40);
-  lv_led_off(led3);
-
-  led4 = lv_led_create(tab1, NULL);
-  lv_obj_set_size(led4, 30, 30);
-  lv_obj_align(led4, NULL, LV_ALIGN_IN_TOP_LEFT, 120, 40);
-  lv_led_off(led4);
-
-  led5 = lv_led_create(tab1, NULL);
-  lv_obj_set_size(led5, 30, 30);
-  lv_obj_align(led5, NULL, LV_ALIGN_IN_TOP_LEFT, 160, 40);
-  lv_led_off(led5);
-
-  led6 = lv_led_create(tab1, NULL);
-  lv_obj_set_size(led6, 30, 30);
-  lv_obj_align(led6, NULL, LV_ALIGN_IN_TOP_LEFT, 200, 40);
-  lv_led_off(led6);
-
-  led7 = lv_led_create(tab1, NULL);
-  lv_obj_set_size(led7, 30, 30);
-  lv_obj_align(led7, NULL, LV_ALIGN_IN_TOP_LEFT, 240, 40);
-  lv_led_off(led7);
-
-  led8 = lv_led_create(tab1, NULL);
-  lv_obj_set_size(led8, 30, 30);
-  lv_obj_align(led8, NULL, LV_ALIGN_IN_TOP_LEFT, 280, 40);
-  lv_led_off(led8);
-
   label = lv_label_create(tab2, NULL);
   lv_label_set_text(label, "\nOut 8\n\nOut 7\n\nOut 6\n\nOut 5\n\nOut 4\n\nOut 3\n\nOut 2\n\nOut 1");
 
@@ -198,9 +169,6 @@ void setup()
 
   label = lv_label_create(tab4, NULL);
   lv_label_set_text(label, "4 tab");
-
-  label = lv_label_create(tab5, NULL);
-  lv_label_set_text(label, "5 tab");
 
   /*Create a chart*/
 
@@ -231,9 +199,7 @@ void setup()
   ser5 = lv_chart_add_series(chart, LV_COLOR_BLUE);
   ser6 = lv_chart_add_series(chart, LV_COLOR_BLACK);
   ser7 = lv_chart_add_series(chart, LV_COLOR_PURPLE);
-  ser8 = lv_chart_add_series(chart, LV_COLOR_AQUA); 
-
-
+  ser8 = lv_chart_add_series(chart, LV_COLOR_AQUA);
 
   lv_obj_t *cpicker;
 
@@ -258,180 +224,50 @@ static void event_handler(lv_obj_t *obj, lv_event_t event)
     printf("Toggled\n");
   }
 }
-/*
-void i2c_scanner()
-{
-
-  byte error, address;
-  int nDevices;
-
-  Serial.println("Scanning...");
-
-  nDevices = 0;
-  for (address = 1; address < 127; address++)
-  {
-    // The i2c_scanner uses the return value of
-    // the Write.endTransmisstion to see if
-    // a device did acknowledge to the address.
-    Wire.beginTransmission(address);
-    error = Wire.endTransmission();
-
-    if (error == 0)
-    {
-      Serial.print("I2C device found at address 0x");
-      if (address < 16)
-        Serial.print("0");
-      Serial.print(address, HEX);
-      Serial.println("  !");
-
-      nDevices++;
-    }
-    else if (error == 4)
-    {
-      Serial.print("Unknown error at address 0x");
-      if (address < 16)
-        Serial.print("0");
-      Serial.println(address, HEX);
-    }
-  }
-  if (nDevices == 0)
-    Serial.println("No I2C devices found\n");
-  else
-    Serial.println("done\n");
-
-  delay(1000); // wait 5 seconds for next scan
-}
-*/
-
-/*
-void read_mcp()
-{
-  
-  uint32_t timeout=millis();
-  while(Wire.busy()&&(millis()-timeout<1000));
-  Serial.println("Reading...");
-
-  delay(500);
-  //conf = mcp.readRegister(MCP23017Register::GPIO_A);
-
-  //conf = ~conf;
-
-  for (i = 7; i >= 0; i--)
-  {
-
-    if (bitRead(conf, i) == 1)
-    {
-
-      switch (i)
-      {
-
-      case 7:
-        lv_led_on(led1);
-        lv_chart_set_next(chart, ser1, 5);
-        lv_chart_refresh(chart); 
-        break;
-      case 6:
-        lv_led_on(led2);
-        lv_chart_set_next(chart, ser2, 15);
-        lv_chart_refresh(chart); 
-        break;
-      case 5:
-        lv_led_on(led3);
-        lv_chart_set_next(chart, ser3, 25);
-        lv_chart_refresh(chart); 
-        break;
-      case 4:
-        lv_led_on(led4);
-        lv_chart_set_next(chart, ser4, 35);
-        lv_chart_refresh(chart); 
-        break;
-      case 3:
-        lv_led_on(led5);
-        lv_chart_set_next(chart, ser5, 45);
-        lv_chart_refresh(chart); 
-        break;
-      case 2:
-        lv_led_on(led6);
-        lv_chart_set_next(chart, ser6, 55);
-        lv_chart_refresh(chart); 
-        break;
-      case 1:
-        lv_led_on(led7);
-        lv_chart_set_next(chart, ser7, 65);
-        lv_chart_refresh(chart); 
-        break;
-      case 0:
-        lv_led_on(led8);
-        lv_chart_set_next(chart, ser8, 75);
-        lv_chart_refresh(chart); 
-        break;
-      default:
-
-        break;
-      }
-    }
-    else if (bitRead(conf, i) == 0)
-    {
-
-      switch (i)
-      {
-
-      case 7:
-        lv_led_off(led1);
-        lv_chart_set_next(chart, ser1, 0);
-        lv_chart_refresh(chart); 
-        break;
-      case 6:
-        lv_led_off(led2);
-        lv_chart_set_next(chart, ser2, 10);
-        lv_chart_refresh(chart); 
-        break;
-      case 5:
-        lv_led_off(led3);
-        lv_chart_set_next(chart, ser3, 20);
-        lv_chart_refresh(chart); 
-        break;
-      case 4:
-        lv_led_off(led4);
-        lv_chart_set_next(chart, ser4, 30);
-        lv_chart_refresh(chart); 
-        break;
-      case 3:
-        lv_led_off(led5);
-        lv_chart_set_next(chart, ser5, 40);
-        lv_chart_refresh(chart); 
-        break;
-      case 2:
-        lv_led_off(led6);
-        lv_chart_set_next(chart, ser6, 50);
-        lv_chart_refresh(chart); 
-        break;
-      case 1:
-        lv_led_off(led7);
-        lv_chart_set_next(chart, ser7, 60);
-        lv_chart_refresh(chart); 
-        break;
-      case 0:
-        lv_led_off(led8);
-        lv_chart_set_next(chart, ser8, 70);
-        lv_chart_refresh(chart); 
-        break;
-      default:
-
-        break;
-        // Statement(s)
-      }
-    }
-  }
-}
-
-*/
 
 void loop()
 {
 
   /* let the GUI do its work */
   //read_mcp();
+  int x = 0;
+  x = mcp.digitalRead(1);
+  Serial.println(x);
+  
+  if (mcp.digitalRead(1) == 0 bh){
+
+    lv_tabview_set_tab_act(tabview, 0, LV_ANIM_ON);
+  }
   lv_task_handler();
+  
   delay(5);
+}
+
+void taskOne(void *parameter)
+{
+
+  for (int i = 0; i < 10; i++)
+  {
+
+    Serial.println("Hello from task 1");
+
+    
+    delay(1000);
+  }
+
+  Serial.println("Ending task 1");
+  vTaskDelete(NULL);
+}
+
+void taskTwo(void *parameter)
+{
+
+  for (int i = 0; i < 10; i++)
+  {
+
+    Serial.println("Hello from task 2");
+    delay(1000);
+  }
+  Serial.println("Ending task 2");
+  vTaskDelete(NULL);
 }
