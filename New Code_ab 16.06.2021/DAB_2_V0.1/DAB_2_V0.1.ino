@@ -5,19 +5,24 @@
 #include <PCA9634.h>
 #include <MCP23017.h>
 
+#include "soc/timer_group_struct.h"
+#include "soc/timer_group_reg.h"
+
 #define BUFFER_MULTIPLIER 35
+
+TaskHandle_t Task1;
 
 PCA9634 ledDriver(0x15, 4);
 
 MCP23017 mcp = MCP23017(0x20);
-
-
 
 lv_obj_t *tabview;
 lv_obj_t *tab1;
 lv_obj_t *tab2;
 lv_obj_t *tab3;
 lv_obj_t *tab4;
+
+lv_obj_t *gauge1;
 
 lv_obj_t *led1;
 
@@ -73,21 +78,14 @@ void setup()
 
   Serial.begin(115200);
 
-  xTaskCreate(
-      taskOne,   /* Task function. */
-      "TaskOne", /* String with name of task. */
-      15000,     /* Stack size in bytes. */
-      NULL,      /* Parameter passed as input of the task */
-      1,         /* Priority of the task. */
-      NULL);     /* Task handle. */
-
-  xTaskCreate(
-      taskTwo,   /* Task function. */
-      "TaskTwo", /* String with name of task. */
-      15000,     /* Stack size in bytes. */
-      NULL,      /* Parameter passed as input of the task */
-      1,         /* Priority of the task. */
-      NULL);     /* Task handle. */
+  xTaskCreatePinnedToCore(
+      read_inputs,   /* Task function. */
+      "read_inputs", /* String with name of task. */
+      20000,         /* Stack size in bytes. */
+      NULL,          /* Parameter passed as input of the task */
+      1,             /* Priority of the task. */
+      &Task1,        /* Task handle. */
+      0);            /* Core */
 
   while (!Serial)
     ;
@@ -95,8 +93,6 @@ void setup()
   mcp.init();
 
   mcp.portMode(MCP23017Port::A, 0b11111111);
-  
-  
 
   lv_init();
 
@@ -122,8 +118,6 @@ void setup()
   }
   // ===============================================
 
-
-
   ledDriver.begin();
 
   ledDriver.allOff();
@@ -146,10 +140,16 @@ void setup()
   indev_drv.read_cb = my_touchpad_read;
   lv_indev_drv_register(&indev_drv);
 
+  static lv_color_t needle_colors[3];
+  needle_colors[0] = LV_COLOR_BLUE;
+  needle_colors[1] = LV_COLOR_ORANGE;
+  needle_colors[2] = LV_COLOR_PURPLE;
+
   // ===============================================
 
   tabview = lv_tabview_create(lv_scr_act(), NULL);
   lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
+  //lv_tabview_set_anim_time(tabview, 100);
 
   /*Add 3 tabs (the tabs are page (lv_page) and can be scrolled*/
   tab1 = lv_tabview_add_tab(tabview, "Main");
@@ -164,10 +164,6 @@ void setup()
   led1 = lv_led_create(tab1, NULL);
   lv_obj_set_size(led1, 30, 30);
   lv_obj_align(led1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 40);
-  lv_led_off(led1);
-
-  label = lv_label_create(tab2, NULL);
-  lv_label_set_text(label, "\nOut 8\n\nOut 7\n\nOut 6\n\nOut 5\n\nOut 4\n\nOut 3\n\nOut 2\n\nOut 1");
 
   label = lv_label_create(tab3, NULL);
   lv_label_set_text(label, "3 tab");
@@ -176,25 +172,24 @@ void setup()
   lv_label_set_text(label, "4 tab");
 
   /*Create a chart*/
-
+  /*
   chart = lv_chart_create(tab2, NULL);
   lv_obj_set_size(chart, 260, 170);
   lv_obj_align(chart, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
-  lv_chart_set_type(chart, LV_CHART_TYPE_LINE); /*Show lines and poi
-  +nts too*/
+  lv_chart_set_type(chart, LV_CHART_TYPE_LINE); 
   lv_chart_set_range(chart, 0, 80);
-  /*Add two data series*/
+
   lv_chart_set_update_mode(chart, LV_CHART_UPDATE_MODE_SHIFT);
   lv_chart_set_div_line_count(chart, 8, 8);
   lv_chart_set_point_count(chart, 200);
-
+*/
   /*
   lv_obj_set_style_local_bg_opa(chart, LV_CHART_PART_SERIES, LV_STATE_DEFAULT, LV_OPA_50); //Max. opa.
   lv_obj_set_style_local_bg_grad_dir(chart, LV_CHART_PART_SERIES, LV_STATE_DEFAULT, LV_GRAD_DIR_VER);
   lv_obj_set_style_local_bg_main_stop(chart, LV_CHART_PART_SERIES, LV_STATE_DEFAULT, 255); //Max opa on the top
   lv_obj_set_style_local_bg_grad_stop(chart, LV_CHART_PART_SERIES, LV_STATE_DEFAULT, 0);
   */
-
+  /*
   lv_obj_set_style_local_size(chart, LV_CHART_PART_SERIES, LV_STATE_DEFAULT, 0);
 
   ser1 = lv_chart_add_series(chart, LV_COLOR_RED);
@@ -205,129 +200,82 @@ void setup()
   ser6 = lv_chart_add_series(chart, LV_COLOR_BLACK);
   ser7 = lv_chart_add_series(chart, LV_COLOR_PURPLE);
   ser8 = lv_chart_add_series(chart, LV_COLOR_AQUA);
+*/
 
-  lv_obj_t *cpicker;
-
-  cpicker = lv_cpicker_create(tab3, NULL);
-  lv_obj_set_size(cpicker, 150, 150);
-  lv_obj_align(cpicker, NULL, LV_ALIGN_CENTER, 0, 0);
 
   /*Create a Preloader object*/
   lv_obj_t *preload = lv_spinner_create(tab4, NULL);
   lv_obj_set_size(preload, 100, 100);
   lv_obj_align(preload, NULL, LV_ALIGN_CENTER, 0, 0);
-}
 
-static void event_handler(lv_obj_t *obj, lv_event_t event)
-{
-  if (event == LV_EVENT_CLICKED)
-  {
-    printf("Clicked\n");
-  }
-  else if (event == LV_EVENT_VALUE_CHANGED)
-  {
-    printf("Toggled\n");
-  }
+  gauge1 = lv_gauge_create(tab2, NULL);
+  lv_gauge_set_needle_count(gauge1, 3, needle_colors);
+  lv_obj_set_size(gauge1, 170, 170);
+  lv_obj_align(gauge1, NULL, LV_ALIGN_CENTER, 0, 0);
+
+  /*Set the values*/
+  lv_gauge_set_value(gauge1, 0, 10);
+  lv_gauge_set_value(gauge1, 1, 20);
+  lv_gauge_set_value(gauge1, 2, 30);
 }
 
 void loop()
 {
-
-  /* let the GUI do its work */
-  //read_mcp();
-  
-  /*x = mcp.digitalRead(1);
-  Serial.println("SW2:");
-  Serial.println(x);
-
-  
-  y = mcp.digitalRead(2);
-  Serial.println("SW3:");
-  Serial.println(y);
-  */
-  if (x == 1){
-
-    lv_tabview_set_tab_act(tabview, 0, LV_ANIM_ON);
-  }
-
-  else if (y == 1)
-  {
-    lv_tabview_set_tab_act(tabview, 1, LV_ANIM_ON);
-  }
-  
-  uint8_t conf = mcp.readRegister(MCP23017Register::GPIO_A);
-	Serial.print("GPIO_A : ");
-	Serial.print(conf, BIN);
-	Serial.println();
-
-  
-for (i = 7; i >= 0; i--)
-  {
-
-    if (bitRead(conf, i) == 1)
-    {
-
-      switch (i)
-      {
-
-      case 4:
-        lv_tabview_set_tab_act(tabview, 3, LV_ANIM_ON);
-        Serial.println("Case 4 = SW 5");
-        break;
-      case 3:
-        lv_tabview_set_tab_act(tabview, 2, LV_ANIM_ON);
-        Serial.println("Case 3 = SW 4");
-        break;
-      case 2:
-        lv_tabview_set_tab_act(tabview, 1, LV_ANIM_ON);
-        Serial.println("Case 2 = SW 3");
-        break;
-      case 1:
-        lv_tabview_set_tab_act(tabview, 0, LV_ANIM_ON);
-        Serial.println("Case 1 = SW 2");
-        break;
-      case 0:
-        
-        Serial.println("Case 0 = On/Off");
-        break;
-      default:
-
-        break;
-      }
-    }
-    
-  }
+  TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+  TIMERG0.wdt_feed = 1;
+  TIMERG0.wdt_wprotect = 0;
+  conf = mcp.readRegister(MCP23017Register::GPIO_A);
 
   lv_task_handler();
-  
-  delay(5);
+  delay(3);
 }
 
-void taskOne(void *parameter)
+void read_inputs(void *parameter)
 {
 
-  for (int i = 0; i < 10; i++)
+  for (;;)
   {
 
-    Serial.println("Hello from task 1");
+    for (i = 7; i >= 0; i--)
+    {
 
-    
-    delay(1000);
+      if (bitRead(conf, i) == 1)
+      {
+
+        switch (i)
+        {
+        case 7:
+
+          break;
+        case 6:
+
+          break;
+        case 5:
+
+          break;
+
+        case 4:
+          lv_tabview_set_tab_act(tabview, 3, LV_ANIM_OFF);
+
+          break;
+        case 3:
+          lv_tabview_set_tab_act(tabview, 2, LV_ANIM_OFF);
+
+          break;
+        case 2:
+          lv_tabview_set_tab_act(tabview, 1, LV_ANIM_OFF);
+
+          break;
+        case 1:
+          lv_tabview_set_tab_act(tabview, 0, LV_ANIM_OFF);
+
+          break;
+        case 0:
+
+          break;
+        }
+      }
+    }
   }
-
-  Serial.println("Ending task 1");
-  vTaskDelete(NULL);
-}
-
-void taskTwo(void *parameter)
-{
-
-  for (int i = 0; i < 10; i++)
-  {
-
-    Serial.println("Hello from task 2");
-    delay(1000);
-  }
-  Serial.println("Ending task 2");
-  vTaskDelete(NULL);
+  vTaskDelay(5);
 }
