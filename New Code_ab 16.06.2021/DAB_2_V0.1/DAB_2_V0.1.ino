@@ -1,13 +1,44 @@
+/**
+ * @file DAB_2_V0.1.ino
+ *
+ * @mainpage DAB Radio V2.0
+ *
+ * @section description Übersicht
+ * An example sketch demonstrating how to use Doxygen style comments for
+ * generating source code documentation with Doxygen.
+ *
+ * @section circuit Produkt
+ * - Red LED connected to pin D2.
+ * - Momentary push button connected to pin D3.
+ *
+ * @section libraries Libraries
+ * - Arduino_LSM6DS3 (https://github.com/arduino-libraries/Arduino_LSM6DS3)
+ *   - Interacts with on-board IMU.
+ *
+ * @section notes Notizen
+ * - Comments are Doxygen compatible.
+ *
+ * @section todo TODO
+ * - Don't use Doxygen style formatting inside the body of a function.
+ *
+ * @section author Author
+ * - Created by Egzon Isaku on 16/06/2021.
+ * - Modified by 
+ *
+ * Copyright (c) RAU Regionales Ausbildungszentrum AU.  All rights reserved.
+ */
+ 
+// Libraries
 #include <lvgl.h>
 #include <TFT_eSPI.h>
 #include "touch.h"
 #include <Wire.h>
 #include <PCA9634.h>
 #include <MCP23017.h>
-
 #include "soc/timer_group_struct.h"
 #include "soc/timer_group_reg.h"
 
+// Defines
 #define BUFFER_MULTIPLIER 35
 
 TaskHandle_t Task1;
@@ -16,16 +47,14 @@ PCA9634 ledDriver(0x15, 4);
 
 MCP23017 mcp = MCP23017(0x20);
 
+// Global LVGL objects
 lv_obj_t *tabview;
 lv_obj_t *tab1;
 lv_obj_t *tab2;
 lv_obj_t *tab3;
 lv_obj_t *tab4;
-
 lv_obj_t *gauge1;
-
 lv_obj_t *led1;
-
 lv_obj_t *chart;
 lv_chart_series_t *ser1;
 lv_chart_series_t *ser2;
@@ -36,9 +65,9 @@ lv_chart_series_t *ser6;
 lv_chart_series_t *ser7;
 lv_chart_series_t *ser8;
 
+// Global Variables
 uint8_t conf;
 int i;
-
 int x = 0;
 int y = 0;
 
@@ -70,7 +99,9 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 
   lv_disp_flush_ready(disp);
 }
-
+/**
+ * The standard Arduino setup function used for setup and configuration tasks.
+ */
 void setup()
 {
 
