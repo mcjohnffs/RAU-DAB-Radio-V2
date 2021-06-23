@@ -1,0 +1,38 @@
+      char *string = NULL;
+        cJSON *resolutions = NULL;
+        size_t index = 0;
+
+        /* declarations */
+        char *out = NULL;
+        char *buf = NULL;
+        char *buf_fail = NULL;
+        size_t len = 0;
+        size_t len_fail = 0;
+
+        cJSON *monitor = cJSON_CreateObject();
+
+        cJSON_AddStringToObject(monitor, "name", "Awesome 4K");
+
+        /* formatted print */
+        out = cJSON_Print(monitor);
+        cJSON_Delete(monitor);
+
+
+        /* create buffer to succeed */
+        /* the extra 5 bytes are because of inaccuracies when reserving memory */
+        len = strlen(out) + 5;
+        buf = (char*)malloc(len);
+        if (buf == NULL)
+        {
+        printf("Failed to allocate memory.\n");
+        }
+            /* Print to buffer */
+        string = cJSON_PrintPreallocated(monitor, buf, (int)len, 1);
+        
+         /* success */
+        printf("%s\n", string);
+
+        free(out);
+        free(buf_fail);
+        free(buf);
+        
