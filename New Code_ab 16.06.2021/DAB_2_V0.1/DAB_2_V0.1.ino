@@ -166,9 +166,9 @@ void setup()
                        { rotaryEncoder2.readEncoder_ISR(); });
   rotaryEncoder2.setBoundaries(0, 20, false);
 
-  Wire.beginTransmission(64); // transmit to device #44 (0x2c)
-  Wire.write(byte(0x03));     // sends value byte
-  Wire.write(byte(0x5A));     // sends value byte
+  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
+  Wire.write(0x14);     // sends value byte
+  Wire.write(0xB9);     // sends value byte
   Wire.endTransmission();     // stop transmitting
 
   delay(50);
