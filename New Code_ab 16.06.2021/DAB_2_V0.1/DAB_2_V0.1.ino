@@ -35,9 +35,9 @@
 #include <Wire.h>
 #include <PCA9634.h>
 #include <MCP23017.h>
-#include "BM83.h"           // Bluetooth Module BM83 Library
+#include "BM83.h"           // Bluetooth Module library (BM83/BM64)
 #include <SoftwareSerial.h> // SoftwareSerial Library for ESP32
-#include <BD37544FS.h>
+#include <BD37544FS.h> // Sound processor library (BD37544FS)
 #include "soc/timer_group_struct.h"
 #include "soc/timer_group_reg.h"
 #include "AiEsp32RotaryEncoder.h" //Encoder Library für ESP32
@@ -49,21 +49,18 @@
 #define TX_IND 5
 #define DAC1 26
 const int mfbPin = 23;
-TaskHandle_t Task1;
-TaskHandle_t Task2;
-
-//Encoder 1+2 Pins und Initialisierung
 #define ROTARY_ENCODER1_A_PIN 34
 #define ROTARY_ENCODER1_B_PIN 35
-
 #define ROTARY_ENCODER2_A_PIN 36
 #define ROTARY_ENCODER2_B_PIN 39
 
 AiEsp32RotaryEncoder rotaryEncoder1 = AiEsp32RotaryEncoder(ROTARY_ENCODER1_A_PIN, ROTARY_ENCODER1_B_PIN, -1);
 AiEsp32RotaryEncoder rotaryEncoder2 = AiEsp32RotaryEncoder(ROTARY_ENCODER2_A_PIN, ROTARY_ENCODER2_B_PIN, -1);
 
+// Sound processor instance (BD37544FS)
 BD37544FS bd;
 
+// Bluetooth module instance (BM83)
 SoftwareSerial swSerial(RX_PIN, TX_PIN);
 BM83 bm83(swSerial, TX_IND);
 
@@ -72,7 +69,11 @@ PCA9634 ledDriver(0x15, 4);
 MCP23017 mcp1 = MCP23017(0x20);
 MCP23017 mcp2 = MCP23017(0x24);
 
-// Global LVGL objects
+// LVGL task handles
+TaskHandle_t Task1;
+TaskHandle_t Task2;
+
+// Global LVGL object variables
 lv_obj_t *tabview;
 lv_obj_t *tab1;
 lv_obj_t *tab2;
@@ -94,15 +95,12 @@ lv_obj_t *lmeter2;
 lv_obj_t *label;
 
 // Global variables
-uint32_t *newencodervalue1 = 0;
 int16_t encoderValue2;
 uint32_t encoderValue;
 int8_t encoderDelta;
 int8_t encoderDelta2;
 uint8_t conf;
 int i;
-int x = 0;
-int y = 0;
 
 TFT_eSPI tft = TFT_eSPI(); /* TFT instance */
 static lv_disp_buf_t disp_buf;
@@ -132,19 +130,21 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 
   lv_disp_flush_ready(disp);
 }
-/**
- * The standard Arduino setup function used for setup and configuration tasks.
- */
+
+// The standard Arduino setup function used for setup and configuration tasks.
 void setup()
 {
 
   Wire.begin();
   Wire.setClock(100000);
+
   // Serial debugging @ 115200 baud
   Serial.begin(115200);
+
   // Software serial for BM83/BM64 Uart connection @ 9600 baud
   swSerial.begin(9600);
 
+  // Input read task creation
   xTaskCreatePinnedToCore(
       read_inputs,   /* Task function. */
       "read_inputs", /* String with name of task. */
@@ -153,9 +153,12 @@ void setup()
       1,             /* Priority of the task. */
       &Task1,        /* Task handle. */
       0);            /* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
+
+  // Encoder read task creation
   xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 10000, NULL, 2, &Task2, 0);
 
-  pinMode(mfbPin, OUTPUT); // sets the MFB Pin 4 as output
+  // Sets the MFB pin 4 as output (BM83)
+  pinMode(mfbPin, OUTPUT);
 
   rotaryEncoder1.begin();
   rotaryEncoder1.setup([]
@@ -167,53 +170,53 @@ void setup()
                        { rotaryEncoder2.readEncoder_ISR(); });
   rotaryEncoder2.setBoundaries(0, 20, false);
 
-  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
-  Wire.write(0x14);             // sends value byte
-  Wire.write(0xB9);             // sends value byte
-  Wire.endTransmission();       // stop transmitting
+  Wire.beginTransmission(0x6A);
+  Wire.write(0x14);
+  Wire.write(0xB9);
+  Wire.endTransmission();
 
-  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
-  Wire.write(0x02);             // sends value byte
-  Wire.write(0x30);             // sends value byte
-  Wire.endTransmission();       // stop transmitting
+  Wire.beginTransmission(0x6A);
+  Wire.write(0x02);
+  Wire.write(0x30);
+  Wire.endTransmission();
 
-  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
-  Wire.write(0x03);             // sends value byte
-  Wire.write(0x5A);             // sends value byte
-  Wire.endTransmission();       // stop transmitting
+  Wire.beginTransmission(0x6A);
+  Wire.write(0x03);
+  Wire.write(0x5A);
+  Wire.endTransmission();
 
-  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
-  Wire.write(0x04);             // sends value byte
-  Wire.write(0x40);             // sends value byte
-  Wire.endTransmission();       // stop transmitting
+  Wire.beginTransmission(0x6A);
+  Wire.write(0x04);
+  Wire.write(0x40);
+  Wire.endTransmission();
 
-  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
-  Wire.write(0x05);             // sends value byte
-  Wire.write(0x66);             // sends value byte
-  Wire.endTransmission();       // stop transmitting
+  Wire.beginTransmission(0x6A);
+  Wire.write(0x05);
+  Wire.write(0x66);
+  Wire.endTransmission();
 
-  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
-  Wire.write(0x06);             // sends value byte
-  Wire.write(0x5A);             // sends value byte
-  Wire.endTransmission();       // stop transmitting
+  Wire.beginTransmission(0x6A);
+  Wire.write(0x06);
+  Wire.write(0x5A);
+  Wire.endTransmission();
 
-  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
-  Wire.write(0x07);             // sends value byte
-  Wire.write(0x89);             // sends value byte
-  Wire.endTransmission();       // stop transmitting
+  Wire.beginTransmission(0x6A);
+  Wire.write(0x07);
+  Wire.write(0x89);
+  Wire.endTransmission();
 
-  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
-  Wire.write(0x09);             // sends value byte
-  Wire.write(0x04);             // sends value byte
-  Wire.endTransmission();       // stop transmitting
+  Wire.beginTransmission(0x6A);
+  Wire.write(0x09);
+  Wire.write(0x04);
+  Wire.endTransmission();
 
   delay(50);
   mcp1.init();
-  mcp1.portMode(MCP23017Port::A, 0b11111111); // Set all as inputs
+  mcp1.portMode(MCP23017Port::A, 0b11111111); // Set all as inputs (MCP1)
   delay(5);
 
   mcp2.init();
-  mcp2.portMode(MCP23017Port::A, 0); // Set all as outputs
+  mcp2.portMode(MCP23017Port::A, 0); // Set all as outputs (MCP2)
   delay(5);
 
   mcp2.digitalWrite(1, 0); // 7.5V disabled!
@@ -468,7 +471,7 @@ static void event_soundsetup(lv_obj_t *obj, lv_event_t event)
     printf("Clicked\n");
     bd.setSelect(0);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
     bd.setIn_gain(0); // int 0...7 === 0...20 dB
-    bd.setVol_1(0); // int 0...87 === 0...-87 dB
+    bd.setVol_1(0);   // int 0...87 === 0...-87 dB
     bd.setFad_1(0);   // int 0...87 === 0...-87 dB
     bd.setFad_2(0);   // int 0...87 === 0...-87 dB
     bd.setBass(0);    // int -7...0...+7 === -14...+14 dB
@@ -488,7 +491,6 @@ static void event_sw1(lv_obj_t *obj, lv_event_t event)
     }
     else
     {
-
       mcp2.digitalWrite(1, 0);
     }
     if (lv_switch_get_state(sw2) == 1)
@@ -497,7 +499,6 @@ static void event_sw1(lv_obj_t *obj, lv_event_t event)
     }
     else
     {
-
       mcp2.digitalWrite(0, 0);
     }
     if (lv_switch_get_state(sw3) == 1)
@@ -506,7 +507,6 @@ static void event_sw1(lv_obj_t *obj, lv_event_t event)
     }
     else
     {
-
       mcp2.digitalWrite(2, 0);
     }
   }
