@@ -44,8 +44,8 @@
 
 // Defines
 #define BUFFER_MULTIPLIER 35
-#define RX_PIN 0
-#define TX_PIN 4
+#define RX_PIN 4
+#define TX_PIN 0
 #define TX_IND 5
 #define DAC1 26
 const int mfbPin = 23;
@@ -82,6 +82,7 @@ lv_obj_t *gauge1;
 lv_obj_t *led1;
 lv_obj_t *btn1;
 lv_obj_t *btn2;
+lv_obj_t *btn3;
 lv_obj_t *sw1;
 lv_obj_t *sw2;
 lv_obj_t *sw3;
@@ -138,7 +139,7 @@ void setup()
 {
 
   Wire.begin();
-
+  Wire.setClock(100000);
   // Serial debugging @ 115200 baud
   Serial.begin(115200);
   // Software serial for BM83/BM64 Uart connection @ 9600 baud
@@ -167,9 +168,44 @@ void setup()
   rotaryEncoder2.setBoundaries(0, 20, false);
 
   Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
-  Wire.write(0x14);     // sends value byte
-  Wire.write(0xB9);     // sends value byte
-  Wire.endTransmission();     // stop transmitting
+  Wire.write(0x14);             // sends value byte
+  Wire.write(0xB9);             // sends value byte
+  Wire.endTransmission();       // stop transmitting
+
+  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
+  Wire.write(0x02);             // sends value byte
+  Wire.write(0x30);             // sends value byte
+  Wire.endTransmission();       // stop transmitting
+
+  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
+  Wire.write(0x03);             // sends value byte
+  Wire.write(0x5A);             // sends value byte
+  Wire.endTransmission();       // stop transmitting
+
+  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
+  Wire.write(0x04);             // sends value byte
+  Wire.write(0x40);             // sends value byte
+  Wire.endTransmission();       // stop transmitting
+
+  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
+  Wire.write(0x05);             // sends value byte
+  Wire.write(0x66);             // sends value byte
+  Wire.endTransmission();       // stop transmitting
+
+  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
+  Wire.write(0x06);             // sends value byte
+  Wire.write(0x5A);             // sends value byte
+  Wire.endTransmission();       // stop transmitting
+
+  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
+  Wire.write(0x07);             // sends value byte
+  Wire.write(0x89);             // sends value byte
+  Wire.endTransmission();       // stop transmitting
+
+  Wire.beginTransmission(0x6A); // transmit to device #44 (0x2c)
+  Wire.write(0x09);             // sends value byte
+  Wire.write(0x04);             // sends value byte
+  Wire.endTransmission();       // stop transmitting
 
   delay(50);
   mcp1.init();
@@ -272,10 +308,6 @@ void setup()
   tab3 = lv_tabview_add_tab(tabview, "Enables");
   tab4 = lv_tabview_add_tab(tabview, "Options");
 
-
-
-
-
   /*Create a Preloader object*/
   lv_obj_t *preload = lv_spinner_create(tab4, NULL);
   lv_obj_set_size(preload, 100, 100);
@@ -336,6 +368,12 @@ void setup()
   lv_obj_align(btn2, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 0);
   label = lv_label_create(btn2, NULL);
   lv_label_set_text(label, "BM83 Pairing");
+
+  btn3 = lv_btn_create(cont2, NULL);
+  lv_obj_set_event_cb(btn3, event_soundsetup);
+  lv_obj_align(btn3, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 0);
+  label = lv_label_create(btn3, NULL);
+  lv_label_set_text(label, "Sound Proc. Setup");
 }
 
 void loop()
@@ -420,6 +458,22 @@ static void event_bm83pair(lv_obj_t *obj, lv_event_t event)
   {
     printf("Clicked\n");
     bm83.mmiAction(BM83_MMI_STANDBY_ENTERING_PAIRING);
+  }
+}
+
+static void event_soundsetup(lv_obj_t *obj, lv_event_t event)
+{
+  if (event == LV_EVENT_CLICKED)
+  {
+    printf("Clicked\n");
+    bd.setSelect(0);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
+    bd.setIn_gain(0); // int 0...7 === 0...20 dB
+    bd.setVol_1(0); // int 0...87 === 0...-87 dB
+    bd.setFad_1(0);   // int 0...87 === 0...-87 dB
+    bd.setFad_2(0);   // int 0...87 === 0...-87 dB
+    bd.setBass(0);    // int -7...0...+7 === -14...+14 dB
+    bd.setMidd(0);    // int -7...0...+7 === -14...+14 dB
+    bd.setTreb(0);    // int -7...0...+7 === -14...+14 dB
   }
 }
 
