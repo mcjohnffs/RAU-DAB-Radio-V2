@@ -29,18 +29,18 @@
  */
 
 // Libraries
-#include <lvgl.h>
-#include <TFT_eSPI.h>
-#include "touch.h"
-#include <Wire.h>
-#include <PCA9634.h>
-#include <MCP23017.h>
-#include "BM83.h"           // Bluetooth Module library (BM83/BM64)
-#include <SoftwareSerial.h> // SoftwareSerial Library for ESP32
-#include <BD37544FS.h> // Sound processor library (BD37544FS)
-#include "soc/timer_group_struct.h"
-#include "soc/timer_group_reg.h"
-#include "AiEsp32RotaryEncoder.h" //Encoder Library für ESP32
+#include <lvgl.h>                   // Light and versatile Embedded Graphics Library (LVGL)
+#include <TFT_eSPI.h>               // General TFT library (TFT_eSPI)
+#include "touch.h"                  // Communication header for the touch controller between "FT6206" and LVGL
+#include <Wire.h>                   // Arduino I2C library
+#include <PCA9634.h>                // Led driver library (PCA9634)
+#include <MCP23017.h>               // Port expander library (MPC23017)
+#include "BM83.h"                   // Bluetooth Module library (BM83/BM64)
+#include <SoftwareSerial.h>         // SoftwareSerial Library for ESP32
+#include <BD37544FS.h>              // Sound processor library (BD37544FS)
+#include "AiEsp32RotaryEncoder.h"   // Encoder Library für ESP32
+#include "soc/timer_group_struct.h" // Watchdog timer
+#include "soc/timer_group_reg.h"    // Watchdog timer
 
 // Defines
 #define BUFFER_MULTIPLIER 35
@@ -48,15 +48,18 @@
 #define TX_PIN 0
 #define TX_IND 5
 #define DAC1 26
-const int mfbPin = 23;
 #define ROTARY_ENCODER1_A_PIN 34
 #define ROTARY_ENCODER1_B_PIN 35
+
 #define ROTARY_ENCODER2_A_PIN 36
 #define ROTARY_ENCODER2_B_PIN 39
 
-AiEsp32RotaryEncoder rotaryEncoder1 = AiEsp32RotaryEncoder(ROTARY_ENCODER1_A_PIN, ROTARY_ENCODER1_B_PIN, -1);
-AiEsp32RotaryEncoder rotaryEncoder2 = AiEsp32RotaryEncoder(ROTARY_ENCODER2_A_PIN, ROTARY_ENCODER2_B_PIN, -1);
 
+const int mfbPin = 23;
+
+// Encoder 1+2 instances ()
+AiEsp32RotaryEncoder rotaryEncoder1 = AiEsp32RotaryEncoder(ROTARY_ENCODER1_A_PIN, ROTARY_ENCODER1_B_PIN, -1,-1);
+AiEsp32RotaryEncoder rotaryEncoder2 = AiEsp32RotaryEncoder(ROTARY_ENCODER2_A_PIN, ROTARY_ENCODER2_B_PIN, -1,-1);
 // Sound processor instance (BD37544FS)
 BD37544FS bd;
 
@@ -64,8 +67,10 @@ BD37544FS bd;
 SoftwareSerial swSerial(RX_PIN, TX_PIN);
 BM83 bm83(swSerial, TX_IND);
 
+// Led driver instance (PCA9634)
 PCA9634 ledDriver(0x15, 4);
 
+// MPC 1 + 2 instance (MCP23017)
 MCP23017 mcp1 = MCP23017(0x20);
 MCP23017 mcp2 = MCP23017(0x24);
 
@@ -101,6 +106,7 @@ int8_t encoderDelta;
 int8_t encoderDelta2;
 uint8_t conf;
 int i;
+int vol;
 
 TFT_eSPI tft = TFT_eSPI(); /* TFT instance */
 static lv_disp_buf_t disp_buf;
@@ -135,6 +141,7 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 void setup()
 {
 
+  // I2C init @ 100 kHz
   Wire.begin();
   Wire.setClock(100000);
 
@@ -160,16 +167,26 @@ void setup()
   // Sets the MFB pin 4 as output (BM83)
   pinMode(mfbPin, OUTPUT);
 
+
+
+  // Encoder 1+2 init
   rotaryEncoder1.begin();
   rotaryEncoder1.setup([]
                        { rotaryEncoder1.readEncoder_ISR(); });
   rotaryEncoder1.setBoundaries(0, 20, false);
+
 
   rotaryEncoder2.begin();
   rotaryEncoder2.setup([]
                        { rotaryEncoder2.readEncoder_ISR(); });
   rotaryEncoder2.setBoundaries(0, 20, false);
 
+
+  // Led driver init
+  ledDriver.begin();
+  ledDriver.allOff();
+
+  // Charger IC setup
   Wire.beginTransmission(0x6A);
   Wire.write(0x14);
   Wire.write(0xB9);
@@ -211,56 +228,60 @@ void setup()
   Wire.endTransmission();
 
   delay(50);
+
+  //MCP 1 init
   mcp1.init();
   mcp1.portMode(MCP23017Port::A, 0b11111111); // Set all as inputs (MCP1)
   delay(5);
 
+  //MCP 2 init
   mcp2.init();
   mcp2.portMode(MCP23017Port::A, 0); // Set all as outputs (MCP2)
   delay(5);
 
-  mcp2.digitalWrite(1, 0); // 7.5V disabled!
+  // Standby sequence
+  mcp2.digitalWrite(1, 0); // 7.5V disable
   delay(10);
-  mcp2.digitalWrite(0, 0); // +-5V disabled!
+  mcp2.digitalWrite(0, 0); // +-5V disable
   delay(10);
-  mcp2.digitalWrite(2, 0); // PVCC disabled!
+  mcp2.digitalWrite(2, 0); // PVCC disable
   delay(10);
-  mcp2.digitalWrite(3, 0); // Power Amp shutdown activated!
+  mcp2.digitalWrite(3, 0); // Power Amp shutdown activation
   delay(10);
-  mcp2.digitalWrite(4, 1); // Power Amp mute activated!
+  mcp2.digitalWrite(4, 1); // Power Amp mute activation
 
+  // Power up sequence
   delay(20);
   mcp2.digitalWrite(1, 1);
-  Serial.println("7.5V enabled!");
-  delay(10);
-
+  Serial.println("7.5V enabled!"); // 7.5V enable
   delay(10);
   mcp2.digitalWrite(0, 1);
-  Serial.println("+-5V enabled!");
+  Serial.println("+-5V enabled!"); // +-5V enable
   delay(10);
   dacWrite(DAC1, 255);
   delay(10);
   mcp2.digitalWrite(2, 1);
-  Serial.println("PVCC enabled!");
+  Serial.println("PVCC enabled!"); // PVCC enable
   delay(10);
   mcp2.digitalWrite(3, 1);
-  Serial.println("Power Amp Shutdown deactivated!");
+  Serial.println("Power Amp Shutdown deactivated!"); // Power amp shutdown deactivation
   delay(10);
   mcp2.digitalWrite(4, 0);
-  Serial.println("Power Amp Mute deactivated!");
+  Serial.println("Power Amp Mute deactivated!"); // Power amp mute deactivation
   delay(10);
+
+  // LVGL init
   lv_init();
 
 #if USE_LV_LOG != 0
   lv_log_register_print_cb(my_print); /* register print function for debugging */
 #endif
 
-  // TFT initialization ===========================
+  // TFT init
   tft.begin();
   tft.setRotation(3);
-  // ===============================================
 
-  // Touch device initialization =================
+  // Touch device init
   if (!touch.begin(150))
   {
     Serial.println("Couldn't start FT6206 touchscreen controller");
@@ -271,14 +292,10 @@ void setup()
   {
     Serial.println("FT6206 touchscreen controller connected!");
   }
-  // ===============================================
-
-  ledDriver.begin();
-  ledDriver.allOff();
 
   lv_disp_buf_init(&disp_buf, buf_1, buf_2, LV_HOR_RES_MAX * 10);
 
-  /*Initialize the display*/
+  // Display init
   lv_disp_drv_t disp_drv;
   lv_disp_drv_init(&disp_drv);
   disp_drv.hor_res = tft.width();
@@ -287,7 +304,7 @@ void setup()
   disp_drv.buffer = &disp_buf;
   lv_disp_drv_register(&disp_drv);
 
-  /*Initialize the (dummy) input device driver*/
+  // Display input driver init
   lv_indev_drv_t indev_drv;
   lv_indev_drv_init(&indev_drv);
   indev_drv.type = LV_INDEV_TYPE_POINTER;
@@ -298,8 +315,6 @@ void setup()
   needle_colors[0] = LV_COLOR_BLUE;
   needle_colors[1] = LV_COLOR_ORANGE;
   needle_colors[2] = LV_COLOR_PURPLE;
-
-  // ===============================================
 
   tabview = lv_tabview_create(lv_scr_act(), NULL);
   lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
@@ -417,7 +432,6 @@ void read_inputs(void *parameter)
         case 5:
 
           break;
-
         case 4:
           lv_tabview_set_tab_act(tabview, 3, LV_ANIM_OFF);
 
@@ -433,7 +447,6 @@ void read_inputs(void *parameter)
           lv_tabview_set_tab_act(tabview, 0, LV_ANIM_OFF);
           break;
         case 0:
-
           break;
         }
       }
@@ -441,6 +454,7 @@ void read_inputs(void *parameter)
   }
   vTaskDelay(5);
 }
+
 static void event_bm83setup(lv_obj_t *obj, lv_event_t event)
 {
   if (event == LV_EVENT_CLICKED)
@@ -469,7 +483,7 @@ static void event_soundsetup(lv_obj_t *obj, lv_event_t event)
   if (event == LV_EVENT_CLICKED)
   {
     printf("Clicked\n");
-    bd.setSelect(0);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
+    bd.setSelect(1);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
     bd.setIn_gain(0); // int 0...7 === 0...20 dB
     bd.setVol_1(0);   // int 0...87 === 0...-87 dB
     bd.setFad_1(0);   // int 0...87 === 0...-87 dB
@@ -554,6 +568,9 @@ void encoder_loop(void *pvParameters)
       Serial.println(encoderValue);
 
       lv_linemeter_set_value(lmeter, encoderValue);
+      vol = encoderValue;
+      bd.setVol_1(vol);
+      vTaskDelay(2);
     }
 
     if (encoderDelta2 != 0)

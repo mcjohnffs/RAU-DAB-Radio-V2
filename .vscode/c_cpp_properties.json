@@ -118,6 +118,7 @@
                 "C:\\Users\\e_isaku\\Documents\\Arduino\\libraries\\EspSoftwareSerial\\src",
                 "C:\\Users\\e_isaku\\Documents\\Arduino\\libraries\\BD37544FS-master",
                 "C:\\Users\\e_isaku\\Documents\\Arduino\\libraries\\ai-esp32-rotary-encoder-master\\src",
+                "C:\\Users\\e_isaku\\Documents\\Arduino\\libraries\\APA102",
                 "c:\\users\\e_isaku\\appdata\\local\\arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\1.22.0-97-gc752ad5-5.2.0\\xtensa-esp32-elf\\include\\c++\\5.2.0",
                 "c:\\users\\e_isaku\\appdata\\local\\arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\1.22.0-97-gc752ad5-5.2.0\\xtensa-esp32-elf\\include\\c++\\5.2.0\\xtensa-esp32-elf",
                 "c:\\users\\e_isaku\\appdata\\local\\arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\1.22.0-97-gc752ad5-5.2.0\\xtensa-esp32-elf\\include\\c++\\5.2.0\\backward",
