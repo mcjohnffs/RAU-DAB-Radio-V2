@@ -38,7 +38,7 @@
 #include "BM83.h"                   // Bluetooth Module library (BM83/BM64)
 #include <SoftwareSerial.h>         // SoftwareSerial Library for ESP32
 #include <BD37544FS.h>              // Sound processor library (BD37544FS)
-#include "AiEsp32RotaryEncoder.h"   // Encoder Library für ESP32
+#include "ESPRotary.h"              // Encoder Library für ESP32
 #include "soc/timer_group_struct.h" // Watchdog timer
 #include "soc/timer_group_reg.h"    // Watchdog timer
 
@@ -48,18 +48,21 @@
 #define TX_PIN 0
 #define TX_IND 5
 #define DAC1 26
-#define ROTARY_ENCODER1_A_PIN 34
-#define ROTARY_ENCODER1_B_PIN 35
 
-#define ROTARY_ENCODER2_A_PIN 36
-#define ROTARY_ENCODER2_B_PIN 39
+#define ENC1_ROTARY_PIN_A 34
+#define ENC1_ROTARY_PIN_B 35
 
+#define ENC2_ROTARY_PIN_A 39
+#define ENC2_ROTARY_PIN_B 36
+#define BUTTON_PIN 12
+
+#define CLICKS_PER_STEP 1 // this number depends on your rotary encoder
 
 const int mfbPin = 23;
 
-// Encoder 1+2 instances ()
-AiEsp32RotaryEncoder rotaryEncoder1 = AiEsp32RotaryEncoder(ROTARY_ENCODER1_A_PIN, ROTARY_ENCODER1_B_PIN, -1,-1);
-AiEsp32RotaryEncoder rotaryEncoder2 = AiEsp32RotaryEncoder(ROTARY_ENCODER2_A_PIN, ROTARY_ENCODER2_B_PIN, -1,-1);
+ESPRotary r = ESPRotary(ENC1_ROTARY_PIN_A, ENC1_ROTARY_PIN_B, CLICKS_PER_STEP);
+ESPRotary u = ESPRotary(ENC2_ROTARY_PIN_A, ENC2_ROTARY_PIN_B, CLICKS_PER_STEP);
+
 // Sound processor instance (BD37544FS)
 BD37544FS bd;
 
@@ -77,6 +80,9 @@ MCP23017 mcp2 = MCP23017(0x24);
 // LVGL task handles
 TaskHandle_t Task1;
 TaskHandle_t Task2;
+
+static lv_group_t *g;             //An Object Group
+static lv_indev_t *encoder_indev; //The input device
 
 // Global LVGL object variables
 lv_obj_t *tabview;
@@ -100,13 +106,11 @@ lv_obj_t *lmeter2;
 lv_obj_t *label;
 
 // Global variables
-int16_t encoderValue2;
-uint32_t encoderValue;
-int8_t encoderDelta;
-int8_t encoderDelta2;
+
 uint8_t conf;
 int i;
 int vol;
+int encoderLastValue = 0;
 
 TFT_eSPI tft = TFT_eSPI(); /* TFT instance */
 static lv_disp_buf_t disp_buf;
@@ -162,25 +166,12 @@ void setup()
       0);            /* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
 
   // Encoder read task creation
-  xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 10000, NULL, 2, &Task2, 0);
+  //xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 10000, NULL, 2, &Task2, 0);
 
   // Sets the MFB pin 4 as output (BM83)
   pinMode(mfbPin, OUTPUT);
 
-
-
   // Encoder 1+2 init
-  rotaryEncoder1.begin();
-  rotaryEncoder1.setup([]
-                       { rotaryEncoder1.readEncoder_ISR(); });
-  rotaryEncoder1.setBoundaries(0, 20, false);
-
-
-  rotaryEncoder2.begin();
-  rotaryEncoder2.setup([]
-                       { rotaryEncoder2.readEncoder_ISR(); });
-  rotaryEncoder2.setBoundaries(0, 20, false);
-
 
   // Led driver init
   ledDriver.begin();
@@ -311,6 +302,16 @@ void setup()
   indev_drv.read_cb = my_touchpad_read;
   lv_indev_drv_register(&indev_drv);
 
+  lv_indev_drv_t enc_indev;
+  lv_indev_drv_init(&indev_drv); /*Basic initialization*/
+  indev_drv.type = LV_INDEV_TYPE_ENCODER;
+  indev_drv.read_cb = encoder_read;
+  encoder_indev = lv_indev_drv_register(&indev_drv);
+
+  //Create Group for encoder
+  g = lv_group_create();
+  lv_indev_set_group(encoder_indev, g);
+
   static lv_color_t needle_colors[3];
   needle_colors[0] = LV_COLOR_BLUE;
   needle_colors[1] = LV_COLOR_ORANGE;
@@ -392,6 +393,23 @@ void setup()
   lv_obj_align(btn3, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 0);
   label = lv_label_create(btn3, NULL);
   lv_label_set_text(label, "Sound Proc. Setup");
+
+  r.setChangedHandler(rotate_r);
+  r.setLeftRotationHandler(showDirection_r);
+  r.setRightRotationHandler(showDirection_r);
+
+  u.setChangedHandler(rotate_u);
+  u.setLeftRotationHandler(showDirection_u);
+  u.setRightRotationHandler(showDirection_u);
+
+  lv_group_add_obj(g, sw1);
+  lv_group_add_obj(g, sw2);
+  lv_group_add_obj(g, sw3);
+  lv_group_add_obj(g, btn1);
+  lv_group_add_obj(g, btn2);
+  lv_group_add_obj(g, btn3);
+
+  lv_group_set_wrap(g, true);
 }
 
 void loop()
@@ -402,6 +420,8 @@ void loop()
   TIMERG0.wdt_wprotect = 0;
 
   conf = mcp1.readRegister(MCP23017Register::GPIO_A); // MCP1 register read for inputs
+  r.loop();
+  u.loop();
 
   // LVGL task handler
   lv_task_handler();
@@ -485,7 +505,7 @@ static void event_soundsetup(lv_obj_t *obj, lv_event_t event)
     printf("Clicked\n");
     bd.setSelect(1);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
     bd.setIn_gain(0); // int 0...7 === 0...20 dB
-    bd.setVol_1(0);   // int 0...87 === 0...-87 dB
+    bd.setVol_1(10);  // int 0...87 === 0...-87 dB
     bd.setFad_1(0);   // int 0...87 === 0...-87 dB
     bd.setFad_2(0);   // int 0...87 === 0...-87 dB
     bd.setBass(0);    // int -7...0...+7 === -14...+14 dB
@@ -526,61 +546,43 @@ static void event_sw1(lv_obj_t *obj, lv_event_t event)
   }
 }
 
-void encoder_loop(void *pvParameters)
+void rotate_r(ESPRotary &r)
+{
+  //Serial.println(r.getPosition());
+}
+// on left or right rotattion
+void showDirection_r(ESPRotary &r)
+{
+  //Serial.println(r.directionToString(r.getDirection()));
+}
+
+void rotate_u(ESPRotary &u)
+{
+  //Serial.println(u.getPosition());
+}
+
+void showDirection_u(ESPRotary &u)
+{
+  //Serial.println(u.directionToString(u.getDirection()));
+}
+
+bool encoder_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
 
-  for (;;)
-  {
+  data->enc_diff = enc_get_new_moves();
 
-    //lets see if anything changed
-    encoderDelta = rotaryEncoder1.encoderChanged();
-    encoderDelta2 = rotaryEncoder2.encoderChanged();
+  if (mcp1.digitalRead(5) == 1)
+    data->state = LV_INDEV_STATE_PR;
+  else
+    data->state = LV_INDEV_STATE_REL;
+  return false; /*No buffering now so no more data read*/
+}
 
-    //optionally we can ignore whenever there is no change
-    //if (encoderDelta == 0) return;
-
-    //for some cases we only want to know if value is
-    //increased or decreased (typically for menu items)
-    if (encoderDelta > 0 || encoderDelta2 > 0)
-    {
-
-      Serial.print("+");
-    }
-    if (encoderDelta < 0 || encoderDelta2 < 0)
-    {
-
-      Serial.print("-");
-
-      //for other cases we want to know what is current value.
-      //Additionally often we only want if something changed
-      //example: when using rotary encoder to set termostat temperature, or sound volume etc
-    }
-    encoderValue = rotaryEncoder1.readEncoder();
-    encoderValue2 = rotaryEncoder2.readEncoder();
-
-    //if value is changed compared to our last read
-    if (encoderDelta != 0)
-    {
-      //now we need current value
-
-      //process new value. Here is simple output.
-      Serial.print("Value 1:  ");
-      Serial.println(encoderValue);
-
-      lv_linemeter_set_value(lmeter, encoderValue);
-      vol = encoderValue;
-      bd.setVol_1(vol);
-      vTaskDelay(2);
-    }
-
-    if (encoderDelta2 != 0)
-    {
-
-      Serial.print("Value 2: ");
-      Serial.println(encoderValue2);
-      lv_linemeter_set_value(lmeter2, encoderValue2);
-    }
-
-    vTaskDelay(2);
-  }
+int enc_get_new_moves()
+{
+  int encoderCount = r.getPosition();
+  int diff = encoderCount - encoderLastValue;
+  encoderLastValue = encoderCount;
+  Serial.println(diff);
+  return diff;
 }
