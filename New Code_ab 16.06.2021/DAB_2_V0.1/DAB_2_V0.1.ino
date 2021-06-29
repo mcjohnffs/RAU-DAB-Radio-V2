@@ -56,12 +56,17 @@
 #define ENC2_ROTARY_PIN_B 36
 #define BUTTON_PIN 12
 
-#define CLICKS_PER_STEP 1 // this number depends on your rotary encoder
+#define CLICKS_PER_STEP 2 // this number depends on your rotary encoder
+
+#define MIN_POS 0
+#define MAX_POS 87
+#define START_POS 0
+#define INCREMENT 1 // this number is the counter increment on each step
 
 const int mfbPin = 23;
 
-ESPRotary r = ESPRotary(ENC1_ROTARY_PIN_A, ENC1_ROTARY_PIN_B, CLICKS_PER_STEP);
-ESPRotary u = ESPRotary(ENC2_ROTARY_PIN_A, ENC2_ROTARY_PIN_B, CLICKS_PER_STEP);
+ESPRotary r;
+ESPRotary u;
 
 // Sound processor instance (BD37544FS)
 BD37544FS bd;
@@ -92,6 +97,7 @@ lv_obj_t *tab3;
 lv_obj_t *tab4;
 lv_obj_t *gauge1;
 lv_obj_t *led1;
+lv_obj_t *btn;
 lv_obj_t *btn1;
 lv_obj_t *btn2;
 lv_obj_t *btn3;
@@ -100,10 +106,18 @@ lv_obj_t *sw2;
 lv_obj_t *sw3;
 lv_obj_t *cont;
 lv_obj_t *cont2;
+lv_obj_t *cont3;
 lv_obj_t *bar1;
 lv_obj_t *lmeter;
 lv_obj_t *lmeter2;
 lv_obj_t *label;
+lv_obj_t *spinbox;
+lv_obj_t *slider_label;
+lv_obj_t *slider_label2;
+lv_obj_t *slider_label3;
+lv_obj_t *slider_label4;
+lv_obj_t *slider_label5;
+
 
 // Global variables
 
@@ -308,6 +322,10 @@ void setup()
   indev_drv.read_cb = encoder_read;
   encoder_indev = lv_indev_drv_register(&indev_drv);
 
+  static lv_style_t style1;
+  lv_style_init(&style1);
+  lv_style_set_border_color(&style1, LV_STATE_FOCUSED, LV_COLOR_RED);
+
   //Create Group for encoder
   g = lv_group_create();
   lv_indev_set_group(encoder_indev, g);
@@ -328,9 +346,6 @@ void setup()
   tab4 = lv_tabview_add_tab(tabview, "Options");
 
   /*Create a Preloader object*/
-  lv_obj_t *preload = lv_spinner_create(tab4, NULL);
-  lv_obj_set_size(preload, 100, 100);
-  lv_obj_align(preload, NULL, LV_ALIGN_CENTER, 0, 0);
 
   lmeter = lv_linemeter_create(tab2, NULL);
   lv_linemeter_set_range(lmeter, 0, 20);   /*Set the range*/
@@ -381,35 +396,88 @@ void setup()
   lv_obj_align(btn1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
   label = lv_label_create(btn1, NULL);
   lv_label_set_text(label, "BM83 Setup");
+  lv_obj_add_style(btn1, LV_BTN_PART_MAIN, &style1);
 
   btn2 = lv_btn_create(cont2, NULL);
   lv_obj_set_event_cb(btn2, event_bm83pair);
   lv_obj_align(btn2, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 0);
   label = lv_label_create(btn2, NULL);
   lv_label_set_text(label, "BM83 Pairing");
+  lv_obj_add_style(btn2, LV_BTN_PART_MAIN, &style1);
 
   btn3 = lv_btn_create(cont2, NULL);
   lv_obj_set_event_cb(btn3, event_soundsetup);
-  lv_obj_align(btn3, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 0);
+  lv_obj_align(btn3, NULL, LV_ALIGN_IN_TOP_LEFT, 80, 0);
   label = lv_label_create(btn3, NULL);
   lv_label_set_text(label, "Sound Proc. Setup");
+  lv_obj_add_style(btn3, LV_BTN_PART_MAIN, &style1);
 
+  r.begin(ENC1_ROTARY_PIN_A, ENC1_ROTARY_PIN_B, CLICKS_PER_STEP);
   r.setChangedHandler(rotate_r);
   r.setLeftRotationHandler(showDirection_r);
   r.setRightRotationHandler(showDirection_r);
 
+  u.begin(ENC2_ROTARY_PIN_A, ENC2_ROTARY_PIN_B, CLICKS_PER_STEP, MIN_POS, MAX_POS, START_POS, INCREMENT);
   u.setChangedHandler(rotate_u);
   u.setLeftRotationHandler(showDirection_u);
   u.setRightRotationHandler(showDirection_u);
 
+  lv_group_add_obj(g, tabview);
   lv_group_add_obj(g, sw1);
   lv_group_add_obj(g, sw2);
   lv_group_add_obj(g, sw3);
+
   lv_group_add_obj(g, btn1);
   lv_group_add_obj(g, btn2);
   lv_group_add_obj(g, btn3);
 
   lv_group_set_wrap(g, true);
+  lv_group_set_editing(g, true);
+
+  //lv_obj_add_style(btn1, LV_BTN_PART_OUTLINE, &style1);
+
+  //cont3 = lv_cont_create(tab4, NULL);
+  //lv_obj_set_auto_realign(cont3, true);                   /*Auto realign when the size changes*/
+  //lv_obj_align_origo(cont3, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
+  //lv_cont_set_fit(cont3, LV_FIT_TIGHT);
+  //lv_cont_set_layout(cont3, LV_LAYOUT_GRID);
+
+  /* Create a slider in the center of the display */
+  lv_obj_t *slider = lv_slider_create(tab4, NULL);
+  lv_obj_set_width(slider, LV_DPI * 1);
+  lv_obj_align(slider, NULL, LV_ALIGN_IN_TOP_LEFT, 5, 25);
+  lv_obj_set_event_cb(slider, slider_event_cb_ingain);
+  lv_slider_set_range(slider, 5, 20);
+
+  /* Create a label below the slider */
+  slider_label = lv_label_create(tab4, NULL);
+  lv_label_set_text(slider_label, "0");
+  lv_obj_set_auto_realign(slider_label, true);
+  lv_obj_align(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 5, 10);
+
+  /* Create an informative label */
+  lv_obj_t *info = lv_label_create(tab4, NULL);
+  lv_label_set_text(info, "Input Gain (0-20dB)");
+  lv_obj_align(info, NULL, LV_ALIGN_IN_TOP_LEFT, 10, 5);
+
+  //______________________________________________________________
+
+  lv_obj_t *slider2 = lv_slider_create(tab4, NULL);
+  lv_obj_set_width(slider2, LV_DPI * 1);
+  lv_obj_align(slider2, NULL, LV_ALIGN_IN_TOP_LEFT, 5, 60);
+  lv_obj_set_event_cb(slider2, slider_event_cb_fade1);
+  lv_slider_set_range(slider2, 0, 87);
+
+  /* Create a label below the slider */
+  slider_label2 = lv_label_create(tab4, NULL);
+  lv_label_set_text(slider_label2, "0");
+  lv_obj_set_auto_realign(slider_label2, true);
+  lv_obj_align(slider_label2, slider2, LV_ALIGN_OUT_BOTTOM_MID, 5, 20);
+
+  /* Create an informative label */
+  lv_obj_t *info2 = lv_label_create(tab4, NULL);
+  lv_label_set_text(info2, "Fader 1 (0-(-87dB))");
+  lv_obj_align(info2, NULL, LV_ALIGN_IN_TOP_LEFT, 10, 25);
 }
 
 void loop()
@@ -505,7 +573,7 @@ static void event_soundsetup(lv_obj_t *obj, lv_event_t event)
     printf("Clicked\n");
     bd.setSelect(1);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
     bd.setIn_gain(0); // int 0...7 === 0...20 dB
-    bd.setVol_1(10);  // int 0...87 === 0...-87 dB
+    bd.setVol_1(0);   // int 0...87 === 0...-87 dB
     bd.setFad_1(0);   // int 0...87 === 0...-87 dB
     bd.setFad_2(0);   // int 0...87 === 0...-87 dB
     bd.setBass(0);    // int -7...0...+7 === -14...+14 dB
@@ -558,7 +626,12 @@ void showDirection_r(ESPRotary &r)
 
 void rotate_u(ESPRotary &u)
 {
-  //Serial.println(u.getPosition());
+  Serial.println(u.getPosition());
+  int k = u.getPosition();
+  bd.setVol_1(k); // int 0...87 === 0...-87 dB
+  Serial.print("Vol:");
+  Serial.println(k);
+  delay(2);
 }
 
 void showDirection_u(ESPRotary &u)
@@ -583,6 +656,73 @@ int enc_get_new_moves()
   int encoderCount = r.getPosition();
   int diff = encoderCount - encoderLastValue;
   encoderLastValue = encoderCount;
+  Serial.print("Diff:");
   Serial.println(diff);
   return diff;
+}
+
+static void slider_event_cb_ingain(lv_obj_t *slider, lv_event_t event)
+{
+  if (event == LV_EVENT_VALUE_CHANGED)
+  {
+    static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+    snprintf(buf, 4, "%u", lv_slider_get_value(slider));
+    lv_label_set_text(slider_label, buf);
+    bd.setIn_gain(lv_slider_get_value(slider));
+  }
+}
+
+static void slider_event_cb_fade1(lv_obj_t *slider, lv_event_t event)
+{
+  if (event == LV_EVENT_VALUE_CHANGED)
+  {
+    static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+    snprintf(buf, 4, "%u", lv_slider_get_value(slider));
+    lv_label_set_text(slider_label, buf);
+    bd.setFad_1(0);(lv_slider_get_value(slider));
+  }
+}
+
+static void slider_event_fade2(lv_obj_t *slider, lv_event_t event)
+{
+  if (event == LV_EVENT_VALUE_CHANGED)
+  {
+    static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+    snprintf(buf, 4, "%u", lv_slider_get_value(slider));
+    lv_label_set_text(slider_label, buf);
+    bd.setIn_gain(lv_slider_get_value(slider));
+  }
+}
+
+static void slider_event_cb_bass(lv_obj_t *slider, lv_event_t event)
+{
+  if (event == LV_EVENT_VALUE_CHANGED)
+  {
+    static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+    snprintf(buf, 4, "%u", lv_slider_get_value(slider));
+    lv_label_set_text(slider_label, buf);
+    bd.setIn_gain(lv_slider_get_value(slider));
+  }
+}
+
+static void slider_event_mid(lv_obj_t *slider, lv_event_t event)
+{
+  if (event == LV_EVENT_VALUE_CHANGED)
+  {
+    static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+    snprintf(buf, 4, "%u", lv_slider_get_value(slider));
+    lv_label_set_text(slider_label, buf);
+    bd.setIn_gain(lv_slider_get_value(slider));
+  }
+}
+
+static void slider_event_treb(lv_obj_t *slider, lv_event_t event)
+{
+  if (event == LV_EVENT_VALUE_CHANGED)
+  {
+    static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+    snprintf(buf, 4, "%u", lv_slider_get_value(slider));
+    lv_label_set_text(slider_label, buf);
+    bd.setIn_gain(lv_slider_get_value(slider));
+  }
 }
