@@ -31,7 +31,7 @@
 // Libraries
 #include <lvgl.h>										// Light and versatile Embedded Graphics Library (LVGL)
 #include <TFT_eSPI.h>								// General TFT library (TFT_eSPI)
-#include "touch.h"									// Communication header for the touch controller between "FT6206" and LVGL
+#include "touch.h"									// Communication header for the touch controller - between "FT6206" and LVGL
 #include <Wire.h>										// Arduino I2C library
 #include <PCA9634.h>								// Led driver library (PCA9634)
 #include <MCP23017.h>								// Port expander library (MPC23017)
@@ -118,7 +118,6 @@ lv_obj_t *slider_label4;
 lv_obj_t *slider_label5;
 
 // Global variables
-
 uint8_t conf;
 int i;
 int vol;
@@ -153,7 +152,7 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 	lv_disp_flush_ready(disp);
 }
 
-// The standard Arduino setup function used for setup and configuration tasks.
+// The standard Arduino setup function used for setup and configuration
 void setup()
 {
 
@@ -180,7 +179,7 @@ void setup()
 	// Encoder read task creation
 	//xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 10000, NULL, 2, &Task2, 0);
 
-	// Sets the MFB pin 23 as output (BM83)
+	// Sets the MFB pin (GPIO23) as output (BM83)
 	pinMode(mfbPin, OUTPUT);
 
 	// Encoder 1+2 init
@@ -276,9 +275,15 @@ void setup()
 	// LVGL init
 	lv_init();
 
-	#if USE_LV_LOG != 0
-	lv_log_register_print_cb(my_print); /* register print function for debugging */
-	#endif
+#if USE_LV_LOG != 0
+/* Serial debugging */
+void my_print(lv_log_level_t level, const char * file, uint32_t line, const char * dsc)
+{
+
+    Serial.printf("%s@%d->%s\r\n", file, line, dsc);
+    Serial.flush();
+}
+#endif
 
 	// TFT init
 	tft.begin();
@@ -469,7 +474,7 @@ void setup()
 
 void loop()
 {
-	// Watchdog timer fix
+	// Watchdog timer manip
 	TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
 	TIMERG0.wdt_feed = 1;
 	TIMERG0.wdt_wprotect = 0;
@@ -536,11 +541,11 @@ static void event_bm83setup(lv_obj_t *obj, lv_event_t event)
 	{
 		printf("Clicked\n");
 
-		digitalWrite(mfbPin, HIGH); // sets the MFB Pin 4 "High" to power on BM83 over BAT_IN
+		digitalWrite(mfbPin, HIGH); // sets the MFB Pin 23 "High" to power on BM83 over BAT_IN
 		delay(500);
 		bm83.run();
 		bm83.powerOn();						 // Sends "power on" command over UART to BM83
-		digitalWrite(mfbPin, LOW); // sets the MFB Pin 4 "LOW" (no longer needed after power on process)
+		digitalWrite(mfbPin, LOW); // sets the MFB Pin 23 "LOW" (no longer needed after power on process)
 	}
 }
 
@@ -548,7 +553,6 @@ static void event_bm83pair(lv_obj_t *obj, lv_event_t event)
 {
 	if (event == LV_EVENT_CLICKED)
 	{
-		printf("Clicked\n");
 		bm83.mmiAction(BM83_MMI_STANDBY_ENTERING_PAIRING);
 	}
 }
@@ -557,7 +561,6 @@ static void event_soundsetup(lv_obj_t *obj, lv_event_t event)
 {
 	if (event == LV_EVENT_CLICKED)
 	{
-		printf("Clicked\n");
 		bd.setSelect(1);	// int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
 		bd.setIn_gain(0); // int 0...7 === 0...20 dB
 		bd.setVol_1(0);		// int 0...87 === 0...-87 dB
