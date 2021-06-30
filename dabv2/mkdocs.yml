@@ -1,2 +1,11 @@
-site_name: My Docs
+site_name: DAB Radio V2.0
 site_url: https://example.com/
+theme:
+    name: readthedocs
+    highlightjs: true
+    hljs_languages:
+        - c
+    hljs_style:
+        - monokai sublime
+    plugins:
+    - with-pdf
