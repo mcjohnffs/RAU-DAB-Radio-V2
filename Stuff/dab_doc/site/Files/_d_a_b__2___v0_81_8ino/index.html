@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="canonical" href="https://mcjohnffs.github.io/Files/_d_a_b__2___v0_81_8ino/">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>Source Code - DAB V2.0</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../../css/theme.css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Source Code";
+    var mkdocs_page_input_path = "Files\\_d_a_b__2___v0_81_8ino.md";
+    var mkdocs_page_url = "/Files/_d_a_b__2___v0_81_8ino/";
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> DAB V2.0</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../Hard-%20und%20Software%20Knfiguration/">Hard- und Software Konfiguration</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../Installation%20der%20Entwicklungsumgebung/">Installation der Entwicklungsumgebung</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../..">Code Beschreibung</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../bm83/">BM83 Anleitung</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../Testsoftware/">Testsoftware</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Source Code</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#attributes">Attributes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#defines">Defines</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#functions-documentation">Functions Documentation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#function-swserial">function swSerial</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-bm83">function bm83</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-leddriver">function ledDriver</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-my_disp_flush">function my_disp_flush</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-setup">function setup</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-loop">function loop</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-read_inputs">function read_inputs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-event_bm83setup">function event_bm83setup</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-event_bm83pair">function event_bm83pair</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-event_soundsetup">function event_soundsetup</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-event_sw1">function event_sw1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-rotate_r">function rotate_r</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-showdirection_r">function showDirection_r</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-rotate_u">function rotate_u</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-showdirection_u">function showDirection_u</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-encoder_read">function encoder_read</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-enc_get_new_moves">function enc_get_new_moves</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-slider_event_cb_ingain">function slider_event_cb_ingain</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-slider_event_cb_fade1">function slider_event_cb_fade1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-slider_event_fade2">function slider_event_fade2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-slider_event_cb_bass">function slider_event_cb_bass</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-slider_event_mid">function slider_event_mid</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#function-slider_event_treb">function slider_event_treb</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#attributes-documentation">Attributes Documentation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-mfbpin">variable mfbPin</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-r">variable r</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-u">variable u</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-bd">variable bd</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-mcp1">variable mcp1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-mcp2">variable mcp2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-task1">variable Task1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-task2">variable Task2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-g">variable g</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-encoder_indev">variable encoder_indev</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-tabview">variable tabview</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-tab1">variable tab1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-tab2">variable tab2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-tab3">variable tab3</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-tab4">variable tab4</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-gauge1">variable gauge1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-led1">variable led1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-btn">variable btn</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-btn1">variable btn1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-btn2">variable btn2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-btn3">variable btn3</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-sw1">variable sw1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-sw2">variable sw2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-sw3">variable sw3</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-cont">variable cont</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-cont2">variable cont2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-cont3">variable cont3</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-bar1">variable bar1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-lmeter">variable lmeter</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-lmeter2">variable lmeter2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-label">variable label</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-spinbox">variable spinbox</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-slider_label">variable slider_label</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-slider_label2">variable slider_label2</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-slider_label3">variable slider_label3</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-slider_label4">variable slider_label4</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-slider_label5">variable slider_label5</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-conf">variable conf</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-i">variable i</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-vol">variable vol</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-encoderlastvalue">variable encoderLastValue</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-k">variable k</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-tft">variable tft</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-disp_buf">variable disp_buf</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-buf_1">variable buf_1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variable-buf_2">variable buf_2</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#macros-documentation">Macros Documentation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#define-buffer_multiplier">define BUFFER_MULTIPLIER</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-rx_pin">define RX_PIN</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-tx_pin">define TX_PIN</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-tx_ind">define TX_IND</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-dac1">define DAC1</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-enc1_rotary_pin_a">define ENC1_ROTARY_PIN_A</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-enc1_rotary_pin_b">define ENC1_ROTARY_PIN_B</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-enc2_rotary_pin_a">define ENC2_ROTARY_PIN_A</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-enc2_rotary_pin_b">define ENC2_ROTARY_PIN_B</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-clicks_per_step">define CLICKS_PER_STEP</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-min_pos">define MIN_POS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-max_pos">define MAX_POS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-start_pos">define START_POS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#define-increment">define INCREMENT</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#source-code">Source code</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../Datenbl%C3%A4tter/">Datenblätter</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../Quellen/">Quellen</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">DAB V2.0</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Source Code</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="cusersjackdocumentsgithubrau-dab-radio-v2new-code_ab-16062021dab_2_v01dab_2_v01ino">C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/DAB_2_V0.1.ino</h1>
+<h2 id="functions">Functions</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SoftwareSerial</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-swserial">swSerial</a></strong>(<a href="/Files/_d_a_b__2___v0_81_8ino/#define-rx_pin">RX_PIN</a> , <a href="/Files/_d_a_b__2___v0_81_8ino/#define-tx_pin">TX_PIN</a> )<br>Software serial instance (BM83)</td>
+</tr>
+<tr>
+<td>BM83</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-bm83">bm83</a></strong>(<a href="/Files/_d_a_b__2___v0_81_8ino/#function-swserial">swSerial</a> , <a href="/Files/_d_a_b__2___v0_81_8ino/#define-tx_ind">TX_IND</a> )<br>BM83 instance (BM83)</td>
+</tr>
+<tr>
+<td>PCA9634</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-leddriver">ledDriver</a></strong>(0x15 , 4 )<br>Led driver instance (PCA9634)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-my_disp_flush">my_disp_flush</a></strong>(lv_disp_drv_t * disp, const lv_area_t * area, lv_color_t * color_p)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-setup">setup</a></strong>()</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-loop">loop</a></strong>()</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-read_inputs">read_inputs</a></strong>(void * parameter)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-event_bm83setup">event_bm83setup</a></strong>(lv_obj_t * obj, lv_event_t event)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-event_bm83pair">event_bm83pair</a></strong>(lv_obj_t * obj, lv_event_t event)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-event_soundsetup">event_soundsetup</a></strong>(lv_obj_t * obj, lv_event_t event)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-event_sw1">event_sw1</a></strong>(lv_obj_t * obj, lv_event_t event)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-rotate_r">rotate_r</a></strong>(ESPRotary &amp; r)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-showdirection_r">showDirection_r</a></strong>(ESPRotary &amp; r)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-rotate_u">rotate_u</a></strong>(ESPRotary &amp; u)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-showdirection_u">showDirection_u</a></strong>(ESPRotary &amp; u)</td>
+</tr>
+<tr>
+<td>bool</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-encoder_read">encoder_read</a></strong>(lv_indev_drv_t * drv, lv_indev_data_t * data)</td>
+</tr>
+<tr>
+<td>int</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-enc_get_new_moves">enc_get_new_moves</a></strong>()</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-slider_event_cb_ingain">slider_event_cb_ingain</a></strong>(lv_obj_t * slider, lv_event_t event)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-slider_event_cb_fade1">slider_event_cb_fade1</a></strong>(lv_obj_t * slider, lv_event_t event)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-slider_event_fade2">slider_event_fade2</a></strong>(lv_obj_t * slider, lv_event_t event)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-slider_event_cb_bass">slider_event_cb_bass</a></strong>(lv_obj_t * slider, lv_event_t event)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-slider_event_mid">slider_event_mid</a></strong>(lv_obj_t * slider, lv_event_t event)</td>
+</tr>
+<tr>
+<td>void</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#function-slider_event_treb">slider_event_treb</a></strong>(lv_obj_t * slider, lv_event_t event)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="attributes">Attributes</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>const int</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-mfbpin">mfbPin</a></strong> <br>BM83 MFB Pin, required for BM83 power on.</td>
+</tr>
+<tr>
+<td>ESPRotary</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-r">r</a></strong> <br>Encoder 1 instance.</td>
+</tr>
+<tr>
+<td>ESPRotary</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-u">u</a></strong> <br>Encoder 2 instance.</td>
+</tr>
+<tr>
+<td>BD37544FS</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-bd">bd</a></strong> <br>Sound processor instance (BD37544FS)</td>
+</tr>
+<tr>
+<td>MCP23017</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-mcp1">mcp1</a></strong> <br>MCP1 (Display board)</td>
+</tr>
+<tr>
+<td>MCP23017</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-mcp2">mcp2</a></strong> <br>MCP2 (MCU board)</td>
+</tr>
+<tr>
+<td>TaskHandle_t</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-task1">Task1</a></strong> <br>Task handle.</td>
+</tr>
+<tr>
+<td>TaskHandle_t</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-task2">Task2</a></strong> <br>Task handle.</td>
+</tr>
+<tr>
+<td>lv_group_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-g">g</a></strong></td>
+</tr>
+<tr>
+<td>lv_indev_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-encoder_indev">encoder_indev</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-tabview">tabview</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-tab1">tab1</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-tab2">tab2</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-tab3">tab3</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-tab4">tab4</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-gauge1">gauge1</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-led1">led1</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-btn">btn</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-btn1">btn1</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-btn2">btn2</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-btn3">btn3</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-sw1">sw1</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-sw2">sw2</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-sw3">sw3</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-cont">cont</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-cont2">cont2</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-cont3">cont3</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-bar1">bar1</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-lmeter">lmeter</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-lmeter2">lmeter2</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-label">label</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-spinbox">spinbox</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-slider_label">slider_label</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-slider_label2">slider_label2</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-slider_label3">slider_label3</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-slider_label4">slider_label4</a></strong></td>
+</tr>
+<tr>
+<td>lv_obj_t *</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-slider_label5">slider_label5</a></strong></td>
+</tr>
+<tr>
+<td>uint8_t</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-conf">conf</a></strong></td>
+</tr>
+<tr>
+<td>int</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-i">i</a></strong></td>
+</tr>
+<tr>
+<td>int</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-vol">vol</a></strong></td>
+</tr>
+<tr>
+<td>int</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-encoderlastvalue">encoderLastValue</a></strong></td>
+</tr>
+<tr>
+<td>int</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-k">k</a></strong></td>
+</tr>
+<tr>
+<td>TFT_eSPI</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-tft">tft</a></strong></td>
+</tr>
+<tr>
+<td>lv_disp_buf_t</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-disp_buf">disp_buf</a></strong></td>
+</tr>
+<tr>
+<td>lv_color_t</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-buf_1">buf_1</a></strong></td>
+</tr>
+<tr>
+<td>lv_color_t</td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#variable-buf_2">buf_2</a></strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="defines">Defines</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-buffer_multiplier">BUFFER_MULTIPLIER</a></strong> <br>LVGL buffer.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-rx_pin">RX_PIN</a></strong> <br>BM83 UART RX.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-tx_pin">TX_PIN</a></strong> <br>BM83 UART TX.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-tx_ind">TX_IND</a></strong> <br>BM83 TX IND.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-dac1">DAC1</a></strong> <br>DAC pin for DC_SET_V.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-enc1_rotary_pin_a">ENC1_ROTARY_PIN_A</a></strong> <br>Encoder 1 Pin A.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-enc1_rotary_pin_b">ENC1_ROTARY_PIN_B</a></strong> <br>Encoder 1 Pin B.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-enc2_rotary_pin_a">ENC2_ROTARY_PIN_A</a></strong> <br>Encoder 2 Pin A.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-enc2_rotary_pin_b">ENC2_ROTARY_PIN_B</a></strong> <br>Encoder 2 Pin B.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-clicks_per_step">CLICKS_PER_STEP</a></strong></td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-min_pos">MIN_POS</a></strong> <br>Max volume 0 dB.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-max_pos">MAX_POS</a></strong> <br>Min volume -87 dB.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-start_pos">START_POS</a></strong> <br>Volume start position.</td>
+</tr>
+<tr>
+<td></td>
+<td><strong><a href="/Files/_d_a_b__2___v0_81_8ino/#define-increment">INCREMENT</a></strong> <br>Volume increment.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="functions-documentation">Functions Documentation</h2>
+<h3 id="function-swserial">function swSerial</h3>
+<pre><code class="language-cpp">SoftwareSerial swSerial(
+    RX_PIN ,
+    TX_PIN 
+)
+</code></pre>
+<p>Software serial instance (BM83) </p>
+<h3 id="function-bm83">function bm83</h3>
+<pre><code class="language-cpp">BM83 bm83(
+    swSerial ,
+    TX_IND 
+)
+</code></pre>
+<p>BM83 instance (BM83) </p>
+<h3 id="function-leddriver">function ledDriver</h3>
+<pre><code class="language-cpp">PCA9634 ledDriver(
+    0x15 ,
+    4 
+)
+</code></pre>
+<p>Led driver instance (PCA9634) </p>
+<h3 id="function-my_disp_flush">function my_disp_flush</h3>
+<pre><code class="language-cpp">void my_disp_flush(
+    lv_disp_drv_t * disp,
+    const lv_area_t * area,
+    lv_color_t * color_p
+)
+</code></pre>
+<h3 id="function-setup">function setup</h3>
+<pre><code class="language-cpp">void setup()
+</code></pre>
+<h3 id="function-loop">function loop</h3>
+<pre><code class="language-cpp">void loop()
+</code></pre>
+<p>&lt; Watchdog timer manipulation</p>
+<h3 id="function-read_inputs">function read_inputs</h3>
+<pre><code class="language-cpp">void read_inputs(
+    void * parameter
+)
+</code></pre>
+<h3 id="function-event_bm83setup">function event_bm83setup</h3>
+<pre><code class="language-cpp">static void event_bm83setup(
+    lv_obj_t * obj,
+    lv_event_t event
+)
+</code></pre>
+<h3 id="function-event_bm83pair">function event_bm83pair</h3>
+<pre><code class="language-cpp">static void event_bm83pair(
+    lv_obj_t * obj,
+    lv_event_t event
+)
+</code></pre>
+<h3 id="function-event_soundsetup">function event_soundsetup</h3>
+<pre><code class="language-cpp">static void event_soundsetup(
+    lv_obj_t * obj,
+    lv_event_t event
+)
+</code></pre>
+<h3 id="function-event_sw1">function event_sw1</h3>
+<pre><code class="language-cpp">static void event_sw1(
+    lv_obj_t * obj,
+    lv_event_t event
+)
+</code></pre>
+<h3 id="function-rotate_r">function rotate_r</h3>
+<pre><code class="language-cpp">void rotate_r(
+    ESPRotary &amp; r
+)
+</code></pre>
+<h3 id="function-showdirection_r">function showDirection_r</h3>
+<pre><code class="language-cpp">void showDirection_r(
+    ESPRotary &amp; r
+)
+</code></pre>
+<h3 id="function-rotate_u">function rotate_u</h3>
+<pre><code class="language-cpp">void rotate_u(
+    ESPRotary &amp; u
+)
+</code></pre>
+<h3 id="function-showdirection_u">function showDirection_u</h3>
+<pre><code class="language-cpp">void showDirection_u(
+    ESPRotary &amp; u
+)
+</code></pre>
+<h3 id="function-encoder_read">function encoder_read</h3>
+<pre><code class="language-cpp">bool encoder_read(
+    lv_indev_drv_t * drv,
+    lv_indev_data_t * data
+)
+</code></pre>
+<h3 id="function-enc_get_new_moves">function enc_get_new_moves</h3>
+<pre><code class="language-cpp">int enc_get_new_moves()
+</code></pre>
+<h3 id="function-slider_event_cb_ingain">function slider_event_cb_ingain</h3>
+<pre><code class="language-cpp">static void slider_event_cb_ingain(
+    lv_obj_t * slider,
+    lv_event_t event
+)
+</code></pre>
+<h3 id="function-slider_event_cb_fade1">function slider_event_cb_fade1</h3>
+<pre><code class="language-cpp">static void slider_event_cb_fade1(
+    lv_obj_t * slider,
+    lv_event_t event
+)
+</code></pre>
+<h3 id="function-slider_event_fade2">function slider_event_fade2</h3>
+<pre><code class="language-cpp">static void slider_event_fade2(
+    lv_obj_t * slider,
+    lv_event_t event
+)
+</code></pre>
+<h3 id="function-slider_event_cb_bass">function slider_event_cb_bass</h3>
+<pre><code class="language-cpp">static void slider_event_cb_bass(
+    lv_obj_t * slider,
+    lv_event_t event
+)
+</code></pre>
+<h3 id="function-slider_event_mid">function slider_event_mid</h3>
+<pre><code class="language-cpp">static void slider_event_mid(
+    lv_obj_t * slider,
+    lv_event_t event
+)
+</code></pre>
+<h3 id="function-slider_event_treb">function slider_event_treb</h3>
+<pre><code class="language-cpp">static void slider_event_treb(
+    lv_obj_t * slider,
+    lv_event_t event
+)
+</code></pre>
+<h2 id="attributes-documentation">Attributes Documentation</h2>
+<h3 id="variable-mfbpin">variable mfbPin</h3>
+<pre><code class="language-cpp">const int mfbPin = 23;
+</code></pre>
+<p>BM83 MFB Pin, required for BM83 power on. </p>
+<h3 id="variable-r">variable r</h3>
+<pre><code class="language-cpp">ESPRotary r;
+</code></pre>
+<p>Encoder 1 instance. </p>
+<h3 id="variable-u">variable u</h3>
+<pre><code class="language-cpp">ESPRotary u;
+</code></pre>
+<p>Encoder 2 instance. </p>
+<h3 id="variable-bd">variable bd</h3>
+<pre><code class="language-cpp">BD37544FS bd;
+</code></pre>
+<p>Sound processor instance (BD37544FS) </p>
+<h3 id="variable-mcp1">variable mcp1</h3>
+<pre><code class="language-cpp">MCP23017 mcp1 = MCP23017(0x20);
+</code></pre>
+<p>MCP1 (Display board) </p>
+<h3 id="variable-mcp2">variable mcp2</h3>
+<pre><code class="language-cpp">MCP23017 mcp2 = MCP23017(0x24);
+</code></pre>
+<p>MCP2 (MCU board) </p>
+<h3 id="variable-task1">variable Task1</h3>
+<pre><code class="language-cpp">TaskHandle_t Task1;
+</code></pre>
+<p>Task handle. </p>
+<h3 id="variable-task2">variable Task2</h3>
+<pre><code class="language-cpp">TaskHandle_t Task2;
+</code></pre>
+<p>Task handle. </p>
+<h3 id="variable-g">variable g</h3>
+<pre><code class="language-cpp">static lv_group_t * g;
+</code></pre>
+<h3 id="variable-encoder_indev">variable encoder_indev</h3>
+<pre><code class="language-cpp">static lv_indev_t * encoder_indev;
+</code></pre>
+<h3 id="variable-tabview">variable tabview</h3>
+<pre><code class="language-cpp">lv_obj_t * tabview;
+</code></pre>
+<h3 id="variable-tab1">variable tab1</h3>
+<pre><code class="language-cpp">lv_obj_t * tab1;
+</code></pre>
+<h3 id="variable-tab2">variable tab2</h3>
+<pre><code class="language-cpp">lv_obj_t * tab2;
+</code></pre>
+<h3 id="variable-tab3">variable tab3</h3>
+<pre><code class="language-cpp">lv_obj_t * tab3;
+</code></pre>
+<h3 id="variable-tab4">variable tab4</h3>
+<pre><code class="language-cpp">lv_obj_t * tab4;
+</code></pre>
+<h3 id="variable-gauge1">variable gauge1</h3>
+<pre><code class="language-cpp">lv_obj_t * gauge1;
+</code></pre>
+<h3 id="variable-led1">variable led1</h3>
+<pre><code class="language-cpp">lv_obj_t * led1;
+</code></pre>
+<h3 id="variable-btn">variable btn</h3>
+<pre><code class="language-cpp">lv_obj_t * btn;
+</code></pre>
+<h3 id="variable-btn1">variable btn1</h3>
+<pre><code class="language-cpp">lv_obj_t * btn1;
+</code></pre>
+<h3 id="variable-btn2">variable btn2</h3>
+<pre><code class="language-cpp">lv_obj_t * btn2;
+</code></pre>
+<h3 id="variable-btn3">variable btn3</h3>
+<pre><code class="language-cpp">lv_obj_t * btn3;
+</code></pre>
+<h3 id="variable-sw1">variable sw1</h3>
+<pre><code class="language-cpp">lv_obj_t * sw1;
+</code></pre>
+<h3 id="variable-sw2">variable sw2</h3>
+<pre><code class="language-cpp">lv_obj_t * sw2;
+</code></pre>
+<h3 id="variable-sw3">variable sw3</h3>
+<pre><code class="language-cpp">lv_obj_t * sw3;
+</code></pre>
+<h3 id="variable-cont">variable cont</h3>
+<pre><code class="language-cpp">lv_obj_t * cont;
+</code></pre>
+<h3 id="variable-cont2">variable cont2</h3>
+<pre><code class="language-cpp">lv_obj_t * cont2;
+</code></pre>
+<h3 id="variable-cont3">variable cont3</h3>
+<pre><code class="language-cpp">lv_obj_t * cont3;
+</code></pre>
+<h3 id="variable-bar1">variable bar1</h3>
+<pre><code class="language-cpp">lv_obj_t * bar1;
+</code></pre>
+<h3 id="variable-lmeter">variable lmeter</h3>
+<pre><code class="language-cpp">lv_obj_t * lmeter;
+</code></pre>
+<h3 id="variable-lmeter2">variable lmeter2</h3>
+<pre><code class="language-cpp">lv_obj_t * lmeter2;
+</code></pre>
+<h3 id="variable-label">variable label</h3>
+<pre><code class="language-cpp">lv_obj_t * label;
+</code></pre>
+<h3 id="variable-spinbox">variable spinbox</h3>
+<pre><code class="language-cpp">lv_obj_t * spinbox;
+</code></pre>
+<h3 id="variable-slider_label">variable slider_label</h3>
+<pre><code class="language-cpp">lv_obj_t * slider_label;
+</code></pre>
+<h3 id="variable-slider_label2">variable slider_label2</h3>
+<pre><code class="language-cpp">lv_obj_t * slider_label2;
+</code></pre>
+<h3 id="variable-slider_label3">variable slider_label3</h3>
+<pre><code class="language-cpp">lv_obj_t * slider_label3;
+</code></pre>
+<h3 id="variable-slider_label4">variable slider_label4</h3>
+<pre><code class="language-cpp">lv_obj_t * slider_label4;
+</code></pre>
+<h3 id="variable-slider_label5">variable slider_label5</h3>
+<pre><code class="language-cpp">lv_obj_t * slider_label5;
+</code></pre>
+<h3 id="variable-conf">variable conf</h3>
+<pre><code class="language-cpp">uint8_t conf;
+</code></pre>
+<h3 id="variable-i">variable i</h3>
+<pre><code class="language-cpp">int i;
+</code></pre>
+<h3 id="variable-vol">variable vol</h3>
+<pre><code class="language-cpp">int vol;
+</code></pre>
+<h3 id="variable-encoderlastvalue">variable encoderLastValue</h3>
+<pre><code class="language-cpp">int encoderLastValue = 0;
+</code></pre>
+<h3 id="variable-k">variable k</h3>
+<pre><code class="language-cpp">int k;
+</code></pre>
+<h3 id="variable-tft">variable tft</h3>
+<pre><code class="language-cpp">TFT_eSPI tft = TFT_eSPI();
+</code></pre>
+<h3 id="variable-disp_buf">variable disp_buf</h3>
+<pre><code class="language-cpp">static lv_disp_buf_t disp_buf;
+</code></pre>
+<h3 id="variable-buf_1">variable buf_1</h3>
+<pre><code class="language-cpp">static lv_color_t buf_1;
+</code></pre>
+<h3 id="variable-buf_2">variable buf_2</h3>
+<pre><code class="language-cpp">static lv_color_t buf_2;
+</code></pre>
+<h2 id="macros-documentation">Macros Documentation</h2>
+<h3 id="define-buffer_multiplier">define BUFFER_MULTIPLIER</h3>
+<pre><code class="language-cpp">#define BUFFER_MULTIPLIER 35
+</code></pre>
+<p>LVGL buffer. </p>
+<h3 id="define-rx_pin">define RX_PIN</h3>
+<pre><code class="language-cpp">#define RX_PIN 4
+</code></pre>
+<p>BM83 UART RX. </p>
+<h3 id="define-tx_pin">define TX_PIN</h3>
+<pre><code class="language-cpp">#define TX_PIN 0
+</code></pre>
+<p>BM83 UART TX. </p>
+<h3 id="define-tx_ind">define TX_IND</h3>
+<pre><code class="language-cpp">#define TX_IND 5
+</code></pre>
+<p>BM83 TX IND. </p>
+<h3 id="define-dac1">define DAC1</h3>
+<pre><code class="language-cpp">#define DAC1 26
+</code></pre>
+<p>DAC pin for DC_SET_V. </p>
+<h3 id="define-enc1_rotary_pin_a">define ENC1_ROTARY_PIN_A</h3>
+<pre><code class="language-cpp">#define ENC1_ROTARY_PIN_A 34
+</code></pre>
+<p>Encoder 1 Pin A. </p>
+<h3 id="define-enc1_rotary_pin_b">define ENC1_ROTARY_PIN_B</h3>
+<pre><code class="language-cpp">#define ENC1_ROTARY_PIN_B 35
+</code></pre>
+<p>Encoder 1 Pin B. </p>
+<h3 id="define-enc2_rotary_pin_a">define ENC2_ROTARY_PIN_A</h3>
+<pre><code class="language-cpp">#define ENC2_ROTARY_PIN_A 39
+</code></pre>
+<p>Encoder 2 Pin A. </p>
+<h3 id="define-enc2_rotary_pin_b">define ENC2_ROTARY_PIN_B</h3>
+<pre><code class="language-cpp">#define ENC2_ROTARY_PIN_B 36
+</code></pre>
+<p>Encoder 2 Pin B. </p>
+<h3 id="define-clicks_per_step">define CLICKS_PER_STEP</h3>
+<pre><code class="language-cpp">#define CLICKS_PER_STEP 2
+</code></pre>
+<h3 id="define-min_pos">define MIN_POS</h3>
+<pre><code class="language-cpp">#define MIN_POS 0
+</code></pre>
+<p>Max volume 0 dB. </p>
+<h3 id="define-max_pos">define MAX_POS</h3>
+<pre><code class="language-cpp">#define MAX_POS 87
+</code></pre>
+<p>Min volume -87 dB. </p>
+<h3 id="define-start_pos">define START_POS</h3>
+<pre><code class="language-cpp">#define START_POS 0
+</code></pre>
+<p>Volume start position. </p>
+<h3 id="define-increment">define INCREMENT</h3>
+<pre><code class="language-cpp">#define INCREMENT 1
+</code></pre>
+<p>Volume increment. </p>
+<h2 id="source-code">Source code</h2>
+<pre><code class="language-cpp">
+
+// Libraries
+#include &lt;lvgl.h&gt;                   // Light and versatile Embedded Graphics Library (LVGL)
+#include &lt;TFT_eSPI.h&gt;               // General TFT library (TFT_eSPI)
+#include &quot;touch.h&quot;                  // Communication header for the touch controller - between &quot;FT6206&quot; and LVGL
+#include &lt;Wire.h&gt;                   // Arduino I2C library
+#include &lt;PCA9634.h&gt;                // Led driver library (PCA9634)
+#include &lt;MCP23017.h&gt;               // Port expander library (MPC23017)
+#include &quot;BM83.h&quot;                   // Bluetooth Module library (BM83/BM64)
+#include &lt;SoftwareSerial.h&gt;         // SoftwareSerial Library for ESP32
+#include &lt;BD37544FS.h&gt;              // Sound processor library (BD37544FS)
+#include &quot;ESPRotary.h&quot;              // Encoder Library für ESP32
+#include &quot;soc/timer_group_struct.h&quot; // Watchdog timer
+#include &quot;soc/timer_group_reg.h&quot;    // Watchdog timer
+
+#define BUFFER_MULTIPLIER 35 
+
+#define RX_PIN 4 
+#define TX_PIN 0 
+#define TX_IND 5 
+#define DAC1 26  
+
+#define ENC1_ROTARY_PIN_A 34 
+#define ENC1_ROTARY_PIN_B 35 
+
+#define ENC2_ROTARY_PIN_A 39 
+#define ENC2_ROTARY_PIN_B 36 
+
+#define CLICKS_PER_STEP 2 // Number depends on the encoder
+
+#define MIN_POS 0   
+#define MAX_POS 87  
+#define START_POS 0 
+#define INCREMENT 1 
+
+const int mfbPin = 23; 
+
+ESPRotary r; 
+ESPRotary u; 
+
+BD37544FS bd; 
+
+SoftwareSerial swSerial(RX_PIN, TX_PIN); 
+BM83 bm83(swSerial, TX_IND);             
+
+PCA9634 ledDriver(0x15, 4); 
+
+MCP23017 mcp1 = MCP23017(0x20); 
+MCP23017 mcp2 = MCP23017(0x24); 
+
+TaskHandle_t Task1; 
+TaskHandle_t Task2; 
+
+static lv_group_t *g;             //An object group
+static lv_indev_t *encoder_indev; //Encoder 1 input device
+
+// Global LVGL object variables
+lv_obj_t *tabview;
+lv_obj_t *tab1;
+lv_obj_t *tab2;
+lv_obj_t *tab3;
+lv_obj_t *tab4;
+lv_obj_t *gauge1;
+lv_obj_t *led1;
+lv_obj_t *btn;
+lv_obj_t *btn1;
+lv_obj_t *btn2;
+lv_obj_t *btn3;
+lv_obj_t *sw1;
+lv_obj_t *sw2;
+lv_obj_t *sw3;
+lv_obj_t *cont;
+lv_obj_t *cont2;
+lv_obj_t *cont3;
+lv_obj_t *bar1;
+lv_obj_t *lmeter;
+lv_obj_t *lmeter2;
+lv_obj_t *label;
+lv_obj_t *spinbox;
+lv_obj_t *slider_label;
+lv_obj_t *slider_label2;
+lv_obj_t *slider_label3;
+lv_obj_t *slider_label4;
+lv_obj_t *slider_label5;
+
+// Global variables
+uint8_t conf;
+int i;
+int vol;
+int encoderLastValue = 0;
+int k; // Current enocder position (volume)
+
+TFT_eSPI tft = TFT_eSPI(); /* TFT instance */
+static lv_disp_buf_t disp_buf;
+static lv_color_t buf_1[LV_HOR_RES_MAX * BUFFER_MULTIPLIER];
+static lv_color_t buf_2[LV_HOR_RES_MAX * BUFFER_MULTIPLIER];
+#if USE_LV_LOG != 0
+/* Serial debugging */
+
+void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *dsc)
+{
+
+    Serial.printf(&quot;%s@%d-&gt;%s\r\n&quot;, file, line, dsc);
+    Serial.flush();
+}
+#endif
+
+/* Display flushing */
+void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
+{
+    uint32_t w = (area-&gt;x2 - area-&gt;x1 + 1);
+    uint32_t h = (area-&gt;y2 - area-&gt;y1 + 1);
+
+    tft.startWrite();
+    tft.setAddrWindow(area-&gt;x1, area-&gt;y1, w, h);
+    tft.pushColors(&amp;color_p-&gt;full, w * h, true);
+    tft.endWrite();
+
+    lv_disp_flush_ready(disp);
+}
+
+// The standard Arduino setup function used for setup and configuration
+void setup()  
+{
+
+    // I2C init @ 100 kHz
+    Wire.begin();
+    Wire.setClock(100000);
+
+    // Serial debugging @ 115200 baud
+    Serial.begin(115200);
+
+    // Software serial for BM83/BM64 Uart communication @ 9600 baud
+    swSerial.begin(9600);
+
+    // Input read task creation
+    xTaskCreatePinnedToCore(
+        read_inputs,   /* Task function. */
+        &quot;read_inputs&quot;, /* String with name of task. */
+        10000,         /* Stack size in bytes. */
+        NULL,          /* Parameter passed as input of the task */
+        1,             /* Priority of the task. */
+        &amp;Task1,        /* Task handle. */
+        0);            /* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
+
+    // Encoder read task creation
+    //xTaskCreatePinnedToCore(encoder_loop, &quot;encoder_loop&quot;, 10000, NULL, 2, &amp;Task2, 0);
+
+    // Sets the MFB pin (GPIO23) as output (BM83)
+    pinMode(mfbPin, OUTPUT);
+
+    // Encoder 1+2 init
+
+    // Led driver init
+    ledDriver.begin();
+    // all on (inverted)
+    ledDriver.allOff();
+
+    // Charger IC setup----------------------------------------------------------------
+    Wire.beginTransmission(0x6A);
+    Wire.write(0x14);
+    Wire.write(0xB9);
+    Wire.endTransmission();
+
+    Wire.beginTransmission(0x6A);
+    Wire.write(0x02);
+    Wire.write(0x30);
+    Wire.endTransmission();
+
+    Wire.beginTransmission(0x6A);
+    Wire.write(0x03);
+    Wire.write(0x5A);
+    Wire.endTransmission();
+
+    Wire.beginTransmission(0x6A);
+    Wire.write(0x04);
+    Wire.write(0x40);
+    Wire.endTransmission();
+
+    Wire.beginTransmission(0x6A);
+    Wire.write(0x05);
+    Wire.write(0x66);
+    Wire.endTransmission();
+
+    Wire.beginTransmission(0x6A);
+    Wire.write(0x06);
+    Wire.write(0x5A);
+    Wire.endTransmission();
+
+    Wire.beginTransmission(0x6A);
+    Wire.write(0x07);
+    Wire.write(0x89);
+    Wire.endTransmission();
+
+    Wire.beginTransmission(0x6A);
+    Wire.write(0x09);
+    Wire.write(0x04);
+    Wire.endTransmission();
+    // --------------------------------------------------------------------
+
+    //MCP 1 init
+    mcp1.init();
+    mcp1.portMode(MCP23017Port::A, 0b11111111); // Set all as inputs (MCP1)
+    delay(5);
+
+    //MCP 2 init
+    mcp2.init();
+    mcp2.portMode(MCP23017Port::A, 0); // Set all as outputs (MCP2)
+    delay(5);
+
+    // Standby sequence
+    mcp2.digitalWrite(1, 0); // 7.5V disable
+    delay(10);
+    mcp2.digitalWrite(0, 0); // +-5V disable
+    delay(10);
+    mcp2.digitalWrite(2, 0); // PVCC disable
+    delay(10);
+    mcp2.digitalWrite(3, 0); // Power Amp shutdown activation
+    delay(10);
+    mcp2.digitalWrite(4, 1); // Power Amp mute activation
+
+    // Power up sequence
+    delay(20);
+    mcp2.digitalWrite(1, 1);
+    Serial.println(&quot;7.5V enabled!&quot;); // 7.5V enable
+    delay(10);
+    mcp2.digitalWrite(0, 1);
+    Serial.println(&quot;+-5V enabled!&quot;); // +-5V enable
+    delay(10);
+    dacWrite(DAC1, 255);
+    delay(10);
+    mcp2.digitalWrite(2, 1);
+    Serial.println(&quot;PVCC enabled!&quot;); // PVCC enable
+    delay(10);
+    mcp2.digitalWrite(3, 1);
+    Serial.println(&quot;Power Amp Shutdown deactivated!&quot;); // Power amp shutdown deactivation
+    delay(10);
+    mcp2.digitalWrite(4, 0);
+    Serial.println(&quot;Power Amp Mute deactivated!&quot;); // Power amp mute deactivation
+    delay(10);
+
+    // LVGL init
+    lv_init();
+
+#if USE_LV_LOG != 0
+    /* Serial debugging */
+    void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *dsc)
+    {
+
+        Serial.printf(&quot;%s@%d-&gt;%s\r\n&quot;, file, line, dsc);
+        Serial.flush();
+    }
+#endif
+
+    // TFT init
+    tft.begin();
+    tft.setRotation(3);
+
+    // Touch device init
+    if (!touch.begin(150))
+    {
+        Serial.println(&quot;Couldn't start FT6206 touchscreen controller&quot;);
+        while (1)
+            ;
+    }
+    else
+    {
+        Serial.println(&quot;FT6206 touchscreen controller connected!&quot;);
+    }
+
+    lv_disp_buf_init(&amp;disp_buf, buf_1, buf_2, LV_HOR_RES_MAX * 10);
+
+    // Display init
+    lv_disp_drv_t disp_drv;
+    lv_disp_drv_init(&amp;disp_drv);
+    disp_drv.hor_res = tft.width();
+    disp_drv.ver_res = tft.height();
+    disp_drv.flush_cb = my_disp_flush;
+    disp_drv.buffer = &amp;disp_buf;
+    lv_disp_drv_register(&amp;disp_drv);
+
+    // Display input driver init
+    lv_indev_drv_t indev_drv;
+    lv_indev_drv_init(&amp;indev_drv);
+    indev_drv.type = LV_INDEV_TYPE_POINTER;
+    indev_drv.read_cb = my_touchpad_read;
+    lv_indev_drv_register(&amp;indev_drv);
+
+    lv_indev_drv_t enc_indev;
+    lv_indev_drv_init(&amp;indev_drv);
+    indev_drv.type = LV_INDEV_TYPE_ENCODER;
+    indev_drv.read_cb = encoder_read;
+    encoder_indev = lv_indev_drv_register(&amp;indev_drv);
+
+    static lv_style_t style1;
+    lv_style_init(&amp;style1);
+    lv_style_set_border_color(&amp;style1, LV_STATE_FOCUSED, LV_COLOR_RED);
+
+    //Create Group for encoder 1
+    g = lv_group_create();
+    lv_indev_set_group(encoder_indev, g);
+
+    static lv_color_t needle_colors[3];
+    needle_colors[0] = LV_COLOR_BLUE;
+    needle_colors[1] = LV_COLOR_ORANGE;
+    needle_colors[2] = LV_COLOR_PURPLE;
+
+    tabview = lv_tabview_create(lv_scr_act(), NULL);
+    lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
+    //lv_tabview_set_anim_time(tabview, 100);
+
+    /*Add 4 tabs (the tabs are page (lv_page) and can be scrolled*/
+    tab1 = lv_tabview_add_tab(tabview, &quot;Setups&quot;);
+    tab2 = lv_tabview_add_tab(tabview, &quot;Values&quot;);
+    tab3 = lv_tabview_add_tab(tabview, &quot;Enables&quot;);
+    tab4 = lv_tabview_add_tab(tabview, &quot;Parameters&quot;);
+
+    lmeter = lv_linemeter_create(tab2, NULL);
+    lv_linemeter_set_range(lmeter, 0, 20);   /*Set the range*/
+    lv_linemeter_set_value(lmeter, 0);       /*Set the current value*/
+    lv_linemeter_set_scale(lmeter, 360, 20); /*Set the angle and number of lines*/
+    lv_obj_set_size(lmeter, 100, 100);
+    lv_obj_align(lmeter, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+
+    lmeter2 = lv_linemeter_create(tab2, NULL);
+    lv_linemeter_set_range(lmeter2, 0, 20);   /*Set the range*/
+    lv_linemeter_set_value(lmeter2, 0);       /*Set the current value*/
+    lv_linemeter_set_scale(lmeter2, 360, 20); /*Set the angle and number of lines*/
+    lv_obj_set_size(lmeter2, 100, 100);
+    lv_obj_align(lmeter2, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
+
+    cont = lv_cont_create(tab3, NULL);
+    lv_obj_set_auto_realign(cont, true);                   /*Auto realign when the size changes*/
+    lv_obj_align_origo(cont, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
+    lv_cont_set_fit(cont, LV_FIT_TIGHT);
+    lv_cont_set_layout(cont, LV_LAYOUT_GRID);
+
+    sw1 = lv_switch_create(cont, NULL);
+    lv_obj_align(sw1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+    label = lv_label_create(sw1, NULL);
+    lv_label_set_text(label, &quot;7.5V&quot;);
+    lv_obj_set_event_cb(sw1, event_sw1);
+
+    sw2 = lv_switch_create(cont, NULL);
+    lv_obj_align(sw2, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 0);
+    label = lv_label_create(sw2, NULL);
+    lv_label_set_text(label, &quot;+-5V&quot;);
+    lv_obj_set_event_cb(sw2, event_sw1);
+
+    sw3 = lv_switch_create(cont, NULL);
+    lv_obj_align(sw3, NULL, LV_ALIGN_IN_TOP_LEFT, 80, 0);
+    label = lv_label_create(sw3, NULL);
+    lv_label_set_text(label, &quot;PVCC&quot;);
+    lv_obj_set_event_cb(sw3, event_sw1);
+
+    cont2 = lv_cont_create(tab1, NULL);
+    lv_obj_set_auto_realign(cont2, true);                   /*Auto realign when the size changes*/
+    lv_obj_align_origo(cont2, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
+    lv_cont_set_fit(cont2, LV_FIT_TIGHT);
+    lv_cont_set_layout(cont2, LV_LAYOUT_GRID);
+
+    btn1 = lv_btn_create(cont2, NULL);
+    lv_obj_set_event_cb(btn1, event_bm83setup);
+    lv_obj_align(btn1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+    label = lv_label_create(btn1, NULL);
+    lv_label_set_text(label, &quot;BM83 Setup&quot;);
+    lv_obj_add_style(btn1, LV_BTN_PART_MAIN, &amp;style1);
+
+    btn2 = lv_btn_create(cont2, NULL);
+    lv_obj_set_event_cb(btn2, event_bm83pair);
+    lv_obj_align(btn2, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 0);
+    label = lv_label_create(btn2, NULL);
+    lv_label_set_text(label, &quot;BM83 Pairing&quot;);
+    lv_obj_add_style(btn2, LV_BTN_PART_MAIN, &amp;style1);
+
+    btn3 = lv_btn_create(cont2, NULL);
+    lv_obj_set_event_cb(btn3, event_soundsetup);
+    lv_obj_align(btn3, NULL, LV_ALIGN_IN_TOP_LEFT, 80, 0);
+    label = lv_label_create(btn3, NULL);
+    lv_label_set_text(label, &quot;Sound Proc. Setup&quot;);
+    lv_obj_add_style(btn3, LV_BTN_PART_MAIN, &amp;style1);
+
+    /* Create a slider in the center of the display */
+    lv_obj_t *slider = lv_slider_create(tab4, NULL);
+    lv_obj_set_width(slider, LV_DPI * 1);
+    lv_obj_align(slider, NULL, LV_ALIGN_IN_TOP_LEFT, 5, 25);
+    lv_obj_set_event_cb(slider, slider_event_cb_ingain);
+    lv_slider_set_range(slider, 5, 20);
+
+    /* Create a label below the slider */
+    slider_label = lv_label_create(tab4, NULL);
+    lv_label_set_text(slider_label, &quot;0&quot;);
+    lv_obj_set_auto_realign(slider_label, true);
+    lv_obj_align(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 5, 10);
+
+    /* Create an informative label */
+    lv_obj_t *info = lv_label_create(tab4, NULL);
+    lv_label_set_text(info, &quot;Input Gain (0-20dB)&quot;);
+    lv_obj_align(info, NULL, LV_ALIGN_IN_TOP_LEFT, 10, 5);
+
+    //______________________________________________________________
+
+    lv_obj_t *slider2 = lv_slider_create(tab4, NULL);
+    lv_obj_set_width(slider2, LV_DPI * 1);
+    lv_obj_align(slider2, NULL, LV_ALIGN_IN_TOP_LEFT, 5, 60);
+    lv_obj_set_event_cb(slider2, slider_event_cb_fade1);
+    lv_slider_set_range(slider2, 0, 87);
+
+    /* Create a label below the slider */
+    slider_label2 = lv_label_create(tab4, NULL);
+    lv_label_set_text(slider_label2, &quot;0&quot;);
+    lv_obj_set_auto_realign(slider_label2, true);
+    lv_obj_align(slider_label2, slider2, LV_ALIGN_OUT_BOTTOM_MID, 5, 20);
+
+    /* Create an informative label */
+    lv_obj_t *info2 = lv_label_create(tab4, NULL);
+    lv_label_set_text(info2, &quot;Fader 1 (0-(-87dB))&quot;);
+    lv_obj_align(info2, NULL, LV_ALIGN_IN_TOP_LEFT, 10, 25);
+
+    lv_group_add_obj(g, tabview);
+    lv_group_add_obj(g, sw1);
+    lv_group_add_obj(g, sw2);
+    lv_group_add_obj(g, sw3);
+    lv_group_add_obj(g, btn1);
+    lv_group_add_obj(g, btn2);
+    lv_group_add_obj(g, btn3);
+
+    lv_group_set_wrap(g, true);
+    lv_group_set_editing(g, true);
+
+    r.begin(ENC1_ROTARY_PIN_A, ENC1_ROTARY_PIN_B, CLICKS_PER_STEP);
+    r.setChangedHandler(rotate_r);
+    r.setLeftRotationHandler(showDirection_r);
+    r.setRightRotationHandler(showDirection_r);
+
+    u.begin(ENC2_ROTARY_PIN_A, ENC2_ROTARY_PIN_B, CLICKS_PER_STEP, MIN_POS, MAX_POS, START_POS, INCREMENT);
+    u.setChangedHandler(rotate_u);
+    u.setLeftRotationHandler(showDirection_u);
+    u.setRightRotationHandler(showDirection_u);
+}
+
+void loop() //&lt; Standard arduino setup function
+{
+
+    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE; 
+    TIMERG0.wdt_feed = 1; //&lt;
+    TIMERG0.wdt_wprotect = 0; //&lt;
+
+    conf = mcp1.readRegister(MCP23017Register::GPIO_A); //&lt; MCP1 register read
+
+    r.loop(); //&lt; Encoder 1 menu loop
+    u.loop(); //&lt; Encoder 2 volume loop
+
+    lv_task_handler(); //&lt; LVG task handler loop
+
+    delay(3);
+}
+
+void read_inputs(void *parameter) //&lt; Buttons read function
+
+{
+
+    for (;;)
+    {
+        bm83.run();
+        for (i = 7; i &gt;= 0; i--)
+        {
+
+            if (bitRead(conf, i) == 1)
+            {
+
+                switch (i)
+                {
+                case 7:
+
+                    break;
+                case 6:
+
+                    break;
+                case 5:
+
+                    break;
+                case 4:
+                    lv_tabview_set_tab_act(tabview, 3, LV_ANIM_OFF);
+                    break;
+                case 3:
+                    lv_tabview_set_tab_act(tabview, 2, LV_ANIM_OFF);
+                    break;
+                case 2:
+                    lv_tabview_set_tab_act(tabview, 1, LV_ANIM_OFF);
+                    break;
+                case 1:
+                    lv_tabview_set_tab_act(tabview, 0, LV_ANIM_OFF);
+                    break;
+                case 0:
+                    break;
+                }
+            }
+        }
+    }
+    vTaskDelay(5);
+}
+
+static void event_bm83setup(lv_obj_t *obj, lv_event_t event) //&lt; BM83 setup function
+{
+    if (event == LV_EVENT_CLICKED)
+    {
+        digitalWrite(mfbPin, HIGH); // sets the MFB Pin 23 &quot;High&quot; to power on BM83 over BAT_IN
+        delay(500);
+        bm83.run();
+        bm83.powerOn();            // Sends &quot;power on&quot; command over UART to BM83
+        digitalWrite(mfbPin, LOW); // sets the MFB Pin 23 &quot;LOW&quot; (no longer needed after power on process)
+    }
+}
+
+static void event_bm83pair(lv_obj_t *obj, lv_event_t event)
+{
+    if (event == LV_EVENT_CLICKED)
+    {
+        bm83.mmiAction(BM83_MMI_STANDBY_ENTERING_PAIRING);
+    }
+}
+
+static void event_soundsetup(lv_obj_t *obj, lv_event_t event)
+{
+    if (event == LV_EVENT_CLICKED)
+    {
+        bd.setSelect(1);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
+        bd.setIn_gain(0); // int 0...7 === 0...20 dB
+        bd.setVol_1(0);   // int 0...87 === 0...-87 dB
+        bd.setFad_1(0);   // int 0...87 === 0...-87 dB
+        bd.setFad_2(0);   // int 0...87 === 0...-87 dB
+        bd.setBass(0);    // int -7...0...+7 === -14...+14 dB
+        bd.setMidd(0);    // int -7...0...+7 === -14...+14 dB
+        bd.setTreb(0);    // int -7...0...+7 === -14...+14 dB
+    }
+}
+
+static void event_sw1(lv_obj_t *obj, lv_event_t event)
+{
+    if (event == LV_EVENT_VALUE_CHANGED)
+    {
+        printf(&quot;State: %s\n&quot;, lv_switch_get_state(obj) ? &quot;On&quot; : &quot;Off&quot;);
+        if (lv_switch_get_state(sw1) == 1)
+        {
+            mcp2.digitalWrite(1, 1);
+        }
+        else
+        {
+            mcp2.digitalWrite(1, 0);
+        }
+        if (lv_switch_get_state(sw2) == 1)
+        {
+            mcp2.digitalWrite(0, 1);
+        }
+        else
+        {
+            mcp2.digitalWrite(0, 0);
+        }
+        if (lv_switch_get_state(sw3) == 1)
+        {
+            mcp2.digitalWrite(2, 1);
+        }
+        else
+        {
+            mcp2.digitalWrite(2, 0);
+        }
+    }
+}
+
+// on change
+void rotate_r(ESPRotary &amp;r)
+{
+    //Serial.println(r.getPosition());
+}
+
+// on left or right rotattion
+void showDirection_r(ESPRotary &amp;r)
+{
+    //Serial.println(r.directionToString(r.getDirection()));
+}
+
+// on change
+void rotate_u(ESPRotary &amp;u)
+{
+    Serial.println(u.getPosition());
+    k = u.getPosition();
+    bd.setVol_1(k); // int 0...87 === 0...-87 dB
+    Serial.print(&quot;Vol:&quot;);
+    Serial.println(k);
+    delay(2);
+}
+
+void showDirection_u(ESPRotary &amp;u)
+{
+    //Serial.println(u.directionToString(u.getDirection()));
+}
+
+bool encoder_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
+{
+
+    data-&gt;enc_diff = enc_get_new_moves();
+
+    if (mcp1.digitalRead(5) == 1)
+        data-&gt;state = LV_INDEV_STATE_PR;
+    else
+        data-&gt;state = LV_INDEV_STATE_REL;
+    return false; /*No buffering now so no more data read*/
+}
+
+int enc_get_new_moves()
+{
+    int encoderCount = r.getPosition();
+    int diff = encoderCount - encoderLastValue;
+    encoderLastValue = encoderCount;
+    Serial.print(&quot;Diff:&quot;);
+    Serial.println(diff);
+    return diff;
+}
+
+static void slider_event_cb_ingain(lv_obj_t *slider, lv_event_t event)
+{
+    if (event == LV_EVENT_VALUE_CHANGED)
+    {
+        static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+        snprintf(buf, 4, &quot;%u&quot;, lv_slider_get_value(slider));
+        lv_label_set_text(slider_label, buf);
+        bd.setIn_gain(lv_slider_get_value(slider));
+    }
+}
+
+static void slider_event_cb_fade1(lv_obj_t *slider, lv_event_t event)
+{
+    if (event == LV_EVENT_VALUE_CHANGED)
+    {
+        static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+        snprintf(buf, 4, &quot;%u&quot;, lv_slider_get_value(slider));
+        lv_label_set_text(slider_label, buf);
+        bd.setFad_1(0);
+        (lv_slider_get_value(slider));
+    }
+}
+
+static void slider_event_fade2(lv_obj_t *slider, lv_event_t event)
+{
+    if (event == LV_EVENT_VALUE_CHANGED)
+    {
+        static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+        snprintf(buf, 4, &quot;%u&quot;, lv_slider_get_value(slider));
+        lv_label_set_text(slider_label, buf);
+        bd.setIn_gain(lv_slider_get_value(slider));
+    }
+}
+
+static void slider_event_cb_bass(lv_obj_t *slider, lv_event_t event)
+{
+    if (event == LV_EVENT_VALUE_CHANGED)
+    {
+        static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+        snprintf(buf, 4, &quot;%u&quot;, lv_slider_get_value(slider));
+        lv_label_set_text(slider_label, buf);
+        bd.setIn_gain(lv_slider_get_value(slider));
+    }
+}
+
+static void slider_event_mid(lv_obj_t *slider, lv_event_t event)
+{
+    if (event == LV_EVENT_VALUE_CHANGED)
+    {
+        static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+        snprintf(buf, 4, &quot;%u&quot;, lv_slider_get_value(slider));
+        lv_label_set_text(slider_label, buf);
+        bd.setIn_gain(lv_slider_get_value(slider));
+    }
+}
+
+static void slider_event_treb(lv_obj_t *slider, lv_event_t event)
+{
+    if (event == LV_EVENT_VALUE_CHANGED)
+    {
+        static char buf[4]; /* max 3 bytes for number plus 1 null terminating byte */
+        snprintf(buf, 4, &quot;%u&quot;, lv_slider_get_value(slider));
+        lv_label_set_text(slider_label, buf);
+        bd.setIn_gain(lv_slider_get_value(slider));
+    }
+}
+</code></pre>
+<hr />
+<p>Updated on  1 July 2021 at 16:33:25 W. Europe Summer Time</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../Datenbl%C3%A4tter/" class="btn btn-neutral float-right" title="Datenblätter">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../../Testsoftware/" class="btn btn-neutral" title="Testsoftware"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../../Testsoftware/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../Datenbl%C3%A4tter/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

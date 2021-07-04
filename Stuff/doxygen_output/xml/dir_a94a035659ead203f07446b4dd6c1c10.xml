@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_a94a035659ead203f07446b4dd6c1c10" kind="dir">
+    <compoundname>C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1</compoundname>
+    <innerfile refid="_d_a_b__2___v0_81_8ino">DAB_2_V0.1.ino</innerfile>
+    <innerfile refid="touch_8h">touch.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/"/>
+  </compounddef>
+</doxygen>

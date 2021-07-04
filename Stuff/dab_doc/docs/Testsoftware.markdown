@@ -1,4 +1,45 @@
+---
+layout: default
+title: 3. Testsoftware
+nav_order: 4
+has_children: true
+permalink: /Testsoftware/
+---
 
+# Code
+
+[Testsoftware v 1.0 - Github](https://github.com/mcjohnffs/RAU-DAB-Radio-V2/tree/test)
+
+```c
+/**
+ * @file DAB_2_V0.1.ino
+ *
+ * @mainpage DAB Radio V2.0
+ *
+ * @section description Übersicht
+ * An example sketch demonstrating how to use Doxygen style comments for
+ * generating source code documentation with Doxygen.
+ *
+ * @section circuit Produkt
+ * - 1
+ * - 2
+ *
+ * @section libraries Libraries
+ * - 2
+ *   - 1
+ *
+ * @section notes Notizen
+ * - Comments are Doxygen compatible.
+ *
+ * @section todo TODO
+ * - Don't use Doxygen style formatting inside the body of a function.
+ *
+ * @section author Author
+ * - Created by Egzon Isaku on 16/06/2021.
+ * - Modified by 
+ *
+ * Copyright (c) RAU Regionales Ausbildungszentrum AU.  All rights reserved.
+ */
 
 // Libraries
 #include <lvgl.h>					// Light and versatile Embedded Graphics Library (LVGL)
@@ -14,45 +55,51 @@
 #include "soc/timer_group_struct.h" // Watchdog timer
 #include "soc/timer_group_reg.h"	// Watchdog timer
 
-#define BUFFER_MULTIPLIER 35 //!< LVGL buffer multiplier
+// Defines
+#define BUFFER_MULTIPLIER 35
+#define RX_PIN 4
+#define TX_PIN 0
+#define TX_IND 5
+#define DAC1 26
 
-#define RX_PIN 4 //!< BM83 UART RX
-#define TX_PIN 0 //!< BM83 UART TX
-#define TX_IND 5 //!< BM83 TX IND
-#define DAC1 26	 //!< DAC pin for DC_SET_V
+#define ENC1_ROTARY_PIN_A 34
+#define ENC1_ROTARY_PIN_B 35
 
-#define ENC1_ROTARY_PIN_A 34 //!< Encoder 1 Pin A
-#define ENC1_ROTARY_PIN_B 35 //!< Encoder 1 Pin B
+#define ENC2_ROTARY_PIN_A 39
+#define ENC2_ROTARY_PIN_B 36
 
-#define ENC2_ROTARY_PIN_A 39 //!< Encoder 2 Pin A
-#define ENC2_ROTARY_PIN_B 36 //!< Encoder 2 Pin B
+#define CLICKS_PER_STEP 2 // this number depends on your rotary encoder
 
-#define CLICKS_PER_STEP 2 // Number depends on the encoder
+#define MIN_POS 0
+#define MAX_POS 87
+#define START_POS 0
+#define INCREMENT 1 // this number is the counter increment on each step
 
-#define MIN_POS 0	//!< Max volume 0 dB
-#define MAX_POS 87	//!< Min volume -87 dB
-#define START_POS 0 //!< Volume start position
-#define INCREMENT 1 //!< Volume increment
+const int mfbPin = 23;
 
-const int mfbPin = 23; //!< BM83 MFB Pin, required for BM83 power on
+ESPRotary r;
+ESPRotary u;
 
-ESPRotary r; //!< Encoder 1 instance
-ESPRotary u; //!< Encoder 2 instance
+// Sound processor instance (BD37544FS)
+BD37544FS bd;
 
-BD37544FS bd; //!< Sound processor instance (BD37544FS)
+// Bluetooth module instance (BM83)
+SoftwareSerial swSerial(RX_PIN, TX_PIN);
+BM83 bm83(swSerial, TX_IND);
 
-SoftwareSerial swSerial(RX_PIN, TX_PIN); //!< Software serial instance (BM83)
-BM83 bm83(swSerial, TX_IND);			 //!< BM83 instance (BM83)
+// Led driver instance (PCA9634)
+PCA9634 ledDriver(0x15, 4);
 
-PCA9634 ledDriver(0x15, 4); //!< Led driver instance (PCA9634)
+// MPC 1 + 2 instance (MCP23017)
+MCP23017 mcp1 = MCP23017(0x20);
+MCP23017 mcp2 = MCP23017(0x24);
 
-MCP23017 mcp1 = MCP23017(0x20); //!< MCP1 (Display board)
-MCP23017 mcp2 = MCP23017(0x24); //!< MCP2 (MCU board)
+// LVGL task handles
+TaskHandle_t Task1;
+TaskHandle_t Task2;
 
-TaskHandle_t Task1; //!< Taskhandle for "read_inputs" task
-
-static lv_group_t *g;			  //!< An object group
-static lv_indev_t *encoder_indev; //!< Encoder 1 LVGL input device
+static lv_group_t *g;			  //An object group
+static lv_indev_t *encoder_indev; //Encoder 1 input device
 
 // Global LVGL object variables
 lv_obj_t *tabview;
@@ -86,18 +133,17 @@ lv_obj_t *slider_label5;
 // Global variables
 uint8_t conf;
 int i;
-int vol; //!< Current volume value
+int vol;
 int encoderLastValue = 0;
-int k; //!< Current encoder position (volume)
 
-TFT_eSPI tft = TFT_eSPI(); //!< TFT instance
-
+TFT_eSPI tft = TFT_eSPI(); /* TFT instance */
 static lv_disp_buf_t disp_buf;
-static lv_color_t buf_1[LV_HOR_RES_MAX * BUFFER_MULTIPLIER]; //!< LVGL display buffer
-static lv_color_t buf_2[LV_HOR_RES_MAX * BUFFER_MULTIPLIER]; //!< LVGL display buffer
-
+static lv_color_t buf_1[LV_HOR_RES_MAX * BUFFER_MULTIPLIER];
+static lv_color_t buf_2[LV_HOR_RES_MAX * BUFFER_MULTIPLIER];
 #if USE_LV_LOG != 0
-void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *dsc) //!< LVGL serial debugging
+/* Serial debugging */
+
+void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *dsc)
 {
 
 	Serial.printf("%s@%d->%s\r\n", file, line, dsc);
@@ -105,7 +151,8 @@ void my_print(lv_log_level_t level, const char *file, uint32_t line, const char 
 }
 #endif
 
-void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p) //!< LVGL display flushing
+/* Display flushing */
+void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
 	uint32_t w = (area->x2 - area->x1 + 1);
 	uint32_t h = (area->y2 - area->y1 + 1);
@@ -118,19 +165,19 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 	lv_disp_flush_ready(disp);
 }
 
-
-void setup() //!< The standard Arduino setup function used for setup and configuration
+// The standard Arduino setup function used for setup and configuration
+void setup()
 {
 
-	
-	Wire.begin(); //!< I2C init
-	Wire.setClock(100000); //!< Setting I2C clock to 100 KHz
+	// I2C init @ 100 kHz
+	Wire.begin();
+	Wire.setClock(100000);
 
+	// Serial debugging @ 115200 baud
+	Serial.begin(115200);
 
-	Serial.begin(115200); //!< Serial debugging @ 115200 baud
-
-
-	swSerial.begin(9600); //!< Software serial for BM83/BM64 Uart communication @ 9600 baud
+	// Software serial for BM83/BM64 Uart communication @ 9600 baud
+	swSerial.begin(9600);
 
 	// Input read task creation
 	xTaskCreatePinnedToCore(
@@ -145,11 +192,15 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	// Encoder read task creation
 	//xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 10000, NULL, 2, &Task2, 0);
 
-	pinMode(mfbPin, OUTPUT);  //!< Sets the MFB pin (GPIO23) as output (BM83)
+	// Sets the MFB pin (GPIO23) as output (BM83)
+	pinMode(mfbPin, OUTPUT);
 
-	ledDriver.begin();  //!< Led driver init
+	// Encoder 1+2 init
 
-	ledDriver.allOff(); //!< All  LEDs on (inverted)
+	// Led driver init
+	ledDriver.begin();
+	// all on (inverted)
+	ledDriver.allOff();
 
 	// Charger IC setup----------------------------------------------------------------
 	Wire.beginTransmission(0x6A);
@@ -193,52 +244,66 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	Wire.endTransmission();
 	// --------------------------------------------------------------------
 
-
-	mcp1.init(); //!< MCP1 init
-	mcp1.portMode(MCP23017Port::A, 0b11111111); //!< Set all as inputs (MCP1)
+	//MCP 1 init
+	mcp1.init();
+	mcp1.portMode(MCP23017Port::A, 0b11111111); // Set all as inputs (MCP1)
 	delay(5);
 
-	mcp2.init(); //!< MCP2 init
-	mcp2.portMode(MCP23017Port::A, 0); //!< Set all as outputs (MCP2)
+	//MCP 2 init
+	mcp2.init();
+	mcp2.portMode(MCP23017Port::A, 0); // Set all as outputs (MCP2)
 	delay(5);
 
 	// Standby sequence
-	mcp2.digitalWrite(1, 0); //!< 7.5V disable
+	mcp2.digitalWrite(1, 0); // 7.5V disable
 	delay(10);
-	mcp2.digitalWrite(0, 0); //!< +-5V disable
+	mcp2.digitalWrite(0, 0); // +-5V disable
 	delay(10);
-	mcp2.digitalWrite(2, 0); //!< PVCC disable
+	mcp2.digitalWrite(2, 0); // PVCC disable
 	delay(10);
-	mcp2.digitalWrite(3, 0); //!< Power Amp shutdown activation
+	mcp2.digitalWrite(3, 0); // Power Amp shutdown activation
 	delay(10);
-	mcp2.digitalWrite(4, 1); //!< Power Amp mute activation
+	mcp2.digitalWrite(4, 1); // Power Amp mute activation
 
 	// Power up sequence
 	delay(20);
 	mcp2.digitalWrite(1, 1);
-	Serial.println("7.5V enabled!"); //!< 7.5V enable
+	Serial.println("7.5V enabled!"); // 7.5V enable
 	delay(10);
 	mcp2.digitalWrite(0, 1);
-	Serial.println("+-5V enabled!"); //!< +-5V enable
+	Serial.println("+-5V enabled!"); // +-5V enable
 	delay(10);
-	dacWrite(DAC1, 255);	//!< Sets GPIO26 to ~3.1 V
+	dacWrite(DAC1, 255);
 	delay(10);
 	mcp2.digitalWrite(2, 1);
-	Serial.println("PVCC enabled!"); //!< PVCC enable
+	Serial.println("PVCC enabled!"); // PVCC enable
 	delay(10);
 	mcp2.digitalWrite(3, 1);
-	Serial.println("Power Amp Shutdown deactivated!"); //!< Power amp shutdown deactivation
+	Serial.println("Power Amp Shutdown deactivated!"); // Power amp shutdown deactivation
 	delay(10);
 	mcp2.digitalWrite(4, 0);
-	Serial.println("Power Amp Mute deactivated!"); //!< Power amp mute deactivation
+	Serial.println("Power Amp Mute deactivated!"); // Power amp mute deactivation
 	delay(10);
 
-	lv_init(); //!< LVGL init
+	// LVGL init
+	lv_init();
 
-	tft.begin(); //!< TFT init
-	tft.setRotation(3); //!< TFT rotation (180*)
+#if USE_LV_LOG != 0
+	/* Serial debugging */
+	void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *dsc)
+	{
 
-	if (!touch.begin(150)) //!< Touch controller init
+		Serial.printf("%s@%d->%s\r\n", file, line, dsc);
+		Serial.flush();
+	}
+#endif
+
+	// TFT init
+	tft.begin();
+	tft.setRotation(3);
+
+	// Touch device init
+	if (!touch.begin(150))
 	{
 		Serial.println("Couldn't start FT6206 touchscreen controller");
 		while (1)
@@ -249,7 +314,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 		Serial.println("FT6206 touchscreen controller connected!");
 	}
 
-	lv_disp_buf_init(&disp_buf, buf_1, buf_2, LV_HOR_RES_MAX * 10); //!< LVGL buffer init
+	lv_disp_buf_init(&disp_buf, buf_1, buf_2, LV_HOR_RES_MAX * 10);
 
 	// Display init
 	lv_disp_drv_t disp_drv;
@@ -420,25 +485,24 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	u.setRightRotationHandler(showDirection_u);
 }
 
-void loop() //< Standard arduino setup function
+void loop()
 {
+	// Watchdog timer manip
+	TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+	TIMERG0.wdt_feed = 1;
+	TIMERG0.wdt_wprotect = 0;
 
-	TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE; //!< Watchdog timer manipulation
-	TIMERG0.wdt_feed = 1;						//<
-	TIMERG0.wdt_wprotect = 0;					//<
+	conf = mcp1.readRegister(MCP23017Register::GPIO_A); // MCP1 register read for inputs
+	r.loop();
+	u.loop();
 
-	conf = mcp1.readRegister(MCP23017Register::GPIO_A); //< MCP1 register read
-
-	r.loop(); //< Encoder 1 menu loop
-	u.loop(); //< Encoder 2 volume loop
-
-	lv_task_handler(); //< LVG task handler loop
+	// LVGL task handler
+	lv_task_handler();
 
 	delay(3);
 }
 
-void read_inputs(void *parameter) //< Buttons read function
-
+void read_inputs(void *parameter)
 {
 
 	for (;;)
@@ -463,9 +527,11 @@ void read_inputs(void *parameter) //< Buttons read function
 					break;
 				case 4:
 					lv_tabview_set_tab_act(tabview, 3, LV_ANIM_OFF);
+
 					break;
 				case 3:
 					lv_tabview_set_tab_act(tabview, 2, LV_ANIM_OFF);
+
 					break;
 				case 2:
 					lv_tabview_set_tab_act(tabview, 1, LV_ANIM_OFF);
@@ -482,10 +548,12 @@ void read_inputs(void *parameter) //< Buttons read function
 	vTaskDelay(5);
 }
 
-static void event_bm83setup(lv_obj_t *obj, lv_event_t event) //< BM83 setup function
+static void event_bm83setup(lv_obj_t *obj, lv_event_t event)
 {
 	if (event == LV_EVENT_CLICKED)
 	{
+		printf("Clicked\n");
+
 		digitalWrite(mfbPin, HIGH); // sets the MFB Pin 23 "High" to power on BM83 over BAT_IN
 		delay(500);
 		bm83.run();
@@ -549,7 +617,6 @@ static void event_sw1(lv_obj_t *obj, lv_event_t event)
 	}
 }
 
-// on change
 void rotate_r(ESPRotary &r)
 {
 	//Serial.println(r.getPosition());
@@ -565,7 +632,7 @@ void showDirection_r(ESPRotary &r)
 void rotate_u(ESPRotary &u)
 {
 	Serial.println(u.getPosition());
-	k = u.getPosition();
+	int k = u.getPosition();
 	bd.setVol_1(k); // int 0...87 === 0...-87 dB
 	Serial.print("Vol:");
 	Serial.println(k);
@@ -665,3 +732,4 @@ static void slider_event_treb(lv_obj_t *slider, lv_event_t event)
 		bd.setIn_gain(lv_slider_get_value(slider));
 	}
 }
+```
