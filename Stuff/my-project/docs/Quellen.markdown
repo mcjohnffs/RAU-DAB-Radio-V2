@@ -1,10 +1,3 @@
----
-layout: default
-title: 4. Quellen
-nav_order: 5
-permalink: /Quellen/
----
-
 # Quellen
 
 Hier befinden sich Links und weitere Angaben der verwendeten Quellen für die Entwicklung der ersten Testsoftware.
@@ -15,13 +8,11 @@ Hier befinden sich Links und weitere Angaben der verwendeten Quellen für die En
 
 -[Arduino ESP32 Core](https://github.com/espressif/arduino-esp32)
 
-### GUIslice
+### LVGL
 
--[Guislice](https://github.com/ImpulseAdventure/GUIslice)
+-[LVGL Github](https://github.com/lvgl/lvgl)
 
--[Guislice Builder](https://github.com/ImpulseAdventure/GUIslice/wiki/GUIslice-Builder)
-
--[Guislice Walkthrough](https://github.com/ImpulseAdventure/GUIslice/wiki/Builder-_-Walkthrough)
+-[LVGL Docs (7.11)](https://docs.lvgl.io/7.11/)
 
 ## Hardware
 

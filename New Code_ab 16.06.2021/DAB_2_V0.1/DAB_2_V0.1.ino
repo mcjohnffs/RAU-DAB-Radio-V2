@@ -1,91 +1,58 @@
-/**
- * @file DAB_2_V0.1.ino
- *
- * @mainpage DAB Radio V2.0
- *
- * @section description Übersicht
- * An example sketch demonstrating how to use Doxygen style comments for
- * generating source code documentation with Doxygen.
- *
- * @section circuit Produkt
- * - 1
- * - 2
- *
- * @section libraries Libraries
- * - 2
- *   - 1
- *
- * @section notes Notizen
- * - Comments are Doxygen compatible.
- *
- * @section todo TODO
- * - Don't use Doxygen style formatting inside the body of a function.
- *
- * @section author Author
- * - Created by Egzon Isaku on 16/06/2021.
- * - Modified by 
- *
- * Copyright (c) RAU Regionales Ausbildungszentrum AU.  All rights reserved.
- */
+
 
 // Libraries
-#include <lvgl.h>										// Light and versatile Embedded Graphics Library (LVGL)
-#include <TFT_eSPI.h>								// General TFT library (TFT_eSPI)
-#include "touch.h"									// Communication header for the touch controller - between "FT6206" and LVGL
-#include <Wire.h>										// Arduino I2C library
-#include <PCA9634.h>								// Led driver library (PCA9634)
-#include <MCP23017.h>								// Port expander library (MPC23017)
-#include "BM83.h"										// Bluetooth Module library (BM83/BM64)
-#include <SoftwareSerial.h>					// SoftwareSerial Library for ESP32
-#include <BD37544FS.h>							// Sound processor library (BD37544FS)
-#include "ESPRotary.h"							// Encoder Library für ESP32
+#include <lvgl.h>					// Light and versatile Embedded Graphics Library (LVGL)
+#include <TFT_eSPI.h>				// General TFT library (TFT_eSPI)
+#include "touch.h"					// Communication header for the touch controller - between "FT6206" and LVGL
+#include <Wire.h>					// Arduino I2C library
+#include <PCA9634.h>				// Led driver library (PCA9634)
+#include <MCP23017.h>				// Port expander library (MPC23017)
+#include "BM83.h"					// Bluetooth Module library (BM83/BM64)
+#include <SoftwareSerial.h>			// SoftwareSerial Library for ESP32
+#include <BD37544FS.h>				// Sound processor library (BD37544FS)
+#include "ESPRotary.h"				// Encoder Library für ESP32
 #include "soc/timer_group_struct.h" // Watchdog timer
-#include "soc/timer_group_reg.h"		// Watchdog timer
+#include "soc/timer_group_reg.h"	// Watchdog timer
 
-// Defines
-#define BUFFER_MULTIPLIER 35
-#define RX_PIN 4
-#define TX_PIN 0
-#define TX_IND 5
-#define DAC1 26
+#define BUFFER_MULTIPLIER 35 //!< LVGL buffer
 
-#define ENC1_ROTARY_PIN_A 34
-#define ENC1_ROTARY_PIN_B 35
+#define RX_PIN 4 //!< BM83 UART RX
+#define TX_PIN 0 //!< BM83 UART TX
+#define TX_IND 5 //!< BM83 TX IND
+#define DAC1 26	 //!< DAC pin for DC_SET_V
 
-#define ENC2_ROTARY_PIN_A 39
-#define ENC2_ROTARY_PIN_B 36
+#define ENC1_ROTARY_PIN_A 34 //!< Encoder 1 Pin A
+#define ENC1_ROTARY_PIN_B 35 //!< Encoder 1 Pin B
 
-#define CLICKS_PER_STEP 2 // this number depends on your rotary encoder
+#define ENC2_ROTARY_PIN_A 39 //!< Encoder 2 Pin A
+#define ENC2_ROTARY_PIN_B 36 //!< Encoder 2 Pin B
 
-#define MIN_POS 0
-#define MAX_POS 87
-#define START_POS 0
-#define INCREMENT 1 // this number is the counter increment on each step
+#define CLICKS_PER_STEP 2 // Number depends on the encoder
 
-const int mfbPin = 23;
+#define MIN_POS 0	//!< Max volume 0 dB
+#define MAX_POS 87	//!< Min volume -87 dB
+#define START_POS 0 //!< Volume start position
+#define INCREMENT 1 //!< Volume increment
 
-ESPRotary r;
-ESPRotary u;
+const int mfbPin = 23; //!< BM83 MFB Pin, required for BM83 power on
 
-// Sound processor instance (BD37544FS)
-BD37544FS bd;
+ESPRotary r; //!< Encoder 1 instance
+ESPRotary u; //!< Encoder 2 instance
 
-// Bluetooth module instance (BM83)
-SoftwareSerial swSerial(RX_PIN, TX_PIN);
-BM83 bm83(swSerial, TX_IND);
+BD37544FS bd; //!< Sound processor instance (BD37544FS)
 
-// Led driver instance (PCA9634)
-PCA9634 ledDriver(0x15, 4);
+SoftwareSerial swSerial(RX_PIN, TX_PIN); //!< Software serial instance (BM83)
+BM83 bm83(swSerial, TX_IND);			 //!< BM83 instance (BM83)
 
-// MPC 1 + 2 instance (MCP23017)
-MCP23017 mcp1 = MCP23017(0x20);
-MCP23017 mcp2 = MCP23017(0x24);
+PCA9634 ledDriver(0x15, 4); //!< Led driver instance (PCA9634)
 
-// LVGL task handles
-TaskHandle_t Task1;
-TaskHandle_t Task2;
+MCP23017 mcp1 = MCP23017(0x20); //!< MCP1 (Display board)
+MCP23017 mcp2 = MCP23017(0x24); //!< MCP2 (MCU board)
 
-static lv_group_t *g;							//An object group
+TaskHandle_t Task1; //!< Task handle
+TaskHandle_t Task2; //!< Task handle
+
+static lv_group_t *g;			  //An object group
 static lv_indev_t *encoder_indev; //Encoder 1 input device
 
 // Global LVGL object variables
@@ -122,6 +89,7 @@ uint8_t conf;
 int i;
 int vol;
 int encoderLastValue = 0;
+int k; // Current enocder position (volume)
 
 TFT_eSPI tft = TFT_eSPI(); /* TFT instance */
 static lv_disp_buf_t disp_buf;
@@ -153,7 +121,7 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 }
 
 // The standard Arduino setup function used for setup and configuration
-void setup()
+void setup()  //!< Standard arduino setup function
 {
 
 	// I2C init @ 100 kHz
@@ -168,13 +136,13 @@ void setup()
 
 	// Input read task creation
 	xTaskCreatePinnedToCore(
-			read_inputs,	 /* Task function. */
-			"read_inputs", /* String with name of task. */
-			10000,				 /* Stack size in bytes. */
-			NULL,					 /* Parameter passed as input of the task */
-			1,						 /* Priority of the task. */
-			&Task1,				 /* Task handle. */
-			0);						 /* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
+		read_inputs,   /* Task function. */
+		"read_inputs", /* String with name of task. */
+		10000,		   /* Stack size in bytes. */
+		NULL,		   /* Parameter passed as input of the task */
+		1,			   /* Priority of the task. */
+		&Task1,		   /* Task handle. */
+		0);			   /* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
 
 	// Encoder read task creation
 	//xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 10000, NULL, 2, &Task2, 0);
@@ -276,13 +244,13 @@ void setup()
 	lv_init();
 
 #if USE_LV_LOG != 0
-/* Serial debugging */
-void my_print(lv_log_level_t level, const char * file, uint32_t line, const char * dsc)
-{
+	/* Serial debugging */
+	void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *dsc)
+	{
 
-    Serial.printf("%s@%d->%s\r\n", file, line, dsc);
-    Serial.flush();
-}
+		Serial.printf("%s@%d->%s\r\n", file, line, dsc);
+		Serial.flush();
+	}
 #endif
 
 	// TFT init
@@ -350,20 +318,20 @@ void my_print(lv_log_level_t level, const char * file, uint32_t line, const char
 
 	lmeter = lv_linemeter_create(tab2, NULL);
 	lv_linemeter_set_range(lmeter, 0, 20);	 /*Set the range*/
-	lv_linemeter_set_value(lmeter, 0);			 /*Set the current value*/
+	lv_linemeter_set_value(lmeter, 0);		 /*Set the current value*/
 	lv_linemeter_set_scale(lmeter, 360, 20); /*Set the angle and number of lines*/
 	lv_obj_set_size(lmeter, 100, 100);
 	lv_obj_align(lmeter, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 
 	lmeter2 = lv_linemeter_create(tab2, NULL);
-	lv_linemeter_set_range(lmeter2, 0, 20);		/*Set the range*/
-	lv_linemeter_set_value(lmeter2, 0);				/*Set the current value*/
+	lv_linemeter_set_range(lmeter2, 0, 20);	  /*Set the range*/
+	lv_linemeter_set_value(lmeter2, 0);		  /*Set the current value*/
 	lv_linemeter_set_scale(lmeter2, 360, 20); /*Set the angle and number of lines*/
 	lv_obj_set_size(lmeter2, 100, 100);
 	lv_obj_align(lmeter2, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
 
 	cont = lv_cont_create(tab3, NULL);
-	lv_obj_set_auto_realign(cont, true);									 /*Auto realign when the size changes*/
+	lv_obj_set_auto_realign(cont, true);				   /*Auto realign when the size changes*/
 	lv_obj_align_origo(cont, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
 	lv_cont_set_fit(cont, LV_FIT_TIGHT);
 	lv_cont_set_layout(cont, LV_LAYOUT_GRID);
@@ -387,7 +355,7 @@ void my_print(lv_log_level_t level, const char * file, uint32_t line, const char
 	lv_obj_set_event_cb(sw3, event_sw1);
 
 	cont2 = lv_cont_create(tab1, NULL);
-	lv_obj_set_auto_realign(cont2, true);										/*Auto realign when the size changes*/
+	lv_obj_set_auto_realign(cont2, true);					/*Auto realign when the size changes*/
 	lv_obj_align_origo(cont2, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
 	lv_cont_set_fit(cont2, LV_FIT_TIGHT);
 	lv_cont_set_layout(cont2, LV_LAYOUT_GRID);
@@ -472,24 +440,25 @@ void my_print(lv_log_level_t level, const char * file, uint32_t line, const char
 	u.setRightRotationHandler(showDirection_u);
 }
 
-void loop()
+void loop() //< Standard arduino setup function
 {
-	// Watchdog timer manip
-	TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-	TIMERG0.wdt_feed = 1;
-	TIMERG0.wdt_wprotect = 0;
 
-	conf = mcp1.readRegister(MCP23017Register::GPIO_A); // MCP1 register read for inputs
-	r.loop();
-	u.loop();
+	TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE; //!< Watchdog timer manipulation
+	TIMERG0.wdt_feed = 1; //<
+	TIMERG0.wdt_wprotect = 0; //<
 
-	// LVGL task handler
-	lv_task_handler();
+	conf = mcp1.readRegister(MCP23017Register::GPIO_A); //< MCP1 register read
+
+	r.loop(); //< Encoder 1 menu loop
+	u.loop(); //< Encoder 2 volume loop
+
+	lv_task_handler(); //< LVG task handler loop
 
 	delay(3);
 }
 
-void read_inputs(void *parameter)
+void read_inputs(void *parameter) //< Buttons read function
+
 {
 
 	for (;;)
@@ -514,11 +483,9 @@ void read_inputs(void *parameter)
 					break;
 				case 4:
 					lv_tabview_set_tab_act(tabview, 3, LV_ANIM_OFF);
-
 					break;
 				case 3:
 					lv_tabview_set_tab_act(tabview, 2, LV_ANIM_OFF);
-
 					break;
 				case 2:
 					lv_tabview_set_tab_act(tabview, 1, LV_ANIM_OFF);
@@ -535,16 +502,14 @@ void read_inputs(void *parameter)
 	vTaskDelay(5);
 }
 
-static void event_bm83setup(lv_obj_t *obj, lv_event_t event)
+static void event_bm83setup(lv_obj_t *obj, lv_event_t event) //< BM83 setup function
 {
 	if (event == LV_EVENT_CLICKED)
 	{
-		printf("Clicked\n");
-
 		digitalWrite(mfbPin, HIGH); // sets the MFB Pin 23 "High" to power on BM83 over BAT_IN
 		delay(500);
 		bm83.run();
-		bm83.powerOn();						 // Sends "power on" command over UART to BM83
+		bm83.powerOn();			   // Sends "power on" command over UART to BM83
 		digitalWrite(mfbPin, LOW); // sets the MFB Pin 23 "LOW" (no longer needed after power on process)
 	}
 }
@@ -561,14 +526,14 @@ static void event_soundsetup(lv_obj_t *obj, lv_event_t event)
 {
 	if (event == LV_EVENT_CLICKED)
 	{
-		bd.setSelect(1);	// int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
+		bd.setSelect(1);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
 		bd.setIn_gain(0); // int 0...7 === 0...20 dB
-		bd.setVol_1(0);		// int 0...87 === 0...-87 dB
-		bd.setFad_1(0);		// int 0...87 === 0...-87 dB
-		bd.setFad_2(0);		// int 0...87 === 0...-87 dB
-		bd.setBass(0);		// int -7...0...+7 === -14...+14 dB
-		bd.setMidd(0);		// int -7...0...+7 === -14...+14 dB
-		bd.setTreb(0);		// int -7...0...+7 === -14...+14 dB
+		bd.setVol_1(0);	  // int 0...87 === 0...-87 dB
+		bd.setFad_1(0);	  // int 0...87 === 0...-87 dB
+		bd.setFad_2(0);	  // int 0...87 === 0...-87 dB
+		bd.setBass(0);	  // int -7...0...+7 === -14...+14 dB
+		bd.setMidd(0);	  // int -7...0...+7 === -14...+14 dB
+		bd.setTreb(0);	  // int -7...0...+7 === -14...+14 dB
 	}
 }
 
@@ -604,6 +569,7 @@ static void event_sw1(lv_obj_t *obj, lv_event_t event)
 	}
 }
 
+// on change
 void rotate_r(ESPRotary &r)
 {
 	//Serial.println(r.getPosition());
@@ -619,7 +585,7 @@ void showDirection_r(ESPRotary &r)
 void rotate_u(ESPRotary &u)
 {
 	Serial.println(u.getPosition());
-	int k = u.getPosition();
+	k = u.getPosition();
 	bd.setVol_1(k); // int 0...87 === 0...-87 dB
 	Serial.print("Vol:");
 	Serial.println(k);

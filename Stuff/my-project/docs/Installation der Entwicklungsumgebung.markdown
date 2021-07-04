@@ -1,10 +1,3 @@
----
-layout: default
-title: 2. Installation der Entwicklungsumgebung
-nav_order: 3
-permalink: /Installation der Entwicklungsumgebung/
----
-
 # Installation der Entwicklungsumgebung
 
 Die Software kann entweder in der Arduino IDE oder in Visual Studio Code bearbeitet und kompiliert werden.
@@ -46,17 +39,15 @@ Anschliessend öffnet sich der "Boards Manager". Im Suchfenster "ESP32" suchen u
 ### Voraussetzungen
 
 
-
-
-
 -[Visual Studio Code Software](https://code.visualstudio.com/download)
 
 -Marketplace Link [VSC Arduino Extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.vscode-arduino)
 
 Um die Entwicklung per Arduino Umgebung zu ermöglichen wird eine zusätzliche Extension benötigt. Diese kann direkt in der Software-Umgebung oder per Marketplace Link installiert werden.
 
-Arduino IDE inkl. ESP32 Arduino Core muss als erstes installiert werden um das Kompilieren und Uploaden von Arduino Code mit der Extension in Visual Studio Code zu ermöglichen.
-{: .label .label-red }
+!!! important "Wichtig"
+    Arduino IDE inkl. ESP32 Arduino Core muss als erstes installiert werden um das Kompilieren und Uploaden von Arduino Code mit der Extension in Visual Studio Code zu ermöglichen.
+
  
 
 ### Kompilieren und Flashen in Visual Studio Code

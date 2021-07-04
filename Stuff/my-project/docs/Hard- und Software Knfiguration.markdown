@@ -1,10 +1,3 @@
----
-layout: default
-title: 1. Hard- und Software Konfiguration
-nav_order: 2
-permalink: /Hard- und Software Knfiguration/
----
-
 # Hard- und Software Konfiguration
 
 ## Hardware

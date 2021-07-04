@@ -1,42 +1,21 @@
-# DAB Radio V2.0
+# DAB-Radio v2.0
 
-blablup
+## Übersicht
 
-## Commands
+Das DAB-Radio ist eine portable Lautsprecherbox mit einem integrierten Mikrocontroller. Welches nebst den Standart-IO's auch über Bluetooth Audio und Wifi konnektivtät verfügt. Die dazugehörige Software wird per Arduino Entwicklungsumgebung realisiert. Für die Anzeige des Menüs und die Bedienung, verfügt das Gerät über ein TFT Touch-Display mit einer Auflösung von 320x240 Pixel.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+### Folgende Bedienelemente sind vorhanden:
+- Lautstärke(Encoder 2)
+- Umschaltung Signalquelle (GUI)
+- Mute (Stummschaltung per Encoder-Button)
+- Eingabetasten (Menübedienung)
+- Addressierbare Beleuchtung für Statusanzeigen(RGB).
 
-## Project layout
+Dieses Projekt wurde mihilfe von MEM-Lernenden im Regionalen Ausbildungszentrum in Au realisiert.
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+## Die Software Entwicklung
 
+Als erstes wurde eine Testsoftware entwickelt um alle im Prototyp verwendeten Komponenten vor der ersten Inbetriebnahme ausgiebig testen zu können. 
 
-```c
-#include <TFT_eSPI.h>
-#include "touch.h"
-#include <Wire.h>
-#include <PCA9634.h>
-#include <MCP23017.h>
-#include "BM83.h"           // Bluetooth Module library (BM83/BM64)
-#include <SoftwareSerial.h> // SoftwareSerial Library for ESP32
-#include <BD37544FS.h> // Sound processor library (BD37544FS)
-#include "soc/timer_group_struct.h"
-#include "soc/timer_group_reg.h"
-#include "AiEsp32RotaryEncoder.h" //Encoder Library für ESP32
-```
+Im nächsten Schritt erfolgt eine minimales Menü mit allen Grundfunktionen des Radios.
 
-> [!TIP]
-> 123
-rtd
-
-> [!TIP]
-> Optional information to help a user be more successful
-
-> [!IMPORTANT]
-> Essential information required for user success

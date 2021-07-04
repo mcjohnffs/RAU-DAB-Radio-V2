@@ -1,9 +1,4 @@
----
-layout: default
-title: 5. Datenblätter
-nav_order: 6
-permalink: /Datenblätter/
----
+
 
 # Datenblätter
 
