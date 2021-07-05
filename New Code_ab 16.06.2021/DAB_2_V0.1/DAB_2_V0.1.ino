@@ -378,7 +378,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_label_set_text(label, "Sound Proc. Setup");
 	lv_obj_add_style(btn3, LV_BTN_PART_MAIN, &style1);
 
-	//Input gain slider________________________________________
+	//Input gain slider_____________________________________________
 
 	/* Create a slider in the center of the display */
 	slider_ingain = lv_slider_create(tab4, NULL);
@@ -408,7 +408,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_align(slider_fade_1, NULL, LV_ALIGN_IN_TOP_LEFT, 5, 80);
 	lv_obj_set_event_cb(slider_fade_1, slider_event_cb_fade_1);
 	lv_slider_set_range(slider_fade_1, 0, 87);
-	lv_slider_set_value(slider_ingain, 0, LV_ANIM_OFF);
+	lv_slider_set_value(slider_fade_1, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
 	slider_label_fade_1 = lv_label_create(tab4, NULL);
@@ -445,13 +445,14 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	//______________________________________________________________
 
-	//Bass slider_______________________________________________________
+	//Bass slider___________________________________________________
 
 	slider_bass = lv_slider_create(tab4, NULL);
 	lv_obj_set_width(slider_bass, LV_DPI * 1);
 	lv_obj_align(slider_bass, NULL, LV_ALIGN_IN_TOP_RIGHT, 5, 25);
 	lv_obj_set_event_cb(slider_bass, slider_event_cb_bass);
 	lv_slider_set_range(slider_bass, -7, 7);
+	lv_slider_set_value(slider_bass, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
 	slider_label_bass = lv_label_create(tab4, NULL);
@@ -473,6 +474,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_align(slider_mid, NULL, LV_ALIGN_IN_TOP_RIGHT, 5, 80);
 	lv_obj_set_event_cb(slider_mid, slider_event_cb_mid);
 	lv_slider_set_range(slider_mid, -7, 7);
+	lv_slider_set_value(slider_mid, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
 	slider_label_mid = lv_label_create(tab4, NULL);
@@ -713,9 +715,9 @@ static void slider_event_cb_ingain(lv_obj_t *slider_ingain, lv_event_t event)
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
 		
-		snprintf(buf_ingain, 4, "%u", lv_slider_get_value(slider_ingain));
+		snprintf(buf_ingain, 4, "%d", lv_slider_get_value(slider_ingain));
 		lv_label_set_text(slider_label_ingain, buf_ingain);
-		//bd.setIn_gain(lv_slider_get_value(slider_ingain));
+		bd.setIn_gain(lv_slider_get_value(slider_ingain));
 	}
 }
 
@@ -724,9 +726,9 @@ static void slider_event_cb_fade_1(lv_obj_t *slider_fade_1, lv_event_t event)
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
 		
-		snprintf(buf_fade_1, 4, "%u", lv_slider_get_value(slider_fade_1));
+		snprintf(buf_fade_1, 4, "%d", lv_slider_get_value(slider_fade_1));
 		lv_label_set_text(slider_fade_1, buf_fade_1);
-		//bd.setFad_1(lv_slider_get_value(slider_fade_1));
+		bd.setFad_1(lv_slider_get_value(slider_fade_1));
 	}
 }
 
@@ -734,9 +736,9 @@ static void slider_event_cb_fade_2(lv_obj_t *slider_fade_2, lv_event_t event)
 {
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
-		snprintf(buf_fade_2, 4, "%u", lv_slider_get_value(slider_fade_2));
+		snprintf(buf_fade_2, 4, "%d", lv_slider_get_value(slider_fade_2));
 		lv_label_set_text(slider_fade_2, buf_fade_2);
-		//bd.setFad_2(lv_slider_get_value(slider_fade_2));
+		bd.setFad_2(lv_slider_get_value(slider_fade_2));
 	}
 }
 
@@ -745,9 +747,9 @@ static void slider_event_cb_bass(lv_obj_t *slider_bass, lv_event_t event)
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
 		
-		snprintf(buf_bass, 4, "%u", lv_slider_get_value(slider_bass));
+		snprintf(buf_bass, 4, "%d", lv_slider_get_value(slider_bass));
 		lv_label_set_text(slider_bass, buf_bass);
-		//bd.setBass(lv_slider_get_value(slider_bass));
+		bd.setBass(lv_slider_get_value(slider_bass));
 	}
 }
 
@@ -756,9 +758,9 @@ static void slider_event_cb_mid(lv_obj_t *slider_mid, lv_event_t event)
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
 		
-		snprintf(buf_mid, 4, "%u", lv_slider_get_value(slider_mid));
+		snprintf(buf_mid, 4, "%d", lv_slider_get_value(slider_mid));
 		lv_label_set_text(slider_label_mid, buf_mid);
-		//bd.setMidd(lv_slider_get_value(slider_mid));
+		bd.setMidd(lv_slider_get_value(slider_mid));
 	}
 }
 
@@ -767,8 +769,8 @@ static void slider_event_cb_treb(lv_obj_t *slider_treb, lv_event_t event)
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
 		
-		snprintf(buf_treb, 4, "%u", lv_slider_get_value(slider_treb));
+		snprintf(buf_treb, 4, "%d", lv_slider_get_value(slider_treb));
 		lv_label_set_text(slider_label_treb, buf_treb);
-		//bd.setTreb(lv_slider_get_value(slider_treb));
+		bd.setTreb(lv_slider_get_value(slider_treb));
 	}
 }
