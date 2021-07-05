@@ -93,14 +93,8 @@
     <member refid="touch_8h_1a4d994ee502a411770e933ee5fa302857" kind="variable"><name>tft_needs_on</name></member>
     <member refid="touch_8h_1a037b9bcc871cb4097dde80f2470d2ccc" kind="function"><name>my_touchpad_read</name></member>
   </compound>
-  <compound refid="dir_83c82381e5904c0ebf0184d0730c4082" kind="dir"><name>DAB_2_V0.1</name>
+  <compound refid="dir_1f5357a0bae416d582bf389114232e5f" kind="dir"><name>DAB_2_V0.1</name>
   </compound>
-  <compound refid="dir_f396504afdc959660871b003fa10164d" kind="dir"><name>Documents</name>
-  </compound>
-  <compound refid="dir_7e17ac9cf8fba2cb04bc248c85b0ceb7" kind="dir"><name>GitHub</name>
-  </compound>
-  <compound refid="dir_fa116be20a52f48738fe7d647ed5edf1" kind="dir"><name>New Code_ab 16.06.2021</name>
-  </compound>
-  <compound refid="dir_e923d9219ee2674246020891f0cda962" kind="dir"><name>RAU-DAB-Radio-V2</name>
+  <compound refid="dir_11525a7cfd3aba6af96f56e04121ded6" kind="dir"><name>New Code_ab 16.06.2021</name>
   </compound>
 </doxygenindex>
