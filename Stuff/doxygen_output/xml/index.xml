@@ -46,17 +46,36 @@
     <member refid="_d_a_b__2___v0_81_8ino_1aa54d7feecee1cbc6c3fd160b59f9063c" kind="variable"><name>lmeter2</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1a6baef825d44efa526d0f2897235d28d0" kind="variable"><name>label</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1af81dbeaf1e3aa9598c50f4f5e09e2650" kind="variable"><name>spinbox</name></member>
-    <member refid="_d_a_b__2___v0_81_8ino_1aedb8833423a5956ab8b1797e6b4e2f43" kind="variable"><name>slider_label</name></member>
-    <member refid="_d_a_b__2___v0_81_8ino_1a6d9a7a2f6d9e6426b362a941c4ca0cad" kind="variable"><name>slider_label2</name></member>
-    <member refid="_d_a_b__2___v0_81_8ino_1a4a3b4de6f2fa4d208dbfa6e21e617e7e" kind="variable"><name>slider_label3</name></member>
-    <member refid="_d_a_b__2___v0_81_8ino_1aa7f85050fd156d11388c904616a7bc03" kind="variable"><name>slider_label4</name></member>
-    <member refid="_d_a_b__2___v0_81_8ino_1a6b5e5a1b4bd0729f9aba407614d62966" kind="variable"><name>slider_label5</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1ade4f213a03cbc30599cd97efcfdde443" kind="variable"><name>slider_ingain</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1afb9f70c4cfae4db229a09dbab7d86ce8" kind="variable"><name>slider_fade_1</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a35e3ee8017a7b7c1f986df3983bf087d" kind="variable"><name>slider_fade_2</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1aafe3d4127c8ed2c9c071c8f2da810be9" kind="variable"><name>slider_bass</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a1bd11f7f629e889a8b589dbddac8462f" kind="variable"><name>slider_mid</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1ad16d0c6853211f1885df8af321132ee3" kind="variable"><name>slider_treb</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a3893345178cacc77a4de3de12b6f5f7c" kind="variable"><name>slider_label_ingain</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a34e8ef0f13fd651851b7396313405a5d" kind="variable"><name>slider_label_fade_1</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a4d22725ab17488b4315b80a48a3a906b" kind="variable"><name>slider_label_fade_2</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a658d743de2a01b9bc7bf87c4e61e4411" kind="variable"><name>slider_label_bass</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a3f7053de7970de97e71d1f25008a7ec7" kind="variable"><name>slider_label_mid</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1acbddfc2b11a87f85769cf29fc3610c85" kind="variable"><name>slider_label_treb</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a2e127e50723973454231c78260308351" kind="variable"><name>info_ingain</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1ad6dd9f74c94e965d862d4c5feeb9580d" kind="variable"><name>info_fade_1</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1aac1678ba9b29806057016415287903cc" kind="variable"><name>info_fade_2</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a0f3f641df7b23d643aed7665761215a3" kind="variable"><name>info_bass</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1ab7d7b396c3c7a51f2fe005f5098e5f61" kind="variable"><name>info_mid</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1ac20c604f5ae3b9cca653ae2890a6005c" kind="variable"><name>info_treb</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1a9c739e0452424f390ff2dd5323456f12" kind="variable"><name>conf</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1acb559820d9ca11295b4500f179ef6392" kind="variable"><name>i</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1a0865f919827121ede94c816e460e4857" kind="variable"><name>vol</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1ac2a8c1c98432be3d4cae590bcc95974b" kind="variable"><name>encoderLastValue</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1ab66ed8e0098c0a86b458672a55a9cca9" kind="variable"><name>k</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1ac5d2dc3534f30f704fd7529ad0f89ff1" kind="variable"><name>tft</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1acc529a8778df438347974af68a536e8e" kind="variable"><name>buf_ingain</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a8ebdae9584d32e8fd199997398d3e0a1" kind="variable"><name>buf_fade_1</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1aa3c8ec139d70a7455bc078a2b2dcbfaf" kind="variable"><name>buf_fade_2</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a72a218ec18e6e87d802425bd3bc69fea" kind="variable"><name>buf_bass</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a87278ec74e978fcc7d7a4601d7d3d1a9" kind="variable"><name>buf_mid</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a44c054feec73ef5e16887d43f488c8ac" kind="variable"><name>buf_treb</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1ae5be6b37763bcde9622fb690c271c919" kind="variable"><name>disp_buf</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1a2a8a9d630d7a33d641130156279e95bd" kind="variable"><name>buf_1</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1aa28503f2f6c108e36c55c8560080f17b" kind="variable"><name>buf_2</name></member>
@@ -77,12 +96,12 @@
     <member refid="_d_a_b__2___v0_81_8ino_1a56693a9e16505593740d5269b2ccae5c" kind="function"><name>showDirection_u</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1a6e8505a1106c8f0460155979f5ca08ed" kind="function"><name>encoder_read</name></member>
     <member refid="_d_a_b__2___v0_81_8ino_1aaf1a2cb3c3623fa535af44419174b526" kind="function"><name>enc_get_new_moves</name></member>
-    <member refid="_d_a_b__2___v0_81_8ino_1af76977f3284c2cd7c4bd7d5d52eba23a" kind="function"><name>slider_event_cb_ingain</name></member>
-    <member refid="_d_a_b__2___v0_81_8ino_1a5244b5955dfd4a7a87c6943a6ee0486e" kind="function"><name>slider_event_cb_fade1</name></member>
-    <member refid="_d_a_b__2___v0_81_8ino_1a067175033fc0b4cc5ddf3ef3aabbab1b" kind="function"><name>slider_event_fade2</name></member>
-    <member refid="_d_a_b__2___v0_81_8ino_1a2b5621f54aeb9478865c65e609cf46a2" kind="function"><name>slider_event_cb_bass</name></member>
-    <member refid="_d_a_b__2___v0_81_8ino_1a8bca7f67e4a3e20f44f4b9e49e928e2d" kind="function"><name>slider_event_mid</name></member>
-    <member refid="_d_a_b__2___v0_81_8ino_1a660bc4418202381023fba4679ed784f2" kind="function"><name>slider_event_treb</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a43be72069afd1c71d37d3f7b5076e261" kind="function"><name>slider_event_cb_ingain</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a37ca27e5fe8ba29a44e860fd51b1027d" kind="function"><name>slider_event_cb_fade_1</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1abab296fd289af3c1db84bf583d456dd2" kind="function"><name>slider_event_cb_fade_2</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a7f812c5d0cc91b3e53b006c5646c3dab" kind="function"><name>slider_event_cb_bass</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1ab86d33945fd057c14c5001c4e7758abe" kind="function"><name>slider_event_cb_mid</name></member>
+    <member refid="_d_a_b__2___v0_81_8ino_1a981c60c625425d71f46cf55894890be8" kind="function"><name>slider_event_cb_treb</name></member>
   </compound>
   <compound refid="touch_8h" kind="file"><name>touch.h</name>
     <member refid="touch_8h_1a5614aafa112de7bfb6f27e7b7a2f3e6f" kind="variable"><name>oldTouchX</name></member>
@@ -96,5 +115,7 @@
   <compound refid="dir_1f5357a0bae416d582bf389114232e5f" kind="dir"><name>DAB_2_V0.1</name>
   </compound>
   <compound refid="dir_11525a7cfd3aba6af96f56e04121ded6" kind="dir"><name>New Code_ab 16.06.2021</name>
+  </compound>
+  <compound refid="indexpage" kind="page"><name>index</name>
   </compound>
 </doxygenindex>

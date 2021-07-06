@@ -46,7 +46,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="6" column="5" bodyfile="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="6" bodyend="-1"/>
+        <location file="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="6" column="5" bodyfile="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="6" bodyend="-1"/>
         <referencedby refid="touch_8h_1a037b9bcc871cb4097dde80f2470d2ccc" compoundref="touch_8h" startline="15" endline="75">my_touchpad_read</referencedby>
       </memberdef>
       <memberdef kind="variable" id="touch_8h_1a8774c5f2259c97e7eb22469f9918a9b1" prot="public" static="no" mutable="no">
@@ -61,7 +61,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="7" column="5" bodyfile="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="7" bodyend="-1"/>
+        <location file="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="7" column="5" bodyfile="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="7" bodyend="-1"/>
         <referencedby refid="touch_8h_1a037b9bcc871cb4097dde80f2470d2ccc" compoundref="touch_8h" startline="15" endline="75">my_touchpad_read</referencedby>
       </memberdef>
       <memberdef kind="variable" id="touch_8h_1a5dc9c635ce9651b9c74cea4d5717778a" prot="public" static="yes" mutable="no">
@@ -76,9 +76,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="9" column="24" bodyfile="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="9" bodyend="-1"/>
+        <location file="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="9" column="24" bodyfile="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="9" bodyend="-1"/>
         <referencedby refid="touch_8h_1a037b9bcc871cb4097dde80f2470d2ccc" compoundref="touch_8h" startline="15" endline="75">my_touchpad_read</referencedby>
-        <referencedby refid="_d_a_b__2___v0_81_8ino_1a4fc01d736fe50cf5b977f755b675f11d" compoundref="_d_a_b__2___v0_81_8ino" startline="122" endline="421">setup</referencedby>
+        <referencedby refid="_d_a_b__2___v0_81_8ino_1a4fc01d736fe50cf5b977f755b675f11d" compoundref="_d_a_b__2___v0_81_8ino" startline="171" endline="562">setup</referencedby>
       </memberdef>
       <memberdef kind="variable" id="touch_8h_1a8a8d9a213b269f8b1fc16d3d00236cc5" prot="public" static="no" mutable="no">
         <type>unsigned long</type>
@@ -92,7 +92,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="11" column="15" bodyfile="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="11" bodyend="-1"/>
+        <location file="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="11" column="15" bodyfile="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="11" bodyend="-1"/>
         <referencedby refid="touch_8h_1a037b9bcc871cb4097dde80f2470d2ccc" compoundref="touch_8h" startline="15" endline="75">my_touchpad_read</referencedby>
       </memberdef>
       <memberdef kind="variable" id="touch_8h_1afa6e86090eca9f1b57e06365c327ee64" prot="public" static="no" mutable="no">
@@ -107,7 +107,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="12" column="6" bodyfile="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="12" bodyend="-1"/>
+        <location file="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="12" column="6" bodyfile="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="12" bodyend="-1"/>
         <referencedby refid="touch_8h_1a037b9bcc871cb4097dde80f2470d2ccc" compoundref="touch_8h" startline="15" endline="75">my_touchpad_read</referencedby>
       </memberdef>
       <memberdef kind="variable" id="touch_8h_1a4d994ee502a411770e933ee5fa302857" prot="public" static="no" mutable="no">
@@ -122,7 +122,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="13" column="6" bodyfile="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="13" bodyend="-1"/>
+        <location file="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="13" column="6" bodyfile="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="13" bodyend="-1"/>
         <referencedby refid="touch_8h_1a037b9bcc871cb4097dde80f2470d2ccc" compoundref="touch_8h" startline="15" endline="75">my_touchpad_read</referencedby>
       </memberdef>
       </sectiondef>
@@ -146,14 +146,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="15" column="6" bodyfile="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="15" bodyend="75"/>
+        <location file="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" line="15" column="6" bodyfile="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h" bodystart="15" bodyend="75"/>
         <references refid="touch_8h_1a8a8d9a213b269f8b1fc16d3d00236cc5" compoundref="touch_8h" startline="11">last_user_input</references>
         <references refid="touch_8h_1a5614aafa112de7bfb6f27e7b7a2f3e6f" compoundref="touch_8h" startline="6">oldTouchX</references>
         <references refid="touch_8h_1a8774c5f2259c97e7eb22469f9918a9b1" compoundref="touch_8h" startline="7">oldTouchY</references>
         <references refid="touch_8h_1afa6e86090eca9f1b57e06365c327ee64" compoundref="touch_8h" startline="12">tft_is_off</references>
         <references refid="touch_8h_1a4d994ee502a411770e933ee5fa302857" compoundref="touch_8h" startline="13">tft_needs_on</references>
         <references refid="touch_8h_1a5dc9c635ce9651b9c74cea4d5717778a" compoundref="touch_8h" startline="9">touch</references>
-        <referencedby refid="_d_a_b__2___v0_81_8ino_1a4fc01d736fe50cf5b977f755b675f11d" compoundref="_d_a_b__2___v0_81_8ino" startline="122" endline="421">setup</referencedby>
+        <referencedby refid="_d_a_b__2___v0_81_8ino_1a4fc01d736fe50cf5b977f755b675f11d" compoundref="_d_a_b__2___v0_81_8ino" startline="171" endline="562">setup</referencedby>
       </memberdef>
       </sectiondef>
     <briefdescription>
@@ -237,6 +237,6 @@
 <codeline lineno="74"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
 <codeline lineno="75"><highlight class="normal">}</highlight></codeline>
     </programlisting>
-    <location file="C:/Users/Jack/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h"/>
+    <location file="C:/Users/e_isaku/Documents/GitHub/RAU-DAB-Radio-V2/New Code_ab 16.06.2021/DAB_2_V0.1/touch.h"/>
   </compounddef>
 </doxygen>

@@ -1,18 +1,46 @@
-
+/**
+ * @file DAB_2_V0.1.ino
+ *
+ * @mainpage DAB V2.0
+ *
+ * @section description Übersicht
+ * 
+ * 
+ *
+ * @section circuit Schema?
+ * - 
+ * -
+ *
+ * @section libraries Libraries
+ * - 
+ *   - 
+ *
+ * @section notes Notes
+ * - 
+ *
+ * @section todo TODO
+ * - 
+ *
+ * @section author Author
+ * - 
+ * 
+ *
+ * Copyright (c) 2021, E.Isaku,  All rights reserved.
+ */
 
 // Libraries
-#include <lvgl.h>					// Light and versatile Embedded Graphics Library (LVGL)
-#include <TFT_eSPI.h>				// General TFT library (TFT_eSPI)
-#include "touch.h"					// Communication header for the touch controller - between "FT6206" and LVGL
-#include <Wire.h>					// Arduino I2C library
-#include <PCA9634.h>				// Led driver library (PCA9634)
-#include <MCP23017.h>				// Port expander library (MPC23017)
-#include "BM83.h"					// Bluetooth Module library (BM83/BM64)
-#include <SoftwareSerial.h>			// SoftwareSerial Library for ESP32
-#include <BD37544FS.h>				// Sound processor library (BD37544FS)
-#include "ESPRotary.h"				// Encoder Library für ESP32
-#include "soc/timer_group_struct.h" // Watchdog timer
-#include "soc/timer_group_reg.h"	// Watchdog timer
+#include <lvgl.h>					//!< Light and versatile Embedded Graphics Library (LVGL)
+#include <TFT_eSPI.h>				//!< General TFT library (TFT_eSPI)
+#include "touch.h"					//!< Communication header for the touch controller - between "FT6206" and LVGL
+#include <Wire.h>					//!< Arduino I2C library
+#include <PCA9634.h>				//!< Led driver library (PCA9634)
+#include <MCP23017.h>				//!< Port expander library (MPC23017)
+#include "BM83.h"					//!< Bluetooth Module library (BM83/BM64)
+#include <SoftwareSerial.h>			//!< SoftwareSerial Library for ESP32
+#include <BD37544FS.h>				//!< Sound processor library (BD37544FS)
+#include "ESPRotary.h"				//!< Encoder Library für ESP32
+#include "soc/timer_group_struct.h" //!< Watchdog timer struct
+#include "soc/timer_group_reg.h"	//!< Watchdog timer reg
 
 #define BUFFER_MULTIPLIER 35 //!< LVGL buffer multiplier
 
@@ -36,23 +64,17 @@
 
 const int mfbPin = 23; //!< BM83 MFB Pin, required for BM83 power on
 
-ESPRotary r; //!< Encoder 1 instance
-ESPRotary u; //!< Encoder 2 instance
-
-BD37544FS bd; //!< Sound processor instance (BD37544FS)
-
-SoftwareSerial swSerial(RX_PIN, TX_PIN); //!< Software serial instance (BM83)
-BM83 bm83(swSerial, TX_IND);			 //!< BM83 instance (BM83)
-
-PCA9634 ledDriver(0x15, 4); //!< Led driver instance (PCA9634)
-
-MCP23017 mcp1 = MCP23017(0x20); //!< MCP1 (Display board)
-MCP23017 mcp2 = MCP23017(0x24); //!< MCP2 (MCU board)
-
-TaskHandle_t Task1; //!< Taskhandle for "read_inputs" task
-
 static lv_group_t *g;			  //!< An object group
 static lv_indev_t *encoder_indev; //!< Encoder 1 LVGL input device
+
+// Global variables
+uint8_t conf;
+int i;
+int vol; //!< Current volume value
+int encoderLastValue = 0;
+int k; //!< Current encoder position (volume)
+
+TaskHandle_t Task1; //!< Taskhandle for "read_inputs" task
 
 // Global LVGL object variables
 lv_obj_t *tabview;
@@ -98,25 +120,24 @@ lv_obj_t *info_bass;
 lv_obj_t *info_mid;
 lv_obj_t *info_treb;
 
-// Global variables
-uint8_t conf;
-int i;
-int vol; //!< Current volume value
-int encoderLastValue = 0;
-int k; //!< Current encoder position (volume)
-
-TFT_eSPI tft = TFT_eSPI(); //!< TFT instance
-
-static char buf_ingain[4]; /* max 3 bytes for number plus 1 null terminating byte */
-static char buf_fade_1[4]; /* max 3 bytes for number plus 1 null terminating byte */
-static char buf_fade_2[4]; /* max 3 bytes for number plus 1 null terminating byte */
-static char buf_bass[4]; /* max 3 bytes for number plus 1 null terminating byte */
-static char buf_mid[4]; /* max 3 bytes for number plus 1 null terminating byte */
-static char buf_treb[4]; /* max 3 bytes for number plus 1 null terminating byte */
-
 static lv_disp_buf_t disp_buf;
 static lv_color_t buf_1[LV_HOR_RES_MAX * BUFFER_MULTIPLIER]; //!< LVGL display buffer
 static lv_color_t buf_2[LV_HOR_RES_MAX * BUFFER_MULTIPLIER]; //!< LVGL display buffer
+
+ESPRotary r; //!< Encoder 1 instance
+ESPRotary u; //!< Encoder 2 instance
+
+BD37544FS bd; //!< Sound processor instance (BD37544FS)
+
+SoftwareSerial swSerial(RX_PIN, TX_PIN); //!< Software serial instance (BM83)
+BM83 bm83(swSerial, TX_IND);			 //!< BM83 instance (BM83)
+
+PCA9634 ledDriver(0x15, 4); //!< Led driver instance (PCA9634)
+
+MCP23017 mcp1 = MCP23017(0x20); //!< MCP1 instance (Display board)
+MCP23017 mcp2 = MCP23017(0x24); //!< MCP2 instance (MCU board)
+
+TFT_eSPI tft = TFT_eSPI(); //!< TFT instance
 
 #if USE_LV_LOG != 0
 void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *dsc) //!< LVGL serial debugging
@@ -151,14 +172,14 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	swSerial.begin(9600); //!< Software serial for BM83/BM64 Uart communication @ 9600 baud
 
 	// Input read task creation
-	//xTaskCreatePinnedToCore(
-	//	read_inputs,   /* Task function. */
-	//	"read_inputs", /* String with name of task. */
-	//	10000,		   /* Stack size in bytes. */
-	//	NULL,		   /* Parameter passed as input of the task */
-	//	1,			   /* Priority of the task. */
-	//	&Task1,		   /* Task handle. */
-	//	0);			   /* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
+	xTaskCreatePinnedToCore(
+		read_inputs,   /* Task function. */
+		"read_inputs", /* String with name of task. */
+		5000,		   /* Stack size in bytes. */
+		NULL,		   /* Parameter passed as input of the task */
+		1,			   /* Priority of the task. */
+		&Task1,		   /* Task handle. */
+		0);			   /* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
 
 	// Encoder read task creation
 	//xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 10000, NULL, 2, &Task2, 0);
@@ -308,10 +329,10 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//lv_tabview_set_anim_time(tabview, 100);
 
 	/*Add 4 tabs (the tabs are page (lv_page) and can be scrolled*/
-	tab1 = lv_tabview_add_tab(tabview, "Setups");
-	tab2 = lv_tabview_add_tab(tabview, "Values");
-	tab3 = lv_tabview_add_tab(tabview, "Enables");
-	tab4 = lv_tabview_add_tab(tabview, "Parameters");
+	tab1 = lv_tabview_add_tab(tabview, "Setup/Enable");
+	tab2 = lv_tabview_add_tab(tabview, "IC Values");
+	tab3 = lv_tabview_add_tab(tabview, "Misc");
+	tab4 = lv_tabview_add_tab(tabview, "Equalizer");
 
 	lmeter = lv_linemeter_create(tab2, NULL);
 	lv_linemeter_set_range(lmeter, 0, 20);	 /*Set the range*/
@@ -333,57 +354,59 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_cont_set_fit(cont, LV_FIT_TIGHT);
 	lv_cont_set_layout(cont, LV_LAYOUT_GRID);
 
-	sw1 = lv_switch_create(cont, NULL);
-	lv_obj_align(sw1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
-	label = lv_label_create(sw1, NULL);
-	lv_label_set_text(label, "7.5V");
-	lv_obj_set_event_cb(sw1, event_sw1);
-
-	sw2 = lv_switch_create(cont, NULL);
-	lv_obj_align(sw2, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 0);
-	label = lv_label_create(sw2, NULL);
-	lv_label_set_text(label, "+-5V");
-	lv_obj_set_event_cb(sw2, event_sw1);
-
-	sw3 = lv_switch_create(cont, NULL);
-	lv_obj_align(sw3, NULL, LV_ALIGN_IN_TOP_LEFT, 80, 0);
-	label = lv_label_create(sw3, NULL);
-	lv_label_set_text(label, "PVCC");
-	lv_obj_set_event_cb(sw3, event_sw1);
+	
 
 	cont2 = lv_cont_create(tab1, NULL);
 	lv_obj_set_auto_realign(cont2, true);					/*Auto realign when the size changes*/
 	lv_obj_align_origo(cont2, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
 	lv_cont_set_fit(cont2, LV_FIT_TIGHT);
-	lv_cont_set_layout(cont2, LV_LAYOUT_GRID);
+	lv_cont_set_layout(cont2, LV_LAYOUT_COLUMN_MID);
 
 	btn1 = lv_btn_create(cont2, NULL);
 	lv_obj_set_event_cb(btn1, event_bm83setup);
-	lv_obj_align(btn1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+	//lv_obj_align(btn1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 	label = lv_label_create(btn1, NULL);
 	lv_label_set_text(label, "BM83 Setup");
 	lv_obj_add_style(btn1, LV_BTN_PART_MAIN, &style1);
 
 	btn2 = lv_btn_create(cont2, NULL);
 	lv_obj_set_event_cb(btn2, event_bm83pair);
-	lv_obj_align(btn2, NULL, LV_ALIGN_IN_TOP_LEFT, 40, 0);
+	//lv_obj_align(btn2, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 40);
 	label = lv_label_create(btn2, NULL);
 	lv_label_set_text(label, "BM83 Pairing");
 	lv_obj_add_style(btn2, LV_BTN_PART_MAIN, &style1);
 
 	btn3 = lv_btn_create(cont2, NULL);
 	lv_obj_set_event_cb(btn3, event_soundsetup);
-	lv_obj_align(btn3, NULL, LV_ALIGN_IN_TOP_LEFT, 80, 0);
+	//lv_obj_align(btn3, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 80);
 	label = lv_label_create(btn3, NULL);
 	lv_label_set_text(label, "Sound Proc. Setup");
 	lv_obj_add_style(btn3, LV_BTN_PART_MAIN, &style1);
+
+	sw1 = lv_switch_create(cont2, NULL);
+	//lv_obj_align(sw1, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
+	label = lv_label_create(sw1, NULL);
+	lv_label_set_text(label, "7.5V");
+	lv_obj_set_event_cb(sw1, event_sw1);
+
+	sw2 = lv_switch_create(cont2, NULL);
+	//lv_obj_align(sw2, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 40);
+	label = lv_label_create(sw2, NULL);
+	lv_label_set_text(label, "+-5V");
+	lv_obj_set_event_cb(sw2, event_sw1);
+
+	sw3 = lv_switch_create(cont2, NULL);
+	//lv_obj_align(sw3, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 80);
+	label = lv_label_create(sw3, NULL);
+	lv_label_set_text(label, "PVCC");
+	lv_obj_set_event_cb(sw3, event_sw1);
 
 	//Input gain slider_____________________________________________
 
 	/* Create a slider in the center of the display */
 	slider_ingain = lv_slider_create(tab4, NULL);
 	lv_obj_set_width(slider_ingain, LV_DPI * 1);
-	lv_obj_align(slider_ingain, NULL, LV_ALIGN_IN_TOP_LEFT, 5, 25);
+	lv_obj_align(slider_ingain, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 25);
 	lv_obj_set_event_cb(slider_ingain, slider_event_cb_ingain);
 	lv_slider_set_range(slider_ingain, 0, 20);
 	lv_slider_set_value(slider_ingain, 0, LV_ANIM_OFF);
@@ -392,12 +415,12 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	slider_label_ingain = lv_label_create(tab4, NULL);
 	lv_label_set_text(slider_label_ingain, "0");
 	lv_obj_set_auto_realign(slider_label_ingain, true);
-	lv_obj_align(slider_label_ingain, slider_ingain, LV_ALIGN_OUT_BOTTOM_MID, 5, 10);
+	lv_obj_align(slider_label_ingain, slider_ingain, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
 
 	/* Create an informative label */
 	info_ingain = lv_label_create(tab4, NULL);
 	lv_label_set_text(info_ingain, "Input Gain (0-20dB)");
-	lv_obj_align(info_ingain, slider_ingain, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+	lv_obj_align(info_ingain, slider_ingain, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
 
 	//______________________________________________________________
 
@@ -405,21 +428,21 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	slider_fade_1 = lv_slider_create(tab4, NULL);
 	lv_obj_set_width(slider_fade_1, LV_DPI * 1);
-	lv_obj_align(slider_fade_1, NULL, LV_ALIGN_IN_TOP_LEFT, 5, 80);
+	lv_obj_align(slider_fade_1, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 80);
 	lv_obj_set_event_cb(slider_fade_1, slider_event_cb_fade_1);
 	lv_slider_set_range(slider_fade_1, 0, 87);
-	lv_slider_set_value(slider_fade_1, 0, LV_ANIM_OFF);
+	lv_slider_set_value(slider_fade_1, 87, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
 	slider_label_fade_1 = lv_label_create(tab4, NULL);
-	lv_label_set_text(slider_label_fade_1, "0");
+	lv_label_set_text(slider_label_fade_1, "87");
 	lv_obj_set_auto_realign(slider_label_fade_1, true);
-	lv_obj_align(slider_label_fade_1, slider_fade_1, LV_ALIGN_OUT_BOTTOM_MID, 5, 10);
+	lv_obj_align(slider_label_fade_1, slider_fade_1, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
 
 	/* Create an informative label */
 	info_fade_1 = lv_label_create(tab4, NULL);
-	lv_label_set_text(info_fade_1, "Fader 1 (-87)-(0dB)");
-	lv_obj_align(info_fade_1, slider_fade_1, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+	lv_label_set_text(info_fade_1, "Fader 1 (0)-(-87dB)");
+	lv_obj_align(info_fade_1, slider_fade_1, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
 
 	//______________________________________________________________
 
@@ -427,21 +450,21 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	slider_fade_2 = lv_slider_create(tab4, NULL);
 	lv_obj_set_width(slider_fade_2, LV_DPI * 1);
-	lv_obj_align(slider_fade_2, NULL, LV_ALIGN_IN_TOP_LEFT, 5, 135);
+	lv_obj_align(slider_fade_2, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 135);
 	lv_obj_set_event_cb(slider_fade_2, slider_event_cb_fade_2);
 	lv_slider_set_range(slider_fade_2, 0, 87);
-	lv_slider_set_value(slider_fade_2, 0, LV_ANIM_OFF);
+	lv_slider_set_value(slider_fade_2, 87, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
 	slider_label_fade_2 = lv_label_create(tab4, NULL);
-	lv_label_set_text(slider_label_fade_2, "0");
+	lv_label_set_text(slider_label_fade_2, "87");
 	lv_obj_set_auto_realign(slider_label_fade_2, true);
-	lv_obj_align(slider_label_fade_2, slider_fade_2, LV_ALIGN_OUT_BOTTOM_MID, 5, 10);
+	lv_obj_align(slider_label_fade_2, slider_fade_2, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
 
 	/* Create an informative label */
 	info_fade_2 = lv_label_create(tab4, NULL);
-	lv_label_set_text(info_fade_2, "Fader 2 (-87)-(0dB)");
-	lv_obj_align(info_fade_2, slider_fade_2, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+	lv_label_set_text(info_fade_2, "Fader 2 (0)-(-87dB)");
+	lv_obj_align(info_fade_2, slider_fade_2, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
 
 	//______________________________________________________________
 
@@ -449,7 +472,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	slider_bass = lv_slider_create(tab4, NULL);
 	lv_obj_set_width(slider_bass, LV_DPI * 1);
-	lv_obj_align(slider_bass, NULL, LV_ALIGN_IN_TOP_RIGHT, 5, 25);
+	lv_obj_align(slider_bass, NULL, LV_ALIGN_IN_TOP_RIGHT, -15, 25);
 	lv_obj_set_event_cb(slider_bass, slider_event_cb_bass);
 	lv_slider_set_range(slider_bass, -7, 7);
 	lv_slider_set_value(slider_bass, 0, LV_ANIM_OFF);
@@ -458,12 +481,12 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	slider_label_bass = lv_label_create(tab4, NULL);
 	lv_label_set_text(slider_label_bass, "0");
 	lv_obj_set_auto_realign(slider_label_bass, true);
-	lv_obj_align(slider_label_bass, slider_bass, LV_ALIGN_OUT_BOTTOM_MID, 5, 10);
+	lv_obj_align(slider_label_bass, slider_bass, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
 
 	/* Create an informative label */
 	info_bass = lv_label_create(tab4, NULL);
 	lv_label_set_text(info_bass, "Bass (-14)-(+14dB)");
-	lv_obj_align(info_bass, slider_bass, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+	lv_obj_align(info_bass, slider_bass, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
 
 	//______________________________________________________________
 
@@ -471,7 +494,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	slider_mid = lv_slider_create(tab4, NULL);
 	lv_obj_set_width(slider_mid, LV_DPI * 1);
-	lv_obj_align(slider_mid, NULL, LV_ALIGN_IN_TOP_RIGHT, 5, 80);
+	lv_obj_align(slider_mid, NULL, LV_ALIGN_IN_TOP_RIGHT, -20, 80);
 	lv_obj_set_event_cb(slider_mid, slider_event_cb_mid);
 	lv_slider_set_range(slider_mid, -7, 7);
 	lv_slider_set_value(slider_mid, 0, LV_ANIM_OFF);
@@ -480,12 +503,12 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	slider_label_mid = lv_label_create(tab4, NULL);
 	lv_label_set_text(slider_label_mid, "0");
 	lv_obj_set_auto_realign(slider_label_mid, true);
-	lv_obj_align(slider_label_mid, slider_mid, LV_ALIGN_OUT_BOTTOM_MID, 5, 10);
+	lv_obj_align(slider_label_mid, slider_mid, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
 
 	/* Create an informative label */
 	info_mid = lv_label_create(tab4, NULL);
 	lv_label_set_text(info_mid, "Midd (-14)-(+14dB)");
-	lv_obj_align(info_mid, slider_mid, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+	lv_obj_align(info_mid, slider_mid, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
 
 	//______________________________________________________________
 
@@ -493,7 +516,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	slider_treb = lv_slider_create(tab4, NULL);
 	lv_obj_set_width(slider_treb, LV_DPI * 1);
-	lv_obj_align(slider_treb, NULL, LV_ALIGN_IN_TOP_RIGHT, 5, 135);
+	lv_obj_align(slider_treb, NULL, LV_ALIGN_IN_TOP_RIGHT, -20, 135);
 	lv_obj_set_event_cb(slider_treb, slider_event_cb_treb);
 	lv_slider_set_range(slider_treb, -7, 7);
 	lv_slider_set_value(slider_treb, 0, LV_ANIM_OFF);
@@ -502,12 +525,12 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	slider_label_treb = lv_label_create(tab4, NULL);
 	lv_label_set_text(slider_label_treb, "0");
 	lv_obj_set_auto_realign(slider_label_treb, true);
-	lv_obj_align(slider_label_treb, slider_treb, LV_ALIGN_OUT_BOTTOM_MID, 5, 10);
+	lv_obj_align(slider_label_treb, slider_treb, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
 
 	/* Create an informative label */
 	info_treb = lv_label_create(tab4, NULL);
 	lv_label_set_text(info_treb, "Treb (-14)-(+14dB)");
-	lv_obj_align(info_treb, slider_treb, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+	lv_obj_align(info_treb, slider_treb, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
 
 	//______________________________________________________________
 
@@ -620,9 +643,9 @@ static void event_soundsetup(lv_obj_t *obj, lv_event_t event)
 	{
 		bd.setSelect(1);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
 		bd.setIn_gain(0); // int 0...7 === 0...20 dB
-		bd.setVol_1(0);	  // int 0...87 === 0...-87 dB
-		bd.setFad_1(0);	  // int 0...87 === 0...-87 dB
-		bd.setFad_2(0);	  // int 0...87 === 0...-87 dB
+		bd.setVol_1(87);  // int 0...87 === 0...-87 dB
+		bd.setFad_1(87);  // int 0...87 === 0...-87 dB
+		bd.setFad_2(87);  // int 0...87 === 0...-87 dB
 		bd.setBass(0);	  // int -7...0...+7 === -14...+14 dB
 		bd.setMidd(0);	  // int -7...0...+7 === -14...+14 dB
 		bd.setTreb(0);	  // int -7...0...+7 === -14...+14 dB
@@ -714,7 +737,7 @@ static void slider_event_cb_ingain(lv_obj_t *slider_ingain, lv_event_t event)
 {
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
-		
+		static char buf_ingain[4]; /* max 3 bytes for number plus 1 null terminating byte */
 		snprintf(buf_ingain, 4, "%d", lv_slider_get_value(slider_ingain));
 		lv_label_set_text(slider_label_ingain, buf_ingain);
 		bd.setIn_gain(lv_slider_get_value(slider_ingain));
@@ -725,9 +748,9 @@ static void slider_event_cb_fade_1(lv_obj_t *slider_fade_1, lv_event_t event)
 {
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
-		
+		static char buf_fade_1[4]; /* max 3 bytes for number plus 1 null terminating byte */
 		snprintf(buf_fade_1, 4, "%d", lv_slider_get_value(slider_fade_1));
-		lv_label_set_text(slider_fade_1, buf_fade_1);
+		lv_label_set_text(slider_label_fade_1, buf_fade_1);
 		bd.setFad_1(lv_slider_get_value(slider_fade_1));
 	}
 }
@@ -736,8 +759,9 @@ static void slider_event_cb_fade_2(lv_obj_t *slider_fade_2, lv_event_t event)
 {
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
+		static char buf_fade_2[4]; /* max 3 bytes for number plus 1 null terminating byte */
 		snprintf(buf_fade_2, 4, "%d", lv_slider_get_value(slider_fade_2));
-		lv_label_set_text(slider_fade_2, buf_fade_2);
+		lv_label_set_text(slider_label_fade_2, buf_fade_2);
 		bd.setFad_2(lv_slider_get_value(slider_fade_2));
 	}
 }
@@ -746,9 +770,9 @@ static void slider_event_cb_bass(lv_obj_t *slider_bass, lv_event_t event)
 {
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
-		
+		static char buf_bass[4]; /* max 3 bytes for number plus 1 null terminating byte */
 		snprintf(buf_bass, 4, "%d", lv_slider_get_value(slider_bass));
-		lv_label_set_text(slider_bass, buf_bass);
+		lv_label_set_text(slider_label_bass, buf_bass);
 		bd.setBass(lv_slider_get_value(slider_bass));
 	}
 }
@@ -757,7 +781,7 @@ static void slider_event_cb_mid(lv_obj_t *slider_mid, lv_event_t event)
 {
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
-		
+		static char buf_mid[4]; /* max 3 bytes for number plus 1 null terminating byte */
 		snprintf(buf_mid, 4, "%d", lv_slider_get_value(slider_mid));
 		lv_label_set_text(slider_label_mid, buf_mid);
 		bd.setMidd(lv_slider_get_value(slider_mid));
@@ -768,7 +792,7 @@ static void slider_event_cb_treb(lv_obj_t *slider_treb, lv_event_t event)
 {
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
-		
+		static char buf_treb[4]; /* max 3 bytes for number plus 1 null terminating byte */
 		snprintf(buf_treb, 4, "%d", lv_slider_get_value(slider_treb));
 		lv_label_set_text(slider_label_treb, buf_treb);
 		bd.setTreb(lv_slider_get_value(slider_treb));

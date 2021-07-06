@@ -24,10 +24,18 @@
 */
 var NAVTREE =
 [
-  [ "DAB V2", "index.html", [
+  [ "DAB V2.0", "index.html", [
+    [ "Doxygen Example Project", "index.html", [
+      [ "Description", "index.html#description", null ],
+      [ "Circuit", "index.html#circuit", null ],
+      [ "Libraries", "index.html#libraries", null ],
+      [ "Notes", "index.html#notes", null ],
+      [ "TODO", "index.html#todo", null ],
+      [ "Author", "index.html#author", null ]
+    ] ],
     [ "Files", "files.html", [
       [ "File List", "files.html", "files_dup" ],
-      [ "Globals", "globals.html", [
+      [ "File Members", "globals.html", [
         [ "All", "globals.html", null ],
         [ "Functions", "globals_func.html", null ],
         [ "Variables", "globals_vars.html", null ],
