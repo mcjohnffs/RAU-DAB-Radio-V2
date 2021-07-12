@@ -67,6 +67,8 @@ const int mfbPin = 23; //!< BM83 MFB Pin, required for BM83 power on
 static lv_group_t *g;			  //!< An object group
 static lv_indev_t *encoder_indev; //!< Encoder 1 LVGL input device
 
+LV_IMG_DECLARE(raulogo);
+
 // Global variables
 uint8_t conf;
 int i;
@@ -77,6 +79,9 @@ int k; //!< Current encoder position (volume)
 TaskHandle_t Task1; //!< Taskhandle for "read_inputs" task
 
 // Global LVGL object variables
+lv_obj_t *main_screen;
+lv_obj_t *splash_screen;
+lv_obj_t *logo1;
 lv_obj_t *tabview;
 lv_obj_t *tab1;
 lv_obj_t *tab2;
@@ -315,16 +320,21 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_style_init(&style1);
 	lv_style_set_border_color(&style1, LV_STATE_FOCUSED, LV_COLOR_RED);
 
+
+
+
+
+   
+	main_screen = lv_obj_create(NULL, NULL);
+
+
+
+
 	//Create Group for encoder 1
 	g = lv_group_create();
 	lv_indev_set_group(encoder_indev, g);
 
-	static lv_color_t needle_colors[3];
-	needle_colors[0] = LV_COLOR_BLUE;
-	needle_colors[1] = LV_COLOR_ORANGE;
-	needle_colors[2] = LV_COLOR_PURPLE;
-
-	tabview = lv_tabview_create(lv_scr_act(), NULL);
+	tabview = lv_tabview_create(main_screen, NULL);
 	lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
 	//lv_tabview_set_anim_time(tabview, 100);
 
@@ -545,6 +555,16 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_group_set_wrap(g, true);
 	lv_group_set_editing(g, true);
 
+	splash_screen = lv_obj_create(NULL, NULL);
+    logo1 = lv_img_create(splash_screen, NULL);
+    lv_img_set_src(logo1, &raulogo);
+    lv_obj_align(logo1, splash_screen, LV_ALIGN_CENTER, 2, -3);
+    lv_obj_set_drag(logo1, false);
+	delay(5);
+	lv_scr_load(splash_screen);
+	delay(3000);
+    lv_scr_load(main_screen);
+
 	r.begin(ENC1_ROTARY_PIN_A, ENC1_ROTARY_PIN_B, CLICKS_PER_STEP);
 	r.setChangedHandler(rotate_r);
 	r.setLeftRotationHandler(showDirection_r);
@@ -554,6 +574,8 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	u.setChangedHandler(rotate_u);
 	u.setLeftRotationHandler(showDirection_u);
 	u.setRightRotationHandler(showDirection_u);
+
+
 }
 
 void loop() //< Standard arduino setup function
@@ -569,7 +591,7 @@ void loop() //< Standard arduino setup function
 
 	lv_task_handler(); //< LVG task handler loop
 
-	delay(3);
+	delay(2);
 }
 
 void read_inputs(void *parameter) //< Buttons read function
@@ -597,7 +619,11 @@ void read_inputs(void *parameter) //< Buttons read function
 
 					break;
 				case 4:
-					lv_tabview_set_tab_act(tabview, 3, LV_ANIM_OFF);
+					//lv_scr_load(splash_screen);
+					
+					//delay(5000);
+					//lv_scr_load(main_screen);
+					//lv_tabview_set_tab_act(tabview, 3, LV_ANIM_OFF);
 					break;
 				case 3:
 					lv_tabview_set_tab_act(tabview, 2, LV_ANIM_OFF);
@@ -728,8 +754,8 @@ int enc_get_new_moves()
 	int encoderCount = r.getPosition();
 	int diff = encoderCount - encoderLastValue;
 	encoderLastValue = encoderCount;
-	Serial.print("Diff:");
-	Serial.println(diff);
+	//Serial.print("Diff:");
+	//Serial.println(diff);
 	return diff;
 }
 
