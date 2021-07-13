@@ -75,12 +75,20 @@ int i;
 int vol; //!< Current volume value
 int encoderLastValue = 0;
 int k; //!< Current encoder position (volume)
+int menu_status = 0;
 
 TaskHandle_t Task1; //!< Taskhandle for "read_inputs" task
+TaskHandle_t Task2;
 
 // Global LVGL object variables
 lv_obj_t *main_screen;
+lv_obj_t *menu_screen;
 lv_obj_t *splash_screen;
+
+lv_obj_t *menu_page;
+
+lv_obj_t *menu_container;
+
 lv_obj_t *logo1;
 lv_obj_t *tabview;
 lv_obj_t *tab1;
@@ -96,6 +104,7 @@ lv_obj_t *btn3;
 lv_obj_t *sw1;
 lv_obj_t *sw2;
 lv_obj_t *sw3;
+lv_obj_t *main_container;
 lv_obj_t *cont;
 lv_obj_t *cont2;
 lv_obj_t *cont3;
@@ -148,7 +157,7 @@ TFT_eSPI tft = TFT_eSPI(); //!< TFT instance
 void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *dsc) //!< LVGL serial debugging
 {
 
-	Serial.printf("%s@%d->%s\r\n", file, line, dsc);
+	Serial.println("%s@%d->%s\r\n", file, line, dsc);
 	Serial.flush();
 }
 #endif
@@ -187,13 +196,13 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 		0);			   /* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
 
 	// Encoder read task creation
-	//xTaskCreatePinnedToCore(encoder_loop, "encoder_loop", 10000, NULL, 2, &Task2, 0);
+	//xTaskCreatePinnedToCore(splash, "splash", 10000, NULL, 3, &Task2, 0);
 
 	pinMode(mfbPin, OUTPUT); //!< Sets the MFB pin (GPIO23) as output (BM83)
 
 	ledDriver.begin(); //!< Led driver init
 
-	ledDriver.allOff(); //!< All  LEDs on (inverted)
+	ledDriver.allOn(); //!< All  LEDs off (inverted)
 
 	// Charger IC setup----------------------------------------------------------------
 	Wire.beginTransmission(0x6A);
@@ -318,94 +327,68 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	static lv_style_t style1;
 	lv_style_init(&style1);
-	lv_style_set_border_color(&style1, LV_STATE_FOCUSED, LV_COLOR_RED);
+	lv_style_set_border_color(&style1, LV_STATE_FOCUSED, LV_COLOR_GREEN);
 
-
-
-
-
-   
 	main_screen = lv_obj_create(NULL, NULL);
-
-
-
+	menu_screen = lv_obj_create(NULL, NULL);
 
 	//Create Group for encoder 1
 	g = lv_group_create();
 	lv_indev_set_group(encoder_indev, g);
 
-	tabview = lv_tabview_create(main_screen, NULL);
-	lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
+	//tabview = lv_tabview_create(main_screen, NULL);
+	//lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
 	//lv_tabview_set_anim_time(tabview, 100);
 
 	/*Add 4 tabs (the tabs are page (lv_page) and can be scrolled*/
-	tab1 = lv_tabview_add_tab(tabview, "Setup/Enable");
-	tab2 = lv_tabview_add_tab(tabview, "IC Values");
-	tab3 = lv_tabview_add_tab(tabview, "Misc");
-	tab4 = lv_tabview_add_tab(tabview, "Equalizer");
+	//tab1 = lv_tabview_add_tab(tabview, "Setup/Enable");
+	//tab2 = lv_tabview_add_tab(tabview, "IC Values");
+	//tab3 = lv_tabview_add_tab(tabview, "Misc");
+	//tab4 = lv_tabview_add_tab(tabview, "Equalizer");
 
-	lmeter = lv_linemeter_create(tab2, NULL);
-	lv_linemeter_set_range(lmeter, 0, 20);	 /*Set the range*/
-	lv_linemeter_set_value(lmeter, 0);		 /*Set the current value*/
-	lv_linemeter_set_scale(lmeter, 360, 20); /*Set the angle and number of lines*/
-	lv_obj_set_size(lmeter, 100, 100);
-	lv_obj_align(lmeter, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+	menu_page = lv_page_create(menu_screen, NULL);
+	lv_obj_set_size(menu_page, LV_HOR_RES, LV_VER_RES);
+	menu_container = lv_page_get_scrl(menu_page);
 
-	lmeter2 = lv_linemeter_create(tab2, NULL);
-	lv_linemeter_set_range(lmeter2, 0, 20);	  /*Set the range*/
-	lv_linemeter_set_value(lmeter2, 0);		  /*Set the current value*/
-	lv_linemeter_set_scale(lmeter2, 360, 20); /*Set the angle and number of lines*/
-	lv_obj_set_size(lmeter2, 100, 100);
-	lv_obj_align(lmeter2, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
+	lv_obj_set_auto_realign(menu_container, true);					 /*Auto realign when the size changes*/
+	lv_obj_align_origo(menu_container, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
+	lv_cont_set_fit(menu_container, LV_FIT_MAX);
+	lv_cont_set_layout(menu_container, LV_LAYOUT_COLUMN_MID);
 
-	cont = lv_cont_create(tab3, NULL);
-	lv_obj_set_auto_realign(cont, true);				   /*Auto realign when the size changes*/
-	lv_obj_align_origo(cont, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
-	lv_cont_set_fit(cont, LV_FIT_TIGHT);
-	lv_cont_set_layout(cont, LV_LAYOUT_GRID);
-
-	
-
-	cont2 = lv_cont_create(tab1, NULL);
-	lv_obj_set_auto_realign(cont2, true);					/*Auto realign when the size changes*/
-	lv_obj_align_origo(cont2, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
-	lv_cont_set_fit(cont2, LV_FIT_TIGHT);
-	lv_cont_set_layout(cont2, LV_LAYOUT_COLUMN_MID);
-
-	btn1 = lv_btn_create(cont2, NULL);
+	btn1 = lv_btn_create(menu_page, NULL);
 	lv_obj_set_event_cb(btn1, event_bm83setup);
 	//lv_obj_align(btn1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 	label = lv_label_create(btn1, NULL);
 	lv_label_set_text(label, "BM83 Setup");
 	lv_obj_add_style(btn1, LV_BTN_PART_MAIN, &style1);
 
-	btn2 = lv_btn_create(cont2, NULL);
+	btn2 = lv_btn_create(menu_page, NULL);
 	lv_obj_set_event_cb(btn2, event_bm83pair);
 	//lv_obj_align(btn2, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 40);
 	label = lv_label_create(btn2, NULL);
 	lv_label_set_text(label, "BM83 Pairing");
 	lv_obj_add_style(btn2, LV_BTN_PART_MAIN, &style1);
 
-	btn3 = lv_btn_create(cont2, NULL);
+	btn3 = lv_btn_create(menu_page, NULL);
 	lv_obj_set_event_cb(btn3, event_soundsetup);
 	//lv_obj_align(btn3, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 80);
 	label = lv_label_create(btn3, NULL);
 	lv_label_set_text(label, "Sound Proc. Setup");
 	lv_obj_add_style(btn3, LV_BTN_PART_MAIN, &style1);
 
-	sw1 = lv_switch_create(cont2, NULL);
+	sw1 = lv_switch_create(menu_page, NULL);
 	//lv_obj_align(sw1, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
 	label = lv_label_create(sw1, NULL);
 	lv_label_set_text(label, "7.5V");
 	lv_obj_set_event_cb(sw1, event_sw1);
 
-	sw2 = lv_switch_create(cont2, NULL);
+	sw2 = lv_switch_create(menu_page, NULL);
 	//lv_obj_align(sw2, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 40);
 	label = lv_label_create(sw2, NULL);
 	lv_label_set_text(label, "+-5V");
 	lv_obj_set_event_cb(sw2, event_sw1);
 
-	sw3 = lv_switch_create(cont2, NULL);
+	sw3 = lv_switch_create(menu_page, NULL);
 	//lv_obj_align(sw3, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 80);
 	label = lv_label_create(sw3, NULL);
 	lv_label_set_text(label, "PVCC");
@@ -413,138 +396,137 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	//Input gain slider_____________________________________________
 
+	/* Create an informative label */
+	info_ingain = lv_label_create(menu_page, NULL);
+	lv_label_set_text(info_ingain, "Input Gain (0-20dB)");
+	lv_obj_align(info_ingain, slider_ingain, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+
 	/* Create a slider in the center of the display */
-	slider_ingain = lv_slider_create(tab4, NULL);
+	slider_ingain = lv_slider_create(menu_page, NULL);
 	lv_obj_set_width(slider_ingain, LV_DPI * 1);
-	lv_obj_align(slider_ingain, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 25);
+	//lv_obj_align(slider_ingain, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 25);
 	lv_obj_set_event_cb(slider_ingain, slider_event_cb_ingain);
 	lv_slider_set_range(slider_ingain, 0, 20);
 	lv_slider_set_value(slider_ingain, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_ingain = lv_label_create(tab4, NULL);
+	slider_label_ingain = lv_label_create(menu_page, NULL);
 	lv_label_set_text(slider_label_ingain, "0");
 	lv_obj_set_auto_realign(slider_label_ingain, true);
 	lv_obj_align(slider_label_ingain, slider_ingain, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
-
-	/* Create an informative label */
-	info_ingain = lv_label_create(tab4, NULL);
-	lv_label_set_text(info_ingain, "Input Gain (0-20dB)");
-	lv_obj_align(info_ingain, slider_ingain, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
 
 	//______________________________________________________________
 
 	//Fader 1 slider________________________________________________
 
-	slider_fade_1 = lv_slider_create(tab4, NULL);
+	/* Create an informative label */
+	info_fade_1 = lv_label_create(menu_page, NULL);
+	lv_label_set_text(info_fade_1, "Fader 1 (0)-(-87dB)");
+	lv_obj_align(info_fade_1, slider_fade_1, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+
+	slider_fade_1 = lv_slider_create(menu_page, NULL);
 	lv_obj_set_width(slider_fade_1, LV_DPI * 1);
-	lv_obj_align(slider_fade_1, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 80);
+	//lv_obj_align(slider_fade_1, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 80);
 	lv_obj_set_event_cb(slider_fade_1, slider_event_cb_fade_1);
 	lv_slider_set_range(slider_fade_1, 0, 87);
 	lv_slider_set_value(slider_fade_1, 87, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_fade_1 = lv_label_create(tab4, NULL);
+	slider_label_fade_1 = lv_label_create(menu_page, NULL);
 	lv_label_set_text(slider_label_fade_1, "87");
 	lv_obj_set_auto_realign(slider_label_fade_1, true);
 	lv_obj_align(slider_label_fade_1, slider_fade_1, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
-
-	/* Create an informative label */
-	info_fade_1 = lv_label_create(tab4, NULL);
-	lv_label_set_text(info_fade_1, "Fader 1 (0)-(-87dB)");
-	lv_obj_align(info_fade_1, slider_fade_1, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
 
 	//______________________________________________________________
 
 	//Fader 2 slider________________________________________________
 
-	slider_fade_2 = lv_slider_create(tab4, NULL);
+	/* Create an informative label */
+	info_fade_2 = lv_label_create(menu_page, NULL);
+	lv_label_set_text(info_fade_2, "Fader 2 (0)-(-87dB)");
+	lv_obj_align(info_fade_2, slider_fade_2, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+
+	slider_fade_2 = lv_slider_create(menu_page, NULL);
 	lv_obj_set_width(slider_fade_2, LV_DPI * 1);
-	lv_obj_align(slider_fade_2, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 135);
+	//lv_obj_align(slider_fade_2, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 135);
 	lv_obj_set_event_cb(slider_fade_2, slider_event_cb_fade_2);
 	lv_slider_set_range(slider_fade_2, 0, 87);
 	lv_slider_set_value(slider_fade_2, 87, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_fade_2 = lv_label_create(tab4, NULL);
+	slider_label_fade_2 = lv_label_create(menu_page, NULL);
 	lv_label_set_text(slider_label_fade_2, "87");
 	lv_obj_set_auto_realign(slider_label_fade_2, true);
 	lv_obj_align(slider_label_fade_2, slider_fade_2, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
-
-	/* Create an informative label */
-	info_fade_2 = lv_label_create(tab4, NULL);
-	lv_label_set_text(info_fade_2, "Fader 2 (0)-(-87dB)");
-	lv_obj_align(info_fade_2, slider_fade_2, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
 
 	//______________________________________________________________
 
 	//Bass slider___________________________________________________
 
-	slider_bass = lv_slider_create(tab4, NULL);
+	/* Create an informative label */
+	info_bass = lv_label_create(menu_page, NULL);
+	lv_label_set_text(info_bass, "Bass (-14)-(+14dB)");
+	lv_obj_align(info_bass, slider_bass, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+
+	slider_bass = lv_slider_create(menu_page, NULL);
 	lv_obj_set_width(slider_bass, LV_DPI * 1);
-	lv_obj_align(slider_bass, NULL, LV_ALIGN_IN_TOP_RIGHT, -15, 25);
+	//lv_obj_align(slider_bass, NULL, LV_ALIGN_IN_TOP_RIGHT, -15, 25);
 	lv_obj_set_event_cb(slider_bass, slider_event_cb_bass);
 	lv_slider_set_range(slider_bass, -7, 7);
 	lv_slider_set_value(slider_bass, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_bass = lv_label_create(tab4, NULL);
+	slider_label_bass = lv_label_create(menu_page, NULL);
 	lv_label_set_text(slider_label_bass, "0");
 	lv_obj_set_auto_realign(slider_label_bass, true);
 	lv_obj_align(slider_label_bass, slider_bass, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
-
-	/* Create an informative label */
-	info_bass = lv_label_create(tab4, NULL);
-	lv_label_set_text(info_bass, "Bass (-14)-(+14dB)");
-	lv_obj_align(info_bass, slider_bass, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
 
 	//______________________________________________________________
 
 	//Middle slider_________________________________________________
 
-	slider_mid = lv_slider_create(tab4, NULL);
+	/* Create an informative label */
+	info_mid = lv_label_create(menu_page, NULL);
+	lv_label_set_text(info_mid, "Midd (-14)-(+14dB)");
+	lv_obj_align(info_mid, slider_mid, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+
+	slider_mid = lv_slider_create(menu_page, NULL);
 	lv_obj_set_width(slider_mid, LV_DPI * 1);
-	lv_obj_align(slider_mid, NULL, LV_ALIGN_IN_TOP_RIGHT, -20, 80);
+	//lv_obj_align(slider_mid, NULL, LV_ALIGN_IN_TOP_RIGHT, -20, 80);
 	lv_obj_set_event_cb(slider_mid, slider_event_cb_mid);
 	lv_slider_set_range(slider_mid, -7, 7);
 	lv_slider_set_value(slider_mid, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_mid = lv_label_create(tab4, NULL);
+	slider_label_mid = lv_label_create(menu_page, NULL);
 	lv_label_set_text(slider_label_mid, "0");
 	lv_obj_set_auto_realign(slider_label_mid, true);
 	lv_obj_align(slider_label_mid, slider_mid, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
-
-	/* Create an informative label */
-	info_mid = lv_label_create(tab4, NULL);
-	lv_label_set_text(info_mid, "Midd (-14)-(+14dB)");
-	lv_obj_align(info_mid, slider_mid, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
 
 	//______________________________________________________________
 
 	//Treble slider_________________________________________________
 
-	slider_treb = lv_slider_create(tab4, NULL);
+	/* Create an informative label */
+	info_treb = lv_label_create(menu_page, NULL);
+	lv_label_set_text(info_treb, "Treb (-14)-(+14dB)");
+	lv_obj_align(info_treb, slider_treb, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
+
+	slider_treb = lv_slider_create(menu_page, NULL);
 	lv_obj_set_width(slider_treb, LV_DPI * 1);
-	lv_obj_align(slider_treb, NULL, LV_ALIGN_IN_TOP_RIGHT, -20, 135);
+	//lv_obj_align(slider_treb, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 135);
 	lv_obj_set_event_cb(slider_treb, slider_event_cb_treb);
 	lv_slider_set_range(slider_treb, -7, 7);
 	lv_slider_set_value(slider_treb, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_treb = lv_label_create(tab4, NULL);
+	slider_label_treb = lv_label_create(menu_page, NULL);
 	lv_label_set_text(slider_label_treb, "0");
 	lv_obj_set_auto_realign(slider_label_treb, true);
 	lv_obj_align(slider_label_treb, slider_treb, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
 
-	/* Create an informative label */
-	info_treb = lv_label_create(tab4, NULL);
-	lv_label_set_text(info_treb, "Treb (-14)-(+14dB)");
-	lv_obj_align(info_treb, slider_treb, LV_ALIGN_OUT_TOP_LEFT, 0, -5);
-
 	//______________________________________________________________
 
-	lv_group_add_obj(g, tabview);
 	lv_group_add_obj(g, sw1);
 	lv_group_add_obj(g, sw2);
 	lv_group_add_obj(g, sw3);
@@ -556,14 +538,12 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_group_set_editing(g, true);
 
 	splash_screen = lv_obj_create(NULL, NULL);
-    logo1 = lv_img_create(splash_screen, NULL);
-    lv_img_set_src(logo1, &raulogo);
-    lv_obj_align(logo1, splash_screen, LV_ALIGN_CENTER, 2, -3);
-    lv_obj_set_drag(logo1, false);
-	delay(5);
-	lv_scr_load(splash_screen);
-	delay(3000);
-    lv_scr_load(main_screen);
+	logo1 = lv_img_create(splash_screen, NULL);
+	lv_img_set_src(logo1, &raulogo);
+	lv_obj_align(logo1, splash_screen, LV_ALIGN_CENTER, 2, -3);
+	lv_obj_set_drag(logo1, false);
+
+	lv_scr_load(menu_screen);
 
 	r.begin(ENC1_ROTARY_PIN_A, ENC1_ROTARY_PIN_B, CLICKS_PER_STEP);
 	r.setChangedHandler(rotate_r);
@@ -574,8 +554,6 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	u.setChangedHandler(rotate_u);
 	u.setLeftRotationHandler(showDirection_u);
 	u.setRightRotationHandler(showDirection_u);
-
-
 }
 
 void loop() //< Standard arduino setup function
@@ -619,20 +597,16 @@ void read_inputs(void *parameter) //< Buttons read function
 
 					break;
 				case 4:
-					//lv_scr_load(splash_screen);
-					
-					//delay(5000);
-					//lv_scr_load(main_screen);
-					//lv_tabview_set_tab_act(tabview, 3, LV_ANIM_OFF);
+					bm83.musicControl(MUSIC_CONTROL_NEXT);
 					break;
 				case 3:
-					lv_tabview_set_tab_act(tabview, 2, LV_ANIM_OFF);
+					bm83.musicControl(MUSIC_CONTROL_PAUSE);
 					break;
 				case 2:
-					lv_tabview_set_tab_act(tabview, 1, LV_ANIM_OFF);
+					bm83.musicControl(MUSIC_CONTROL_PLAY);
 					break;
 				case 1:
-					lv_tabview_set_tab_act(tabview, 0, LV_ANIM_OFF);
+					bm83.musicControl(MUSIC_CONTROL_PREV);
 					break;
 				case 0:
 					break;
@@ -742,10 +716,31 @@ bool encoder_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
 	data->enc_diff = enc_get_new_moves();
 
-	if (mcp1.digitalRead(5) == 1)
-		data->state = LV_INDEV_STATE_PR;
+	/*if (mcp1.digitalRead(5) == 1)
+	{
+		//data->state = LV_INDEV_STATE_PR;
+	}
 	else
-		data->state = LV_INDEV_STATE_REL;
+	{
+		//data->state = LV_INDEV_STATE_REL;
+	}*/
+
+	if (mcp1.digitalRead(5) == 1 && lv_scr_act() == main_screen)
+	{
+		lv_scr_load(menu_screen);
+	}
+
+	else
+	{
+	
+	if (mcp1.digitalRead(5) == 1 && lv_scr_act() == menu_screen)
+	{
+		lv_scr_load(main_screen);
+	}
+
+	}
+
+
 	return false; /*No buffering now so no more data read*/
 }
 
