@@ -386,13 +386,13 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//lv_obj_align(sw2, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 40);
 	label = lv_label_create(sw2, NULL);
 	lv_label_set_text(label, "+-5V");
-	lv_obj_set_event_cb(sw2, event_sw1);
+	lv_obj_set_event_cb(sw2, event_sw2);
 
 	sw3 = lv_switch_create(menu_page, NULL);
 	//lv_obj_align(sw3, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 80);
 	label = lv_label_create(sw3, NULL);
 	lv_label_set_text(label, "PVCC");
-	lv_obj_set_event_cb(sw3, event_sw1);
+	lv_obj_set_event_cb(sw3, event_sw3);
 
 	//Input gain slider_____________________________________________
 
@@ -543,7 +543,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_align(logo1, splash_screen, LV_ALIGN_CENTER, 2, -3);
 	lv_obj_set_drag(logo1, false);
 
-	lv_scr_load(menu_screen);
+	lv_scr_load(main_screen);
 
 	r.begin(ENC1_ROTARY_PIN_A, ENC1_ROTARY_PIN_B, CLICKS_PER_STEP);
 	r.setChangedHandler(rotate_r);
@@ -598,9 +598,11 @@ void read_inputs(void *parameter) //< Buttons read function
 					break;
 				case 4:
 					bm83.musicControl(MUSIC_CONTROL_NEXT);
+					lv_scr_load(main_screen);
 					break;
 				case 3:
 					bm83.musicControl(MUSIC_CONTROL_PAUSE);
+					lv_scr_load(menu_screen);
 					break;
 				case 2:
 					bm83.musicControl(MUSIC_CONTROL_PLAY);
@@ -617,7 +619,7 @@ void read_inputs(void *parameter) //< Buttons read function
 	vTaskDelay(5);
 }
 
-static void event_bm83setup(lv_obj_t *obj, lv_event_t event) //< BM83 setup function
+static void event_bm83setup(lv_obj_t *btn1, lv_event_t event) //< BM83 setup function
 {
 	if (event == LV_EVENT_CLICKED)
 	{
@@ -629,7 +631,7 @@ static void event_bm83setup(lv_obj_t *obj, lv_event_t event) //< BM83 setup func
 	}
 }
 
-static void event_bm83pair(lv_obj_t *obj, lv_event_t event)
+static void event_bm83pair(lv_obj_t *btn2, lv_event_t event)
 {
 	if (event == LV_EVENT_CLICKED)
 	{
@@ -637,7 +639,7 @@ static void event_bm83pair(lv_obj_t *obj, lv_event_t event)
 	}
 }
 
-static void event_soundsetup(lv_obj_t *obj, lv_event_t event)
+static void event_soundsetup(lv_obj_t *btn3, lv_event_t event)
 {
 	if (event == LV_EVENT_CLICKED)
 	{
@@ -652,11 +654,11 @@ static void event_soundsetup(lv_obj_t *obj, lv_event_t event)
 	}
 }
 
-static void event_sw1(lv_obj_t *obj, lv_event_t event)
+static void event_sw1(lv_obj_t *sw1, lv_event_t event_sw1)
 {
-	if (event == LV_EVENT_VALUE_CHANGED)
+	if (event_sw1 == LV_EVENT_VALUE_CHANGED)
 	{
-		printf("State: %s\n", lv_switch_get_state(obj) ? "On" : "Off");
+		printf("State 7.5V: %s\n", lv_switch_get_state(sw1) ? "On" : "Off");
 		if (lv_switch_get_state(sw1) == 1)
 		{
 			mcp2.digitalWrite(1, 1);
@@ -665,6 +667,14 @@ static void event_sw1(lv_obj_t *obj, lv_event_t event)
 		{
 			mcp2.digitalWrite(1, 0);
 		}
+	}
+}
+
+static void event_sw2(lv_obj_t *sw2, lv_event_t event)
+{
+	if (event == LV_EVENT_VALUE_CHANGED)
+	{
+		printf("State +-5V: %s\n", lv_switch_get_state(sw2) ? "On" : "Off");
 		if (lv_switch_get_state(sw2) == 1)
 		{
 			mcp2.digitalWrite(0, 1);
@@ -673,14 +683,21 @@ static void event_sw1(lv_obj_t *obj, lv_event_t event)
 		{
 			mcp2.digitalWrite(0, 0);
 		}
-		if (lv_switch_get_state(sw3) == 1)
-		{
-			mcp2.digitalWrite(2, 1);
-		}
-		else
-		{
-			mcp2.digitalWrite(2, 0);
-		}
+	}
+}
+
+static void event_sw3(lv_obj_t *sw3, lv_event_t event)
+{
+	if (event == LV_EVENT_VALUE_CHANGED)
+
+		printf("State PVCC: %s\n", lv_switch_get_state(sw3) ? "On" : "Off");
+	if (lv_switch_get_state(sw3) == 1)
+	{
+		mcp2.digitalWrite(2, 1);
+	}
+	else
+	{
+		mcp2.digitalWrite(2, 0);
 	}
 }
 
@@ -707,42 +724,53 @@ void rotate_u(ESPRotary &u)
 	delay(2);
 }
 
+/*
+void menu_button(void *pvParameter)
+{
+	int counter = 1;
+	if (mcp1.digitalRead(5) == 1 && lv_scr_act() == main_screen)
+	{
+		data->state = LV_INDEV_STATE_PR;
+		lv_scr_load(menu_screen);
+		counter++;
+	}
+
+	else if (mcp1.digitalRead(5) == 0 && counter == 0)
+	{
+		
+		lv_scr_load(main_screen);
+		counter++;
+	}
+
+	else
+	{
+		data->state = LV_INDEV_STATE_REL;
+	}
+}
+*/
+
 void showDirection_u(ESPRotary &u)
 {
 	//Serial.println(u.directionToString(u.getDirection()));
 }
 
-bool encoder_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
+bool encoder_read(lv_indev_drv_t *encoder_indev, lv_indev_data_t *data)
 {
 	data->enc_diff = enc_get_new_moves();
 
-	/*if (mcp1.digitalRead(5) == 1)
+	if (mcp1.digitalRead(5) == 1)
 	{
-		//data->state = LV_INDEV_STATE_PR;
-	}
-	else
-	{
-		//data->state = LV_INDEV_STATE_REL;
-	}*/
-
-	if (mcp1.digitalRead(5) == 1 && lv_scr_act() == main_screen)
-	{
-		lv_scr_load(menu_screen);
+		data->state = LV_INDEV_STATE_PR;
 	}
 
 	else
 	{
-	
-	if (mcp1.digitalRead(5) == 1 && lv_scr_act() == menu_screen)
-	{
-		lv_scr_load(main_screen);
+		data->state = LV_INDEV_STATE_REL;
 	}
-
-	}
-
 
 	return false; /*No buffering now so no more data read*/
 }
+
 
 int enc_get_new_moves()
 {
