@@ -81,13 +81,12 @@ TaskHandle_t Task1; //!< Taskhandle for "read_inputs" task
 TaskHandle_t Task2;
 
 // Global LVGL object variables
-lv_obj_t *main_screen;
+lv_obj_t *home_screen;
 lv_obj_t *menu_screen;
 lv_obj_t *splash_screen;
 
-lv_obj_t *menu_page;
-
 lv_obj_t *menu_container;
+lv_obj_t *menu_page;
 
 lv_obj_t *logo1;
 lv_obj_t *tabview;
@@ -329,27 +328,34 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_style_init(&style1);
 	lv_style_set_border_color(&style1, LV_STATE_FOCUSED, LV_COLOR_GREEN);
 
-	main_screen = lv_obj_create(NULL, NULL);
+	home_screen = lv_obj_create(NULL, NULL);
 	menu_screen = lv_obj_create(NULL, NULL);
 
 	//Create Group for encoder 1
 	g = lv_group_create();
 	lv_indev_set_group(encoder_indev, g);
 
-	//tabview = lv_tabview_create(main_screen, NULL);
-	//lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
-	//lv_tabview_set_anim_time(tabview, 100);
+	tabview = lv_tabview_create(menu_screen, NULL);
+	lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
+	lv_tabview_set_anim_time(tabview, 100);
 
 	/*Add 4 tabs (the tabs are page (lv_page) and can be scrolled*/
-	//tab1 = lv_tabview_add_tab(tabview, "Setup/Enable");
-	//tab2 = lv_tabview_add_tab(tabview, "IC Values");
-	//tab3 = lv_tabview_add_tab(tabview, "Misc");
-	//tab4 = lv_tabview_add_tab(tabview, "Equalizer");
+	tab1 = lv_tabview_add_tab(tabview, "Setup/Enable");
+	tab2 = lv_tabview_add_tab(tabview, "IC Values");
+	tab3 = lv_tabview_add_tab(tabview, "Misc");
+	tab4 = lv_tabview_add_tab(tabview, "Equalizer");
 
-	menu_page = lv_page_create(menu_screen, NULL);
+	lv_obj_set_height(tab1, 10);
+	lv_obj_set_height(tab2, 10);
+	lv_obj_set_height(tab3, 10);
+	lv_obj_set_height(tab4, 10);
+
+	menu_page = lv_page_create(tab1, NULL);
 	lv_obj_set_size(menu_page, LV_HOR_RES, LV_VER_RES);
 	menu_container = lv_page_get_scrl(menu_page);
+	
 
+	
 	lv_obj_set_auto_realign(menu_container, true);					 /*Auto realign when the size changes*/
 	lv_obj_align_origo(menu_container, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
 	lv_cont_set_fit(menu_container, LV_FIT_MAX);
@@ -535,7 +541,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_group_add_obj(g, btn3);
 
 	lv_group_set_wrap(g, true);
-	lv_group_set_editing(g, true);
+	lv_group_set_editing(g, false);
 
 	splash_screen = lv_obj_create(NULL, NULL);
 	logo1 = lv_img_create(splash_screen, NULL);
@@ -543,7 +549,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_align(logo1, splash_screen, LV_ALIGN_CENTER, 2, -3);
 	lv_obj_set_drag(logo1, false);
 
-	lv_scr_load(main_screen);
+	lv_scr_load(home_screen);
 
 	r.begin(ENC1_ROTARY_PIN_A, ENC1_ROTARY_PIN_B, CLICKS_PER_STEP);
 	r.setChangedHandler(rotate_r);
@@ -598,7 +604,7 @@ void read_inputs(void *parameter) //< Buttons read function
 					break;
 				case 4:
 					bm83.musicControl(MUSIC_CONTROL_NEXT);
-					lv_scr_load(main_screen);
+					lv_scr_load(home_screen);
 					break;
 				case 3:
 					bm83.musicControl(MUSIC_CONTROL_PAUSE);
@@ -728,7 +734,7 @@ void rotate_u(ESPRotary &u)
 void menu_button(void *pvParameter)
 {
 	int counter = 1;
-	if (mcp1.digitalRead(5) == 1 && lv_scr_act() == main_screen)
+	if (mcp1.digitalRead(5) == 1 && lv_scr_act() == home_screen)
 	{
 		data->state = LV_INDEV_STATE_PR;
 		lv_scr_load(menu_screen);
@@ -738,7 +744,7 @@ void menu_button(void *pvParameter)
 	else if (mcp1.digitalRead(5) == 0 && counter == 0)
 	{
 		
-		lv_scr_load(main_screen);
+		lv_scr_load(home_screen);
 		counter++;
 	}
 
