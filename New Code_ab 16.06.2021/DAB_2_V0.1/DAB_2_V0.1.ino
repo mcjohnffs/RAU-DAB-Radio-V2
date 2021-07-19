@@ -88,6 +88,11 @@ lv_obj_t *splash_screen;
 lv_obj_t *menu_container;
 lv_obj_t *menu_page;
 
+lv_obj_t *win_home;
+lv_obj_t *win_menu;
+
+lv_obj_t *music_control_container;
+
 lv_obj_t *logo1;
 lv_obj_t *tabview;
 lv_obj_t *tab1;
@@ -96,6 +101,8 @@ lv_obj_t *tab3;
 lv_obj_t *tab4;
 lv_obj_t *gauge1;
 lv_obj_t *led1;
+lv_obj_t *btn_play;
+lv_obj_t *btn_next;
 lv_obj_t *btn;
 lv_obj_t *btn1;
 lv_obj_t *btn2;
@@ -327,6 +334,19 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	static lv_style_t style1;
 	lv_style_init(&style1);
 	lv_style_set_border_color(&style1, LV_STATE_FOCUSED, LV_COLOR_GREEN);
+    lv_style_set_radius(&style1, LV_STATE_DEFAULT, 0);
+	lv_style_set_pad_top(&style1, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_bottom(&style1, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_left(&style1, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_right(&style1, LV_STATE_DEFAULT, 0);
+
+	static lv_style_t style2;
+	lv_style_init(&style2);
+	lv_style_set_pad_top(&style2, LV_STATE_DEFAULT, 2);
+    lv_style_set_pad_bottom(&style2, LV_STATE_DEFAULT, 2);
+    lv_style_set_pad_left(&style2, LV_STATE_DEFAULT, 2);
+    lv_style_set_pad_right(&style2, LV_STATE_DEFAULT, 2);
+	lv_style_set_pad_inner(&style2, LV_STATE_DEFAULT, 2);
 
 	home_screen = lv_obj_create(NULL, NULL);
 	menu_screen = lv_obj_create(NULL, NULL);
@@ -335,66 +355,115 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	g = lv_group_create();
 	lv_indev_set_group(encoder_indev, g);
 
-	tabview = lv_tabview_create(menu_screen, NULL);
-	lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
-	lv_tabview_set_anim_time(tabview, 100);
+	//tabview = lv_tabview_create(menu_screen, NULL);
+	//lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
+	//lv_tabview_set_anim_time(tabview, 100);
 
 	/*Add 4 tabs (the tabs are page (lv_page) and can be scrolled*/
-	tab1 = lv_tabview_add_tab(tabview, "Setup/Enable");
-	tab2 = lv_tabview_add_tab(tabview, "IC Values");
-	tab3 = lv_tabview_add_tab(tabview, "Misc");
-	tab4 = lv_tabview_add_tab(tabview, "Equalizer");
+	//tab1 = lv_tabview_add_tab(tabview, "Setup/Enable");
+	//tab2 = lv_tabview_add_tab(tabview, "IC Values");
+	//tab3 = lv_tabview_add_tab(tabview, "Misc");
+	//tab4 = lv_tabview_add_tab(tabview, "Equalizer");
+    /*Create a window*/
+    win_home = lv_win_create(home_screen, NULL);
+    lv_win_set_title(win_home, "Home");                        /*Set the title*/
+	lv_win_add_btn_left(win_home,LV_SYMBOL_BATTERY_2);
+	//lv_win_set_layout(win_home, LV_LAYOUT_COLUMN_MID);
+	lv_win_set_header_height(win_home, 30);
+	lv_win_set_scrollbar_mode(win_home, LV_SCRLBAR_MODE_OFF);
+	lv_win_set_layout(win_home, LV_LAYOUT_ROW_BOTTOM);
+	lv_obj_add_style(win_home, LV_WIN_PART_CONTENT_SCROLLABLE, &style2);
 
-	lv_obj_set_height(tab1, 10);
-	lv_obj_set_height(tab2, 10);
-	lv_obj_set_height(tab3, 10);
-	lv_obj_set_height(tab4, 10);
+	win_menu = lv_win_create(menu_screen, NULL);
+    lv_win_set_title(win_menu, "Menu");                        /*Set the title*/
+	lv_win_add_btn_left(win_menu,LV_SYMBOL_BATTERY_2);
+	lv_win_set_layout(win_menu, LV_LAYOUT_COLUMN_MID);
+	lv_win_set_header_height(win_menu, 30);
+	
+	music_control_container = lv_cont_create(win_home, NULL);
+    lv_obj_set_auto_realign(music_control_container, true);                    /*Auto realign when the size changes*/
+    lv_obj_align_origo(music_control_container, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, 0);  /*This parametrs will be sued when realigned*/
+    lv_cont_set_fit(music_control_container, LV_FIT_TIGHT);
+    lv_cont_set_layout(music_control_container, LV_LAYOUT_ROW_MID);
+	lv_obj_add_style(music_control_container, LV_CONT_PART_MAIN, &style2);
 
-	menu_page = lv_page_create(tab1, NULL);
-	lv_obj_set_size(menu_page, LV_HOR_RES, LV_VER_RES);
-	menu_container = lv_page_get_scrl(menu_page);
+    /*Add control button to the header*/
+    //lv_obj_t * close_btn = lv_win_add_btn(win_home, LV_SYMBOL_CLOSE);           /*Add close button and use built-in close action*/
+    //lv_obj_set_event_cb(close_btn, lv_win_close_event_cb);
+    //lv_win_add_btn(win, LV_SYMBOL_SETTINGS);        /*Add a setup button*/
 	
 
+	//menu_page = lv_page_create(win, NULL);
+	//lv_obj_set_size(menu_page, LV_HOR_RES, LV_VER_RES);
+	//menu_container = lv_page_get_scrl(menu_page);
 	
-	lv_obj_set_auto_realign(menu_container, true);					 /*Auto realign when the size changes*/
-	lv_obj_align_origo(menu_container, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
-	lv_cont_set_fit(menu_container, LV_FIT_MAX);
-	lv_cont_set_layout(menu_container, LV_LAYOUT_COLUMN_MID);
+	//lv_obj_set_auto_realign(menu_container, true);					 /*Auto realign when the size changes*/
+	//lv_obj_align_origo(menu_container, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
+	//lv_cont_set_fit(menu_container, LV_FIT_MAX);
+	//lv_cont_set_layout(menu_container, LV_LAYOUT_COLUMN_MID);
 
-	btn1 = lv_btn_create(menu_page, NULL);
+	btn_mute = lv_btn_create(music_control_container, NULL);
+    //lv_obj_align(btn_play, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 5, 5);
+    label = lv_label_create(btn_mute, NULL);
+    lv_label_set_text(label, LV_SYMBOL_MUTE);
+	lv_obj_add_style(btn_next, LV_BTN_PART_MAIN, &style1);
+	lv_obj_set_size(btn_next, 80, 30);
+	
+	btn_mute = lv_btn_create(music_control_container, NULL);
+    //lv_obj_align(btn_play, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 5, 5);
+    label = lv_label_create(btn_mute, NULL);
+    lv_label_set_text(label, LV_SYMBOL_MUTE);
+	lv_obj_add_style(btn_next, LV_BTN_PART_MAIN, &style1);
+	lv_obj_set_size(btn_next, 80, 30);
+	
+	btn_play = lv_btn_create(music_control_container, NULL);
+    //lv_obj_align(btn_play, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 5, 5);
+    label = lv_label_create(btn_play, NULL);
+    lv_label_set_text(label, LV_SYMBOL_PLAY);
+	lv_obj_add_style(btn_play, LV_BTN_PART_MAIN, &style1);
+	lv_obj_set_size(btn_play, 80, 30);
+	
+	btn_next = lv_btn_create(music_control_container, NULL);
+    //lv_obj_align(btn_play, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 5, 5);
+    label = lv_label_create(btn_next, NULL);
+    lv_label_set_text(label, LV_SYMBOL_NEXT);
+	lv_obj_add_style(btn_next, LV_BTN_PART_MAIN, &style1);
+	lv_obj_set_size(btn_next, 80, 30);
+
+	btn1 = lv_btn_create(win_menu, NULL);
 	lv_obj_set_event_cb(btn1, event_bm83setup);
 	//lv_obj_align(btn1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 	label = lv_label_create(btn1, NULL);
 	lv_label_set_text(label, "BM83 Setup");
 	lv_obj_add_style(btn1, LV_BTN_PART_MAIN, &style1);
 
-	btn2 = lv_btn_create(menu_page, NULL);
+	btn2 = lv_btn_create(win_menu, NULL);
 	lv_obj_set_event_cb(btn2, event_bm83pair);
 	//lv_obj_align(btn2, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 40);
 	label = lv_label_create(btn2, NULL);
 	lv_label_set_text(label, "BM83 Pairing");
 	lv_obj_add_style(btn2, LV_BTN_PART_MAIN, &style1);
 
-	btn3 = lv_btn_create(menu_page, NULL);
+	btn3 = lv_btn_create(win_menu, NULL);
 	lv_obj_set_event_cb(btn3, event_soundsetup);
 	//lv_obj_align(btn3, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 80);
 	label = lv_label_create(btn3, NULL);
 	lv_label_set_text(label, "Sound Proc. Setup");
 	lv_obj_add_style(btn3, LV_BTN_PART_MAIN, &style1);
 
-	sw1 = lv_switch_create(menu_page, NULL);
+	sw1 = lv_switch_create(win_menu, NULL);
 	//lv_obj_align(sw1, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
 	label = lv_label_create(sw1, NULL);
 	lv_label_set_text(label, "7.5V");
 	lv_obj_set_event_cb(sw1, event_sw1);
 
-	sw2 = lv_switch_create(menu_page, NULL);
+	sw2 = lv_switch_create(win_menu, NULL);
 	//lv_obj_align(sw2, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 40);
 	label = lv_label_create(sw2, NULL);
 	lv_label_set_text(label, "+-5V");
 	lv_obj_set_event_cb(sw2, event_sw2);
 
-	sw3 = lv_switch_create(menu_page, NULL);
+	sw3 = lv_switch_create(win_menu, NULL);
 	//lv_obj_align(sw3, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 80);
 	label = lv_label_create(sw3, NULL);
 	lv_label_set_text(label, "PVCC");
@@ -403,12 +472,12 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Input gain slider_____________________________________________
 
 	/* Create an informative label */
-	info_ingain = lv_label_create(menu_page, NULL);
+	info_ingain = lv_label_create(win_menu, NULL);
 	lv_label_set_text(info_ingain, "Input Gain (0-20dB)");
 	lv_obj_align(info_ingain, slider_ingain, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
 	/* Create a slider in the center of the display */
-	slider_ingain = lv_slider_create(menu_page, NULL);
+	slider_ingain = lv_slider_create(win_menu, NULL);
 	lv_obj_set_width(slider_ingain, LV_DPI * 1);
 	//lv_obj_align(slider_ingain, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 25);
 	lv_obj_set_event_cb(slider_ingain, slider_event_cb_ingain);
@@ -416,7 +485,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_ingain, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_ingain = lv_label_create(menu_page, NULL);
+	slider_label_ingain = lv_label_create(win_menu, NULL);
 	lv_label_set_text(slider_label_ingain, "0");
 	lv_obj_set_auto_realign(slider_label_ingain, true);
 	lv_obj_align(slider_label_ingain, slider_ingain, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
@@ -426,11 +495,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Fader 1 slider________________________________________________
 
 	/* Create an informative label */
-	info_fade_1 = lv_label_create(menu_page, NULL);
+	info_fade_1 = lv_label_create(win_menu, NULL);
 	lv_label_set_text(info_fade_1, "Fader 1 (0)-(-87dB)");
 	lv_obj_align(info_fade_1, slider_fade_1, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
-	slider_fade_1 = lv_slider_create(menu_page, NULL);
+	slider_fade_1 = lv_slider_create(win_menu, NULL);
 	lv_obj_set_width(slider_fade_1, LV_DPI * 1);
 	//lv_obj_align(slider_fade_1, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 80);
 	lv_obj_set_event_cb(slider_fade_1, slider_event_cb_fade_1);
@@ -438,7 +507,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_fade_1, 87, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_fade_1 = lv_label_create(menu_page, NULL);
+	slider_label_fade_1 = lv_label_create(win_menu, NULL);
 	lv_label_set_text(slider_label_fade_1, "87");
 	lv_obj_set_auto_realign(slider_label_fade_1, true);
 	lv_obj_align(slider_label_fade_1, slider_fade_1, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
@@ -448,11 +517,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Fader 2 slider________________________________________________
 
 	/* Create an informative label */
-	info_fade_2 = lv_label_create(menu_page, NULL);
+	info_fade_2 = lv_label_create(win_menu, NULL);
 	lv_label_set_text(info_fade_2, "Fader 2 (0)-(-87dB)");
 	lv_obj_align(info_fade_2, slider_fade_2, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
-	slider_fade_2 = lv_slider_create(menu_page, NULL);
+	slider_fade_2 = lv_slider_create(win_menu, NULL);
 	lv_obj_set_width(slider_fade_2, LV_DPI * 1);
 	//lv_obj_align(slider_fade_2, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 135);
 	lv_obj_set_event_cb(slider_fade_2, slider_event_cb_fade_2);
@@ -460,7 +529,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_fade_2, 87, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_fade_2 = lv_label_create(menu_page, NULL);
+	slider_label_fade_2 = lv_label_create(win_menu, NULL);
 	lv_label_set_text(slider_label_fade_2, "87");
 	lv_obj_set_auto_realign(slider_label_fade_2, true);
 	lv_obj_align(slider_label_fade_2, slider_fade_2, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
@@ -470,11 +539,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Bass slider___________________________________________________
 
 	/* Create an informative label */
-	info_bass = lv_label_create(menu_page, NULL);
+	info_bass = lv_label_create(win_menu, NULL);
 	lv_label_set_text(info_bass, "Bass (-14)-(+14dB)");
 	lv_obj_align(info_bass, slider_bass, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
-	slider_bass = lv_slider_create(menu_page, NULL);
+	slider_bass = lv_slider_create(win_menu, NULL);
 	lv_obj_set_width(slider_bass, LV_DPI * 1);
 	//lv_obj_align(slider_bass, NULL, LV_ALIGN_IN_TOP_RIGHT, -15, 25);
 	lv_obj_set_event_cb(slider_bass, slider_event_cb_bass);
@@ -482,7 +551,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_bass, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_bass = lv_label_create(menu_page, NULL);
+	slider_label_bass = lv_label_create(win_menu, NULL);
 	lv_label_set_text(slider_label_bass, "0");
 	lv_obj_set_auto_realign(slider_label_bass, true);
 	lv_obj_align(slider_label_bass, slider_bass, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
@@ -492,11 +561,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Middle slider_________________________________________________
 
 	/* Create an informative label */
-	info_mid = lv_label_create(menu_page, NULL);
+	info_mid = lv_label_create(win_menu, NULL);
 	lv_label_set_text(info_mid, "Midd (-14)-(+14dB)");
 	lv_obj_align(info_mid, slider_mid, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
-	slider_mid = lv_slider_create(menu_page, NULL);
+	slider_mid = lv_slider_create(win_menu, NULL);
 	lv_obj_set_width(slider_mid, LV_DPI * 1);
 	//lv_obj_align(slider_mid, NULL, LV_ALIGN_IN_TOP_RIGHT, -20, 80);
 	lv_obj_set_event_cb(slider_mid, slider_event_cb_mid);
@@ -504,7 +573,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_mid, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_mid = lv_label_create(menu_page, NULL);
+	slider_label_mid = lv_label_create(win_menu, NULL);
 	lv_label_set_text(slider_label_mid, "0");
 	lv_obj_set_auto_realign(slider_label_mid, true);
 	lv_obj_align(slider_label_mid, slider_mid, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
@@ -514,11 +583,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Treble slider_________________________________________________
 
 	/* Create an informative label */
-	info_treb = lv_label_create(menu_page, NULL);
+	info_treb = lv_label_create(win_menu, NULL);
 	lv_label_set_text(info_treb, "Treb (-14)-(+14dB)");
 	lv_obj_align(info_treb, slider_treb, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
-	slider_treb = lv_slider_create(menu_page, NULL);
+	slider_treb = lv_slider_create(win_menu, NULL);
 	lv_obj_set_width(slider_treb, LV_DPI * 1);
 	//lv_obj_align(slider_treb, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 135);
 	lv_obj_set_event_cb(slider_treb, slider_event_cb_treb);
@@ -526,7 +595,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_treb, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_treb = lv_label_create(menu_page, NULL);
+	slider_label_treb = lv_label_create(win_menu, NULL);
 	lv_label_set_text(slider_label_treb, "0");
 	lv_obj_set_auto_realign(slider_label_treb, true);
 	lv_obj_align(slider_label_treb, slider_treb, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
