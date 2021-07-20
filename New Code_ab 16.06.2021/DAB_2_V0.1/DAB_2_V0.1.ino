@@ -135,7 +135,7 @@ lv_obj_t *lmeter;
 lv_obj_t *lmeter2;
 lv_obj_t *label;
 lv_obj_t *label_battery;
-
+lv_obj_t *label_bluetooth;
 lv_obj_t *spinbox;
 
 // Sound processor config sLiders
@@ -351,21 +351,34 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	static lv_style_t style1;
 	lv_style_init(&style1);
-	//lv_style_set_border_color(&style1, LV_STATE_FOCUSED, LV_COLOR_GREEN);
+	lv_style_set_border_color(&style1, LV_STATE_FOCUSED, LV_COLOR_GREEN);
+	lv_style_set_border_color(&style1, LV_STATE_DEFAULT, LV_COLOR_BLACK);
     lv_style_set_radius(&style1, LV_STATE_DEFAULT, 0);
-	lv_style_set_pad_top(&style1, LV_STATE_DEFAULT, 0);
-    lv_style_set_pad_bottom(&style1, LV_STATE_DEFAULT, 10);
-    lv_style_set_pad_left(&style1, LV_STATE_DEFAULT, 0);
-    lv_style_set_pad_right(&style1, LV_STATE_DEFAULT, 0);
-	lv_style_set_pad_inner(&style1, LV_STATE_DEFAULT, 10);
 
 	static lv_style_t style2;
 	lv_style_init(&style2);
+	lv_style_set_radius(&style2, LV_STATE_DEFAULT, 0);
 	lv_style_set_pad_top(&style2, LV_STATE_DEFAULT, 2);
-    lv_style_set_pad_bottom(&style2, LV_STATE_DEFAULT, 2);
+    lv_style_set_pad_bottom(&style2, LV_STATE_DEFAULT, 5);
     lv_style_set_pad_left(&style2, LV_STATE_DEFAULT, 2);
-    lv_style_set_pad_right(&style2, LV_STATE_DEFAULT, 2);
-	lv_style_set_pad_inner(&style2, LV_STATE_DEFAULT, 4);
+    lv_style_set_pad_right(&style2, LV_STATE_DEFAULT, 2); 
+	lv_style_set_pad_inner(&style2, LV_STATE_DEFAULT, 5);
+	lv_style_set_margin_top(&style2, LV_STATE_DEFAULT, 0);
+    lv_style_set_margin_bottom(&style2, LV_STATE_DEFAULT, 0);
+    lv_style_set_margin_left(&style2, LV_STATE_DEFAULT, 0);
+    lv_style_set_margin_right(&style2, LV_STATE_DEFAULT, 0);
+
+	static lv_style_t style3;
+	lv_style_init(&style3);
+	lv_style_set_pad_top(&style3, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_bottom(&style3, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_left(&style3, LV_STATE_DEFAULT, 5);
+    lv_style_set_pad_right(&style3, LV_STATE_DEFAULT, 5);
+	lv_style_set_pad_inner(&style3, LV_STATE_DEFAULT, 0);
+	lv_style_set_margin_top(&style3, LV_STATE_DEFAULT, 0);
+    lv_style_set_margin_bottom(&style3, LV_STATE_DEFAULT, 0);
+    lv_style_set_margin_left(&style3, LV_STATE_DEFAULT, 0);
+    lv_style_set_margin_right(&style3, LV_STATE_DEFAULT, 0);
 
 	home_screen = lv_obj_create(NULL, NULL);
 	menu_screen = lv_obj_create(NULL, NULL);
@@ -380,6 +393,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_NONE);
 	
 	tab_home = lv_tabview_add_tab(tabview, "1");
+	lv_page_set_scrlbar_mode(tab_home, LV_SCRLBAR_MODE_OFF);
 	//lv_obj_set_size(tabview, 320,240);
 
 	tab_vis = lv_tabview_add_tab(tabview, "2");
@@ -395,8 +409,8 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	tab_display_settings = lv_tabview_add_tab(tabview, "9");
 	tab_led_settings = lv_tabview_add_tab(tabview, "10");
 
-	
-    
+	//lv_obj_add_style(tabview, LV_TABVIEW_PART_BG, &style3);
+    //lv_obj_add_style(tabview, LV_TABVIEW_PART_BG_SCRL, &style3);
 	/*
     win_home = lv_win_create(home_screen, NULL);
     lv_win_set_title(win_home, "Home");                        
@@ -415,33 +429,34 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_win_set_header_height(win_menu, 30);
 	*/
 
-	status_bar_container = lv_cont_create(tab_home, NULL);
+	status_bar_container = lv_cont_create(lv_layer_top(), NULL);
 	lv_obj_set_size(status_bar_container, 320,30);  
     //lv_obj_set_auto_realign(status_bar_container, true);                    
     lv_obj_align(status_bar_container, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);   
     lv_cont_set_fit(status_bar_container, LV_FIT_NONE);
-    lv_cont_set_layout(status_bar_container, LV_LAYOUT_OFF);
-	lv_obj_add_style(status_bar_container, LV_CONT_PART_MAIN, &style1);
+    lv_cont_set_layout(status_bar_container, LV_LAYOUT_ROW_MID);
+	lv_obj_add_style(status_bar_container, LV_CONT_PART_MAIN, &style3);
 
 	label_battery = lv_label_create(status_bar_container, NULL);
     lv_obj_align(label_battery, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
     lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_FULL);
 
-	music_control_container = lv_cont_create(tab_home, NULL);
-    //lv_obj_set_auto_realign(music_control_container, true);                    
-    lv_obj_align(music_control_container, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);  
-    lv_cont_set_fit(music_control_container, LV_FIT_TIGHT);
-    lv_cont_set_layout(music_control_container, LV_LAYOUT_ROW_MID);
-	lv_obj_add_style(music_control_container, LV_CONT_PART_MAIN, &style2);
+	label_bluetooth = lv_label_create(status_bar_container, NULL);
+    lv_obj_align(label_bluetooth, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
+    lv_label_set_text(label_bluetooth, LV_SYMBOL_BLUETOOTH);
 
-	
-	
-   
+	music_control_container = lv_cont_create(lv_layer_top(), NULL);
+    //lv_obj_set_auto_realign(music_control_container, true);
+    lv_cont_set_fit(music_control_container, LV_FIT_NONE);
+    lv_cont_set_layout(music_control_container, LV_LAYOUT_ROW_TOP);
+	lv_obj_set_size(music_control_container, 320,40);                      
+    lv_obj_align(music_control_container, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);  
+   	lv_obj_add_style(music_control_container, LV_CONT_PART_MAIN, &style2);
+
     //lv_obj_t * close_btn = lv_win_add_btn(win_home, LV_SYMBOL_CLOSE);         
     //lv_obj_set_event_cb(close_btn, lv_win_close_event_cb);
     //lv_win_add_btn(win, LV_SYMBOL_SETTINGS);        
 	
-
 	//menu_page = lv_page_create(win, NULL);
 	//lv_obj_set_size(menu_page, LV_HOR_RES, LV_VER_RES);
 	//menu_container = lv_page_get_scrl(menu_page);
@@ -452,68 +467,58 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//lv_cont_set_layout(menu_container, LV_LAYOUT_COLUMN_MID);
 
 	btn_mute = lv_btn_create(music_control_container, NULL);
-    //lv_obj_align(btn_play, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 5, 5);
     label = lv_label_create(btn_mute, NULL);
     lv_label_set_text(label, LV_SYMBOL_MUTE);
 	lv_obj_add_style(btn_mute, LV_BTN_PART_MAIN, &style1);
-	lv_obj_set_size(btn_mute, 70, 30);
+	lv_obj_set_size(btn_mute, 75, 35);
 	
 	btn_prev = lv_btn_create(music_control_container, NULL);
-    //lv_obj_align(btn_play, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 5, 5);
     label = lv_label_create(btn_prev, NULL);
     lv_label_set_text(label, LV_SYMBOL_PREV);
 	lv_obj_add_style(btn_prev, LV_BTN_PART_MAIN, &style1);
-	lv_obj_set_size(btn_prev, 70, 30);
+	lv_obj_set_size(btn_prev, 75, 35);
 	
 	btn_play = lv_btn_create(music_control_container, NULL);
-    //lv_obj_align(btn_play, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 5, 5);
     label = lv_label_create(btn_play, NULL);
     lv_label_set_text(label, LV_SYMBOL_PLAY);
 	lv_obj_add_style(btn_play, LV_BTN_PART_MAIN, &style1);
-	lv_obj_set_size(btn_play, 70, 30);
+	lv_obj_set_size(btn_play, 75, 35);
 	
 	btn_next = lv_btn_create(music_control_container, NULL);
-    //lv_obj_align(btn_play, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 5, 5);
     label = lv_label_create(btn_next, NULL);
     lv_label_set_text(label, LV_SYMBOL_NEXT);
 	lv_obj_add_style(btn_next, LV_BTN_PART_MAIN, &style1);
-	lv_obj_set_size(btn_next, 70, 30);
+	lv_obj_set_size(btn_next, 75, 35);
 	
 	btn1 = lv_btn_create(tab_bt_settings, NULL);
 	lv_obj_set_event_cb(btn1, event_bm83setup);
-	//lv_obj_align(btn1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 	label = lv_label_create(btn1, NULL);
 	lv_label_set_text(label, "BM83 Setup");
 	lv_obj_add_style(btn1, LV_BTN_PART_MAIN, &style1);
 
 	btn2 = lv_btn_create(tab_bt_settings, NULL);
 	lv_obj_set_event_cb(btn2, event_bm83pair);
-	//lv_obj_align(btn2, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 40);
 	label = lv_label_create(btn2, NULL);
 	lv_label_set_text(label, "BM83 Pairing");
 	lv_obj_add_style(btn2, LV_BTN_PART_MAIN, &style1);
 
 	btn3 = lv_btn_create(tab_audio_settings, NULL);
 	lv_obj_set_event_cb(btn3, event_soundsetup);
-	//lv_obj_align(btn3, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 80);
 	label = lv_label_create(btn3, NULL);
 	lv_label_set_text(label, "Sound Proc. Setup");
 	lv_obj_add_style(btn3, LV_BTN_PART_MAIN, &style1);
 
 	sw1 = lv_switch_create(tab_menu, NULL);
-	//lv_obj_align(sw1, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
 	label = lv_label_create(sw1, NULL);
 	lv_label_set_text(label, "7.5V");
 	lv_obj_set_event_cb(sw1, event_sw1);
 
 	sw2 = lv_switch_create(tab_menu, NULL);
-	//lv_obj_align(sw2, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 40);
 	label = lv_label_create(sw2, NULL);
 	lv_label_set_text(label, "+-5V");
 	lv_obj_set_event_cb(sw2, event_sw2);
 
 	sw3 = lv_switch_create(tab_menu, NULL);
-	//lv_obj_align(sw3, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 80);
 	label = lv_label_create(sw3, NULL);
 	lv_label_set_text(label, "PVCC");
 	lv_obj_set_event_cb(sw3, event_sw3);
