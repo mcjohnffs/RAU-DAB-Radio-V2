@@ -41,7 +41,10 @@
 #include "ESPRotary.h"				//!< Encoder Library für ESP32
 #include "soc/timer_group_struct.h" //!< Watchdog timer struct
 #include "soc/timer_group_reg.h"	//!< Watchdog timer reg
-#include <DS3232RTC.h>      // https://github.com/JChristensen/DS3232RTC
+
+#include <DS3231_Simple.h>
+
+DS3231_Simple Clock;
 
 #define BUFFER_MULTIPLIER 35 //!< LVGL buffer multiplier
 
@@ -119,6 +122,14 @@ lv_obj_t *btn_play;
 lv_obj_t *btn_next;
 lv_obj_t *btn_prev;
 lv_obj_t *btn_mute;
+
+lv_obj_t *list1;
+lv_obj_t *list_btn_bt;
+lv_obj_t *list_btn_audio;
+lv_obj_t *list_btn_disp;
+lv_obj_t *list_btn_leds;
+lv_obj_t *list_btn_misc;
+lv_obj_t *list_btn_pwr;
 
 lv_obj_t *btn;
 lv_obj_t *btn1;
@@ -201,6 +212,8 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 	lv_disp_flush_ready(disp);
 }
 
+DateTime MyDateAndTime;
+
 void setup() //!< The standard Arduino setup function used for setup and configuration
 {
 
@@ -222,17 +235,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 		0);			   /* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
 
 	// Encoder read task creation
-	//xTaskCreatePinnedToCore(splash, "splash", 10000, NULL, 3, &Task2, 0);
+	//xTaskCreatePinnedToCore(back, "back", 5000, NULL, 3, &Task2, 0);
 
 	pinMode(mfbPin, OUTPUT); //!< Sets the MFB pin (GPIO23) as output (BM83)
 
-	setSyncProvider(RTC.get);   // the function to get the time from the RTC
-
-    if(timeStatus() != timeSet)
-        Serial.println("Unable to sync with the RTC");
-    else
-        Serial.println("RTC has set the system time");
-
+	Clock.begin();
 	ledDriver.begin(); //!< Led driver init
 
 	ledDriver.allOn(); //!< All  LEDs off (inverted)
@@ -362,32 +369,32 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_style_init(&style1);
 	lv_style_set_border_color(&style1, LV_STATE_FOCUSED, LV_COLOR_GREEN);
 	lv_style_set_border_color(&style1, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-    lv_style_set_radius(&style1, LV_STATE_DEFAULT, 0);
+	lv_style_set_radius(&style1, LV_STATE_DEFAULT, 0);
 
 	static lv_style_t style2;
 	lv_style_init(&style2);
 	lv_style_set_radius(&style2, LV_STATE_DEFAULT, 0);
 	lv_style_set_pad_top(&style2, LV_STATE_DEFAULT, 2);
-    lv_style_set_pad_bottom(&style2, LV_STATE_DEFAULT, 5);
-    lv_style_set_pad_left(&style2, LV_STATE_DEFAULT, 2);
-    lv_style_set_pad_right(&style2, LV_STATE_DEFAULT, 2); 
+	lv_style_set_pad_bottom(&style2, LV_STATE_DEFAULT, 5);
+	lv_style_set_pad_left(&style2, LV_STATE_DEFAULT, 2);
+	lv_style_set_pad_right(&style2, LV_STATE_DEFAULT, 2);
 	lv_style_set_pad_inner(&style2, LV_STATE_DEFAULT, 5);
 	lv_style_set_margin_top(&style2, LV_STATE_DEFAULT, 0);
-    lv_style_set_margin_bottom(&style2, LV_STATE_DEFAULT, 0);
-    lv_style_set_margin_left(&style2, LV_STATE_DEFAULT, 0);
-    lv_style_set_margin_right(&style2, LV_STATE_DEFAULT, 0);
+	lv_style_set_margin_bottom(&style2, LV_STATE_DEFAULT, 0);
+	lv_style_set_margin_left(&style2, LV_STATE_DEFAULT, 0);
+	lv_style_set_margin_right(&style2, LV_STATE_DEFAULT, 0);
 
 	static lv_style_t style3;
 	lv_style_init(&style3);
-	lv_style_set_pad_top(&style3, LV_STATE_DEFAULT, 0);
-    lv_style_set_pad_bottom(&style3, LV_STATE_DEFAULT, 0);
-    lv_style_set_pad_left(&style3, LV_STATE_DEFAULT, 5);
-    lv_style_set_pad_right(&style3, LV_STATE_DEFAULT, 5);
+	lv_style_set_pad_top(&style3, LV_STATE_DEFAULT, 10);
+	lv_style_set_pad_bottom(&style3, LV_STATE_DEFAULT, 0);
+	lv_style_set_pad_left(&style3, LV_STATE_DEFAULT, 5);
+	lv_style_set_pad_right(&style3, LV_STATE_DEFAULT, 5);
 	lv_style_set_pad_inner(&style3, LV_STATE_DEFAULT, 0);
 	lv_style_set_margin_top(&style3, LV_STATE_DEFAULT, 0);
-    lv_style_set_margin_bottom(&style3, LV_STATE_DEFAULT, 0);
-    lv_style_set_margin_left(&style3, LV_STATE_DEFAULT, 0);
-    lv_style_set_margin_right(&style3, LV_STATE_DEFAULT, 0);
+	lv_style_set_margin_bottom(&style3, LV_STATE_DEFAULT, 0);
+	lv_style_set_margin_left(&style3, LV_STATE_DEFAULT, 0);
+	lv_style_set_margin_right(&style3, LV_STATE_DEFAULT, 0);
 
 	home_screen = lv_obj_create(NULL, NULL);
 	menu_screen = lv_obj_create(NULL, NULL);
@@ -400,7 +407,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
 	lv_tabview_set_anim_time(tabview, 100);
 	lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_NONE);
-	
+
 	tab_home = lv_tabview_add_tab(tabview, "1");
 	lv_page_set_scrlbar_mode(tab_home, LV_SCRLBAR_MODE_OFF);
 	//lv_obj_set_size(tabview, 320,240);
@@ -419,7 +426,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	tab_led_settings = lv_tabview_add_tab(tabview, "10");
 
 	//lv_obj_add_style(tabview, LV_TABVIEW_PART_BG, &style3);
-    //lv_obj_add_style(tabview, LV_TABVIEW_PART_BG_SCRL, &style3);
+	//lv_obj_add_style(tabview, LV_TABVIEW_PART_BG_SCRL, &style3);
 	/*
     win_home = lv_win_create(home_screen, NULL);
     lv_win_set_title(win_home, "Home");                        
@@ -439,70 +446,99 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	*/
 
 	status_bar_container = lv_cont_create(lv_layer_top(), NULL);
-	lv_obj_set_size(status_bar_container, 320,30);  
-    //lv_obj_set_auto_realign(status_bar_container, true);                    
-    lv_obj_align(status_bar_container, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);   
-    lv_cont_set_fit(status_bar_container, LV_FIT_NONE);
-    lv_cont_set_layout(status_bar_container, LV_LAYOUT_ROW_MID);
+	lv_obj_set_size(status_bar_container, 320, 30);
+	//lv_obj_set_auto_realign(status_bar_container, true);
+	lv_obj_align(status_bar_container, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+	lv_cont_set_fit(status_bar_container, LV_FIT_NONE);
+	lv_cont_set_layout(status_bar_container, LV_LAYOUT_OFF);
 	lv_obj_add_style(status_bar_container, LV_CONT_PART_MAIN, &style3);
 
 	label_battery = lv_label_create(status_bar_container, NULL);
-    lv_obj_align(label_battery, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
-    lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_FULL);
+	lv_obj_align(label_battery, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+	lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_FULL);
+	lv_obj_add_style(label_battery, LV_LABEL_PART_MAIN, &style3);
 
 	label_clock = lv_label_create(status_bar_container, NULL);
-    lv_obj_align(label_clock, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
-    lv_label_set_text(label_clock, hour());
+	lv_obj_align(label_clock, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
+	lv_obj_add_style(label_clock, LV_LABEL_PART_MAIN, &style3);
+	//lv_label_set_text(label_clock, );
+	//lv_label_set_text_fmt(label_clock, "Value: %s", MyDateAndTime.Hour);
 
 	label_bluetooth = lv_label_create(status_bar_container, NULL);
-    lv_obj_align(label_bluetooth, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
-    lv_label_set_text(label_bluetooth, LV_SYMBOL_BLUETOOTH);
+	lv_obj_align(label_bluetooth, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
+	lv_label_set_text(label_bluetooth, LV_SYMBOL_BLUETOOTH);
+	lv_obj_add_style(label_bluetooth, LV_LABEL_PART_MAIN, &style3);
 
 	music_control_container = lv_cont_create(lv_layer_top(), NULL);
-    //lv_obj_set_auto_realign(music_control_container, true);
-    lv_cont_set_fit(music_control_container, LV_FIT_NONE);
-    lv_cont_set_layout(music_control_container, LV_LAYOUT_ROW_TOP);
-	lv_obj_set_size(music_control_container, 320,40);                      
-    lv_obj_align(music_control_container, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);  
-   	lv_obj_add_style(music_control_container, LV_CONT_PART_MAIN, &style2);
+	//lv_obj_set_auto_realign(music_control_container, true);
+	lv_cont_set_fit(music_control_container, LV_FIT_NONE);
+	lv_cont_set_layout(music_control_container, LV_LAYOUT_ROW_TOP);
+	lv_obj_set_size(music_control_container, 320, 40);
+	lv_obj_align(music_control_container, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
+	lv_obj_add_style(music_control_container, LV_CONT_PART_MAIN, &style2);
 
-    //lv_obj_t * close_btn = lv_win_add_btn(win_home, LV_SYMBOL_CLOSE);         
-    //lv_obj_set_event_cb(close_btn, lv_win_close_event_cb);
-    //lv_win_add_btn(win, LV_SYMBOL_SETTINGS);        
-	
+	//lv_obj_t * close_btn = lv_win_add_btn(win_home, LV_SYMBOL_CLOSE);
+	//lv_obj_set_event_cb(close_btn, lv_win_close_event_cb);
+	//lv_win_add_btn(win, LV_SYMBOL_SETTINGS);
+
 	//menu_page = lv_page_create(win, NULL);
 	//lv_obj_set_size(menu_page, LV_HOR_RES, LV_VER_RES);
 	//menu_container = lv_page_get_scrl(menu_page);
-	
-	//lv_obj_set_auto_realign(menu_container, true);					 
-	//lv_obj_align_origo(menu_container, NULL, LV_ALIGN_CENTER, 0, 0); 
+
+	//lv_obj_set_auto_realign(menu_container, true);
+	//lv_obj_align_origo(menu_container, NULL, LV_ALIGN_CENTER, 0, 0);
 	//lv_cont_set_fit(menu_container, LV_FIT_MAX);
 	//lv_cont_set_layout(menu_container, LV_LAYOUT_COLUMN_MID);
 
+	/*Create a list*/
+	list1 = lv_list_create(tab_menu, NULL);
+	lv_obj_set_size(list1, 320, 170);
+	lv_obj_align(list1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 30);
+
+	/*Add buttons to the list*/
+
+	list_btn_bt = lv_list_add_btn(list1, LV_SYMBOL_BLUETOOTH, "Bluetooth");
+	lv_obj_set_event_cb(list_btn_bt, event_handler);
+
+	list_btn_audio = lv_list_add_btn(list1, LV_SYMBOL_AUDIO, "Audio");
+	lv_obj_set_event_cb(list_btn_audio, event_handler);
+
+	list_btn_disp = lv_list_add_btn(list1, LV_SYMBOL_IMAGE, "Display");
+	lv_obj_set_event_cb(list_btn_disp, event_handler);
+
+	list_btn_leds = lv_list_add_btn(list1, LV_SYMBOL_EYE_OPEN, "LEDs");
+	lv_obj_set_event_cb(list_btn_leds, event_handler);
+
+	list_btn_misc = lv_list_add_btn(list1, LV_SYMBOL_SETTINGS, "Misc");
+	lv_obj_set_event_cb(list_btn_misc, event_handler);
+
+	list_btn_pwr = lv_list_add_btn(list1, LV_SYMBOL_POWER, "Power");
+	lv_obj_set_event_cb(list_btn_pwr, event_handler);
+
 	btn_mute = lv_btn_create(music_control_container, NULL);
-    label = lv_label_create(btn_mute, NULL);
-    lv_label_set_text(label, LV_SYMBOL_MUTE);
+	label = lv_label_create(btn_mute, NULL);
+	lv_label_set_text(label, LV_SYMBOL_MUTE);
 	lv_obj_add_style(btn_mute, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_mute, 75, 35);
-	
+
 	btn_prev = lv_btn_create(music_control_container, NULL);
-    label = lv_label_create(btn_prev, NULL);
-    lv_label_set_text(label, LV_SYMBOL_PREV);
+	label = lv_label_create(btn_prev, NULL);
+	lv_label_set_text(label, LV_SYMBOL_PREV);
 	lv_obj_add_style(btn_prev, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_prev, 75, 35);
-	
+
 	btn_play = lv_btn_create(music_control_container, NULL);
-    label = lv_label_create(btn_play, NULL);
-    lv_label_set_text(label, LV_SYMBOL_PLAY);
+	label = lv_label_create(btn_play, NULL);
+	lv_label_set_text(label, LV_SYMBOL_PLAY);
 	lv_obj_add_style(btn_play, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_play, 75, 35);
-	
+
 	btn_next = lv_btn_create(music_control_container, NULL);
-    label = lv_label_create(btn_next, NULL);
-    lv_label_set_text(label, LV_SYMBOL_NEXT);
+	label = lv_label_create(btn_next, NULL);
+	lv_label_set_text(label, LV_SYMBOL_NEXT);
 	lv_obj_add_style(btn_next, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_next, 75, 35);
-	
+
 	btn1 = lv_btn_create(tab_bt_settings, NULL);
 	lv_obj_set_event_cb(btn1, event_bm83setup);
 	label = lv_label_create(btn1, NULL);
@@ -696,6 +732,22 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	u.setChangedHandler(rotate_u);
 	u.setLeftRotationHandler(showDirection_u);
 	u.setRightRotationHandler(showDirection_u);
+
+	// Create a variable to hold the data
+	DateTime MyTimestamp;
+
+	// Load it with the date and time you want to set, for example
+	//   Saturday the 3rd of October 2020 at 14:17 and 33 Seconds...
+	MyTimestamp.Day = 2;
+	MyTimestamp.Month = 7;
+	MyTimestamp.Year = 21;
+	MyTimestamp.Hour = 14;
+	MyTimestamp.Minute = 13;
+	MyTimestamp.Second = 33;
+
+	// Then write it to the clock
+	Clock.write(MyTimestamp);
+	
 }
 
 void loop() //< Standard arduino setup function
@@ -708,6 +760,8 @@ void loop() //< Standard arduino setup function
 
 	r.loop(); //< Encoder 1 menu loop
 	u.loop(); //< Encoder 2 volume loop
+	// Ask the clock for the data.
+	MyDateAndTime = Clock.read();
 
 	lv_task_handler(); //< LVGL task handler loop
 
@@ -763,6 +817,38 @@ void read_inputs(void *parameter) //< Buttons read function
 		}
 	}
 	vTaskDelay(5);
+}
+
+static void event_handler(lv_obj_t *obj, lv_event_t event)
+{
+	if (event == LV_EVENT_CLICKED)
+	{
+		if (obj == list_btn_bt)
+		{
+			Serial.println("1");
+		}
+		else if (obj == list_btn_audio)
+		{
+			Serial.println("2");
+		}
+		else if (obj == list_btn_disp)
+		{
+			Serial.println("3");
+		}
+		else if (obj == list_btn_leds)
+		{
+			Serial.println("4");
+		}
+		else if (obj == list_btn_misc)
+		{
+			Serial.println("5");
+		}
+		else if (obj == list_btn_pwr)
+		{
+			Serial.println("6");
+		}
+		//printf("Clicked: %s\n", lv_list_get_btn_text(obj));
+	}
 }
 
 static void event_bm83setup(lv_obj_t *btn1, lv_event_t event) //< BM83 setup function
@@ -917,7 +1003,6 @@ bool encoder_read(lv_indev_drv_t *encoder_indev, lv_indev_data_t *data)
 	return false; /*No buffering now so no more data read*/
 }
 
-
 int enc_get_new_moves()
 {
 	int encoderCount = r.getPosition();
@@ -927,6 +1012,18 @@ int enc_get_new_moves()
 	//Serial.println(diff);
 	return diff;
 }
+
+//void back(void* pvParameters)
+//{
+//	while (1)
+//	{
+//		if (lv_tabview_get_tab_act(tabview) == 5)
+//		{
+//			Serial.println("Hello");
+//		}
+		
+//	}
+//}
 
 static void slider_event_cb_ingain(lv_obj_t *slider_ingain, lv_event_t event)
 {
