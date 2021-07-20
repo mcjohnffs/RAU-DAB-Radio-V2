@@ -41,6 +41,7 @@
 #include "ESPRotary.h"				//!< Encoder Library für ESP32
 #include "soc/timer_group_struct.h" //!< Watchdog timer struct
 #include "soc/timer_group_reg.h"	//!< Watchdog timer reg
+#include <DS3232RTC.h>      // https://github.com/JChristensen/DS3232RTC
 
 #define BUFFER_MULTIPLIER 35 //!< LVGL buffer multiplier
 
@@ -136,6 +137,7 @@ lv_obj_t *lmeter2;
 lv_obj_t *label;
 lv_obj_t *label_battery;
 lv_obj_t *label_bluetooth;
+lv_obj_t *label_clock;
 lv_obj_t *spinbox;
 
 // Sound processor config sLiders
@@ -223,6 +225,13 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//xTaskCreatePinnedToCore(splash, "splash", 10000, NULL, 3, &Task2, 0);
 
 	pinMode(mfbPin, OUTPUT); //!< Sets the MFB pin (GPIO23) as output (BM83)
+
+	setSyncProvider(RTC.get);   // the function to get the time from the RTC
+
+    if(timeStatus() != timeSet)
+        Serial.println("Unable to sync with the RTC");
+    else
+        Serial.println("RTC has set the system time");
 
 	ledDriver.begin(); //!< Led driver init
 
@@ -440,6 +449,10 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	label_battery = lv_label_create(status_bar_container, NULL);
     lv_obj_align(label_battery, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
     lv_label_set_text(label_battery, LV_SYMBOL_BATTERY_FULL);
+
+	label_clock = lv_label_create(status_bar_container, NULL);
+    lv_obj_align(label_clock, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
+    lv_label_set_text(label_clock, hour());
 
 	label_bluetooth = lv_label_create(status_bar_container, NULL);
     lv_obj_align(label_bluetooth, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
