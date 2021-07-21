@@ -29,20 +29,16 @@
  */
 
 // Libraries
-#include <lvgl.h>	  //!< Light and versatile Embedded Graphics Library (LVGL)
-#include <TFT_eSPI.h> //!< General TFT library (TFT_eSPI)
-#include "touch.h"	  //!< Communication header for the touch controller - between "FT6206" and LVGL
-#include <Wire.h>	  //!< Arduino I2C library
-#include <PCA9634.h>
+#include <lvgl.h>			//!< Light and versatile Embedded Graphics Library (LVGL)
+#include <TFT_eSPI.h>		//!< General TFT library (TFT_eSPI)
+#include "touch.h"			//!< Communication header for the touch controller - between "FT6206" and LVGL
+#include <Wire.h>			//!< Arduino I2C library
+#include <PCA9634.h>		//!< LED driver library (PCA9634)
 #include <MCP23017.h>		//!< Port expander library (MPC23017)
 #include "BM83.h"			//!< Bluetooth Module library (BM83/BM64)
 #include <SoftwareSerial.h> //!< SoftwareSerial Library for ESP32
 #include <BD37544FS.h>		//!< Sound processor library (BD37544FS)
-#include "ESPRotary.h"		//!< Encoder Library für ESP32
-
-
-PCA9634 ledDriver(0x15, NULL);
-
+#include "ESPRotary.h"		//!< Encoder library for ESP32
 
 #define BUFFER_MULTIPLIER 35 //!< LVGL buffer multiplier
 
@@ -87,31 +83,19 @@ TaskHandle_t Task5;
 TaskHandle_t Task6;
 
 // Global LVGL object variables
-lv_obj_t *home_screen;
-lv_obj_t *menu_screen;
 lv_obj_t *splash_screen;
-
-lv_obj_t *menu_container;
-lv_obj_t *menu_page;
-
-lv_obj_t *win_home;
-lv_obj_t *win_menu;
 
 lv_obj_t *music_control_container;
 lv_obj_t *status_bar_container;
 lv_obj_t *audio_control_container;
 
-lv_obj_t *logo1;
-
 lv_obj_t *tabview;
 
 lv_obj_t *tab_home;
 lv_obj_t *tab_vis;
-
 lv_obj_t *tab_bt;
 lv_obj_t *tab_aux;
 lv_obj_t *tab_dab;
-
 lv_obj_t *tab_menu;
 lv_obj_t *tab_bt_settings;
 lv_obj_t *tab_audio_settings;
@@ -119,8 +103,6 @@ lv_obj_t *tab_power_settings;
 lv_obj_t *tab_display_settings;
 lv_obj_t *tab_led_settings;
 
-lv_obj_t *gauge1;
-lv_obj_t *led1;
 lv_obj_t *btn_play;
 lv_obj_t *btn_next;
 lv_obj_t *btn_prev;
@@ -134,25 +116,18 @@ lv_obj_t *list_btn_leds;
 lv_obj_t *list_btn_misc;
 lv_obj_t *list_btn_pwr;
 
-lv_obj_t *btn;
 lv_obj_t *btn1;
 lv_obj_t *btn2;
 lv_obj_t *btn3;
+
 lv_obj_t *sw1;
 lv_obj_t *sw2;
 lv_obj_t *sw3;
-lv_obj_t *main_container;
-lv_obj_t *cont;
-lv_obj_t *cont2;
-lv_obj_t *cont3;
-lv_obj_t *bar1;
-lv_obj_t *lmeter;
-lv_obj_t *lmeter2;
+
 lv_obj_t *label;
 lv_obj_t *label_battery;
 lv_obj_t *label_bluetooth;
 lv_obj_t *label_clock;
-lv_obj_t *spinbox;
 
 // Sound processor config sLiders "objects"
 lv_obj_t *slider_ingain;
@@ -215,8 +190,6 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 	lv_disp_flush_ready(disp);
 }
 
-
-
 void setup() //!< The standard Arduino setup function used for setup and configuration
 {
 
@@ -227,18 +200,13 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	swSerial.begin(9600); //!< Software serial for BM83/BM64 Uart communication @ 9600 baud
 
-
-	// Input read task creation
-	/* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
-
-	// Encoder read task creation
-
 	pinMode(mfbPin, OUTPUT); //!< Sets the MFB pin (GPIO23) as output (BM83)
-	
-	  ledDriver.begin();
-  // Turn all leds on 1 for type, 0 for pin wich doesn't matter because all bool is set to true.
-  ledDriver.allOff();
 
+	ledDriver.begin();
+	// Turn all leds on 1 for type, 0 for pin wich doesn't matter because all bool is set to true.
+	ledDriver.allOff();
+
+	/*
 	// Charger IC setup----------------------------------------------------------------
 	Wire.beginTransmission(0x6A);
 	Wire.write(0x14);
@@ -279,6 +247,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	Wire.write(0x09);
 	Wire.write(0x04);
 	Wire.endTransmission();
+	*/
 	// --------------------------------------------------------------------
 
 	mcp1.init();								//!< MCP1 init
@@ -393,28 +362,22 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_style_set_margin_left(&style3, LV_STATE_DEFAULT, 0);
 	lv_style_set_margin_right(&style3, LV_STATE_DEFAULT, 0);
 
-	home_screen = lv_obj_create(NULL, NULL);
-	menu_screen = lv_obj_create(NULL, NULL);
-
 	//Create Group for encoder 1
 	g = lv_group_create();
 	lv_indev_set_group(encoder_indev, g);
 
 	tabview = lv_tabview_create(lv_scr_act(), NULL);
 	//lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
-	lv_tabview_set_anim_time(tabview, 100);
+	//lv_tabview_set_anim_time(tabview, 100);
 	lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_NONE);
 
 	tab_home = lv_tabview_add_tab(tabview, "1");
 	lv_page_set_scrlbar_mode(tab_home, LV_SCRLBAR_MODE_OFF);
-	//lv_obj_set_size(tabview, 320,240);
 
 	tab_vis = lv_tabview_add_tab(tabview, "2");
-
 	tab_bt = lv_tabview_add_tab(tabview, "3");
 	tab_aux = lv_tabview_add_tab(tabview, "4");
 	tab_dab = lv_tabview_add_tab(tabview, "5");
-
 	tab_menu = lv_tabview_add_tab(tabview, "6");
 	tab_bt_settings = lv_tabview_add_tab(tabview, "7");
 	tab_audio_settings = lv_tabview_add_tab(tabview, "8");
@@ -422,29 +385,8 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	tab_display_settings = lv_tabview_add_tab(tabview, "10");
 	tab_led_settings = lv_tabview_add_tab(tabview, "11");
 
-	//lv_obj_add_style(tabview, LV_TABVIEW_PART_BG, &style3);
-	//lv_obj_add_style(tabview, LV_TABVIEW_PART_BG_SCRL, &style3);
-	/*
-    win_home = lv_win_create(home_screen, NULL);
-    lv_win_set_title(win_home, "Home");                        
-	lv_win_add_btn_left(win_home,LV_SYMBOL_BATTERY_2);
-	//lv_win_set_layout(win_home, LV_LAYOUT_COLUMN_MID);
-	lv_win_set_header_height(win_home, 30);
-	lv_win_set_scrollbar_mode(win_home, LV_SCRLBAR_MODE_OFF);
-	lv_win_set_layout(win_home, LV_LAYOUT_ROW_BOTTOM);
-	lv_obj_add_style(win_home, LV_WIN_PART_CONTENT_SCROLLABLE, &style2);
-	*/
-	/*
-	win_menu = lv_win_create(menu_screen, NULL);
-    lv_win_set_title(win_menu, "Menu");                       
-	lv_win_add_btn_left(win_menu,LV_SYMBOL_BATTERY_2);
-	lv_win_set_layout(win_menu, LV_LAYOUT_COLUMN_MID);
-	lv_win_set_header_height(win_menu, 30);
-	*/
-
 	status_bar_container = lv_cont_create(lv_layer_top(), NULL);
 	lv_obj_set_size(status_bar_container, 320, 30);
-	//lv_obj_set_auto_realign(status_bar_container, true);
 	lv_obj_align(status_bar_container, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
 	lv_cont_set_fit(status_bar_container, LV_FIT_NONE);
 	lv_cont_set_layout(status_bar_container, LV_LAYOUT_OFF);
@@ -458,8 +400,6 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	label_clock = lv_label_create(status_bar_container, NULL);
 	lv_obj_align(label_clock, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
 	lv_obj_add_style(label_clock, LV_LABEL_PART_MAIN, &style3);
-	//lv_label_set_text(label_clock, );
-	//lv_label_set_text_fmt(label_clock, "Value: %s", MyDateAndTime.Hour);
 
 	label_bluetooth = lv_label_create(status_bar_container, NULL);
 	lv_obj_align(label_bluetooth, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
@@ -467,40 +407,22 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_add_style(label_bluetooth, LV_LABEL_PART_MAIN, &style3);
 
 	music_control_container = lv_cont_create(lv_layer_top(), NULL);
-	//lv_obj_set_auto_realign(music_control_container, true);
 	lv_cont_set_fit(music_control_container, LV_FIT_NONE);
 	lv_cont_set_layout(music_control_container, LV_LAYOUT_ROW_TOP);
 	lv_obj_set_size(music_control_container, 320, 40);
 	lv_obj_align(music_control_container, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
 	lv_obj_add_style(music_control_container, LV_CONT_PART_MAIN, &style2);
 
-	//lv_obj_t * close_btn = lv_win_add_btn(win_home, LV_SYMBOL_CLOSE);
-	//lv_obj_set_event_cb(close_btn, lv_win_close_event_cb);
-	//lv_win_add_btn(win, LV_SYMBOL_SETTINGS);
-
-	//menu_page = lv_page_create(win, NULL);
-	//lv_obj_set_size(menu_page, LV_HOR_RES, LV_VER_RES);
-	//menu_container = lv_page_get_scrl(menu_page);
-
-	//lv_obj_set_auto_realign(menu_container, true);
-	//lv_obj_align_origo(menu_container, NULL, LV_ALIGN_CENTER, 0, 0);
-	//lv_cont_set_fit(menu_container, LV_FIT_MAX);
-	//lv_cont_set_layout(menu_container, LV_LAYOUT_COLUMN_MID);
-
 	audio_control_container = lv_cont_create(tab_audio_settings, NULL);
-	//lv_obj_set_auto_realign(music_control_container, true);
 	lv_cont_set_fit(audio_control_container, LV_FIT_NONE);
 	lv_cont_set_layout(audio_control_container, LV_LAYOUT_COLUMN_MID);
 	lv_obj_set_size(audio_control_container, 320, 170);
 	lv_obj_align(audio_control_container, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 30);
 	lv_obj_add_style(music_control_container, LV_CONT_PART_MAIN, &style2);
 
-	/*Create a list*/
 	list1 = lv_list_create(tab_menu, NULL);
 	lv_obj_set_size(list1, 320, 170);
 	lv_obj_align(list1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 30);
-
-	/*Add buttons to the list*/
 
 	list_btn_bt = lv_list_add_btn(list1, LV_SYMBOL_BLUETOOTH, "Bluetooth");
 	lv_obj_set_event_cb(list_btn_bt, event_handler);
@@ -577,14 +499,10 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_label_set_text(label, "PVCC");
 	lv_obj_set_event_cb(sw3, event_sw3);
 
-	//Input gain slider_____________________________________________
-
-	/* Create an informative label */
 	info_ingain = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(info_ingain, "Input Gain (0-20dB)");
 	lv_obj_align(info_ingain, slider_ingain, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
-	/* Create a slider in the center of the display */
 	slider_ingain = lv_slider_create(audio_control_container, NULL);
 	lv_obj_set_width(slider_ingain, LV_DPI * 1);
 	//lv_obj_align(slider_ingain, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 25);
@@ -592,17 +510,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_range(slider_ingain, 0, 20);
 	lv_slider_set_value(slider_ingain, 0, LV_ANIM_OFF);
 
-	/* Create a label below the slider */
 	slider_label_ingain = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_ingain, "0");
 	lv_obj_set_auto_realign(slider_label_ingain, true);
 	lv_obj_align(slider_label_ingain, slider_ingain, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
 
-	//______________________________________________________________
-
-	//Fader 1 slider________________________________________________
-
-	/* Create an informative label */
 	info_fade_1 = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(info_fade_1, "Fader 1 (0)-(-87dB)");
 	lv_obj_align(info_fade_1, slider_fade_1, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
@@ -614,15 +526,10 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_range(slider_fade_1, 0, 87);
 	lv_slider_set_value(slider_fade_1, 87, LV_ANIM_OFF);
 
-	/* Create a label below the slider */
 	slider_label_fade_1 = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_fade_1, "87");
 	lv_obj_set_auto_realign(slider_label_fade_1, true);
 	lv_obj_align(slider_label_fade_1, slider_fade_1, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
-
-	//______________________________________________________________
-
-	//Fader 2 slider________________________________________________
 
 	/* Create an informative label */
 	info_fade_2 = lv_label_create(audio_control_container, NULL);
@@ -636,17 +543,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_range(slider_fade_2, 0, 87);
 	lv_slider_set_value(slider_fade_2, 87, LV_ANIM_OFF);
 
-	/* Create a label below the slider */
 	slider_label_fade_2 = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_fade_2, "87");
 	lv_obj_set_auto_realign(slider_label_fade_2, true);
 	lv_obj_align(slider_label_fade_2, slider_fade_2, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
 
-	//______________________________________________________________
-
-	//Bass slider___________________________________________________
-
-	/* Create an informative label */
 	info_bass = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(info_bass, "Bass (-14)-(+14dB)");
 	lv_obj_align(info_bass, slider_bass, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
@@ -658,17 +559,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_range(slider_bass, -7, 7);
 	lv_slider_set_value(slider_bass, 0, LV_ANIM_OFF);
 
-	/* Create a label below the slider */
 	slider_label_bass = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_bass, "0");
 	lv_obj_set_auto_realign(slider_label_bass, true);
 	lv_obj_align(slider_label_bass, slider_bass, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
 
-	//______________________________________________________________
-
-	//Middle slider_________________________________________________
-
-	/* Create an informative label */
 	info_mid = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(info_mid, "Midd (-14)-(+14dB)");
 	lv_obj_align(info_mid, slider_mid, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
@@ -680,17 +575,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_range(slider_mid, -7, 7);
 	lv_slider_set_value(slider_mid, 0, LV_ANIM_OFF);
 
-	/* Create a label below the slider */
 	slider_label_mid = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_mid, "0");
 	lv_obj_set_auto_realign(slider_label_mid, true);
 	lv_obj_align(slider_label_mid, slider_mid, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
 
-	//______________________________________________________________
-
-	//Treble slider_________________________________________________
-
-	/* Create an informative label */
 	info_treb = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(info_treb, "Treb (-14)-(+14dB)");
 	lv_obj_align(info_treb, slider_treb, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
@@ -702,13 +591,10 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_range(slider_treb, -7, 7);
 	lv_slider_set_value(slider_treb, 0, LV_ANIM_OFF);
 
-	/* Create a label below the slider */
 	slider_label_treb = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_treb, "0");
 	lv_obj_set_auto_realign(slider_label_treb, true);
 	lv_obj_align(slider_label_treb, slider_treb, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
-
-	//______________________________________________________________
 
 	lv_group_add_obj(g, sw1);
 	lv_group_add_obj(g, sw2);
@@ -738,16 +624,15 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	u.setLeftRotationHandler(showDirection_u);
 	u.setRightRotationHandler(showDirection_u);
 
-
-
 	xTaskCreatePinnedToCore(loop_task, "Main loop task", 10000, NULL, 24, &Task1, 1);
 	xTaskCreatePinnedToCore(read_inputs, "Button input reads", 5000, NULL, 24, &Task2, 0);
 	xTaskCreatePinnedToCore(back, "Back funtion handling", 5000, NULL, 2, &Task3, 0);
 	//xTaskCreatePinnedToCore(source_leds, "Source LED handling", 5000, NULL, 5, &Task4, 0);
 }
 
-void loop() //< Standard arduino setup function 
+void loop()
 {
+	//Nothing, everything is handled with tasks
 }
 
 void loop_task(void *pvParameters) //< Standard arduino setup function
@@ -758,7 +643,7 @@ void loop_task(void *pvParameters) //< Standard arduino setup function
 
 		r.loop(); //< Encoder 1 menu loop
 		u.loop(); //< Encoder 2 volume loop
-		// Ask the clock for the data.
+
 		lv_task_handler(); //< LVGL task handler loop
 
 		vTaskDelay(1 / portTICK_PERIOD_MS);
@@ -782,7 +667,6 @@ void source_leds(void *pvParameters) //< Standard arduino setup function
 }
 */
 void read_inputs(void *pvParameters) //< Buttons read function
-
 {
 
 	for (;;)
@@ -793,7 +677,6 @@ void read_inputs(void *pvParameters) //< Buttons read function
 
 			if (bitRead(conf, i) == 1)
 			{
-
 				switch (i)
 				{
 				case 7:
@@ -807,13 +690,10 @@ void read_inputs(void *pvParameters) //< Buttons read function
 					break;
 				case 4:
 					//bm83.musicControl(MUSIC_CONTROL_NEXT);
-
-					
 					lv_tabview_set_tab_act(tabview, 7, LV_ANIM_ON);
 					break;
 				case 3:
 					//bm83.musicControl(MUSIC_CONTROL_PAUSE);
-				
 					//lv_tabview_set_tab_act(tabview, 6, LV_ANIM_ON);
 					break;
 				case 2:
@@ -864,7 +744,6 @@ static void event_handler(lv_obj_t *obj, lv_event_t event)
 		{
 			Serial.println("6");
 		}
-		//printf("Clicked: %s\n", lv_list_get_btn_text(obj));
 	}
 }
 
@@ -908,6 +787,7 @@ static void event_sw1(lv_obj_t *sw1, lv_event_t event_sw1)
 	if (event_sw1 == LV_EVENT_VALUE_CHANGED)
 	{
 		printf("State 7.5V: %s\n", lv_switch_get_state(sw1) ? "On" : "Off");
+
 		if (lv_switch_get_state(sw1) == 1)
 		{
 			mcp2.digitalWrite(1, 1);
@@ -924,6 +804,7 @@ static void event_sw2(lv_obj_t *sw2, lv_event_t event)
 	if (event == LV_EVENT_VALUE_CHANGED)
 	{
 		printf("State +-5V: %s\n", lv_switch_get_state(sw2) ? "On" : "Off");
+
 		if (lv_switch_get_state(sw2) == 1)
 		{
 			mcp2.digitalWrite(0, 1);
@@ -938,25 +819,26 @@ static void event_sw2(lv_obj_t *sw2, lv_event_t event)
 static void event_sw3(lv_obj_t *sw3, lv_event_t event)
 {
 	if (event == LV_EVENT_VALUE_CHANGED)
-
+	{
 		printf("State PVCC: %s\n", lv_switch_get_state(sw3) ? "On" : "Off");
-	if (lv_switch_get_state(sw3) == 1)
-	{
-		mcp2.digitalWrite(2, 1);
-	}
-	else
-	{
-		mcp2.digitalWrite(2, 0);
+
+		if (lv_switch_get_state(sw3) == 1)
+		{
+			mcp2.digitalWrite(2, 1);
+		}
+		else
+		{
+			mcp2.digitalWrite(2, 0);
+		}
 	}
 }
-
 // on change
 void rotate_r(ESPRotary &r)
 {
 	//Serial.println(r.getPosition());
 }
 
-// on left or right rotattion
+// on left or right rotation
 void showDirection_r(ESPRotary &r)
 {
 	//Serial.println(r.directionToString(r.getDirection()));

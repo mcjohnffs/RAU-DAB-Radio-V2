@@ -34,7 +34,9 @@ Anschliessend öffnet sich der "Boards Manager". Im Suchfenster "ESP32" suchen u
 
 ### Kompilieren und Flashen in der Arduino IDE
 
-## Visual Studio Code mit Arduino (Extension)
+Captain Obvious
+
+## Visual Studio Code mit Arduino (Extension) installieren
 
 ### Voraussetzungen
 
@@ -43,11 +45,28 @@ Anschliessend öffnet sich der "Boards Manager". Im Suchfenster "ESP32" suchen u
 
 -Marketplace Link [VSC Arduino Extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.vscode-arduino)
 
-Um die Entwicklung per Arduino Umgebung zu ermöglichen wird eine zusätzliche Extension benötigt. Diese kann direkt in der Software-Umgebung oder per Marketplace Link installiert werden.
+Um die Entwicklung per Arduino Umgebung zu ermöglichen wird eine zusätzliche Extension benötigt. 
+
+Diese kann auch direkt in der Software-Umgebung oder per Marketplace Link installiert werden.
+
+![Vsc_open](/assets/images/vsc_extension.png)
 
 !!! important "Wichtig"
     Arduino IDE inkl. ESP32 Arduino Core muss als erstes installiert werden um das Kompilieren und Uploaden von Arduino Code mit der Extension in Visual Studio Code zu ermöglichen.
 
  
 
-### Kompilieren und Flashen in Visual Studio Code
+## Kompilieren und Flashen in Visual Studio Code
+
+Oben Links auf "File" klicken und Ordner des Codes öffnen.
+
+![Vsc_open](/assets/images/vsc_open.png)
+
+Unten rechts Board (ESP32 Dev Module) und COM Port auswählen.
+
+![Vsc_board](/assets/images/vsc_board.png)
+
+Oben Rechts auf "Upload" klicken um den Code zu flashen.
+
+![Vsc_upload](/assets/images/vsc_upload.png)
+

@@ -1,14 +1,25 @@
 site_name: DAB V2.0
 site_url: https://mcjohnffs.github.io/
 theme:
-    name: readthedocs
+    name: material
+    palette:
+        scheme: slate
+        primary: black
+        accent: indigo
 markdown_extensions:
     - admonition
+    - pymdownx.highlight
+    - pymdownx.superfences
+    - pymdownx.details
+
+pymdownx.highlight:
+      linenums: true
+
 nav:
  - Home: 'index.md'
  - Hard- und Software Konfiguration: Hard- und Software Knfiguration.markdown
  - Installation der Entwicklungsumgebung: Installation der Entwicklungsumgebung.markdown
- - Code Beschreibung: index.md
+ - Code Beschreibung: code_beschreibung.md
  - BM83 Anleitung: bm83.md
  - Testsoftware: Testsoftware.markdown
  - Source Code: 'Files\_d_a_b__2___v0_81_8ino.md'
