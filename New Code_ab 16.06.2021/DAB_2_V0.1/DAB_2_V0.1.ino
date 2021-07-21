@@ -29,20 +29,32 @@
  */
 
 // Libraries
-#include <lvgl.h>					//!< Light and versatile Embedded Graphics Library (LVGL)
-#include <TFT_eSPI.h>				//!< General TFT library (TFT_eSPI)
-#include "touch.h"					//!< Communication header for the touch controller - between "FT6206" and LVGL
-#include <Wire.h>					//!< Arduino I2C library
-#include <PCA9634.h>				//!< Led driver library (PCA9634)
-#include <MCP23017.h>				//!< Port expander library (MPC23017)
-#include "BM83.h"					//!< Bluetooth Module library (BM83/BM64)
-#include <SoftwareSerial.h>			//!< SoftwareSerial Library for ESP32
-#include <BD37544FS.h>				//!< Sound processor library (BD37544FS)
-#include "ESPRotary.h"				//!< Encoder Library für ESP32
-#include "soc/timer_group_struct.h" //!< Watchdog timer struct
-#include "soc/timer_group_reg.h"	//!< Watchdog timer reg
-
+#include <lvgl.h>	  //!< Light and versatile Embedded Graphics Library (LVGL)
+#include <TFT_eSPI.h> //!< General TFT library (TFT_eSPI)
+#include "touch.h"	  //!< Communication header for the touch controller - between "FT6206" and LVGL
+#include <Wire.h>	  //!< Arduino I2C library
+#include <PCA9634.h>
+#include <MCP23017.h>		//!< Port expander library (MPC23017)
+#include "BM83.h"			//!< Bluetooth Module library (BM83/BM64)
+#include <SoftwareSerial.h> //!< SoftwareSerial Library for ESP32
+#include <BD37544FS.h>		//!< Sound processor library (BD37544FS)
+#include "ESPRotary.h"		//!< Encoder Library für ESP32
+#include <esp_task_wdt.h>
 #include <DS3231_Simple.h>
+#include <FastLED.h>
+
+// How many leds in your strip?
+#define NUM_LEDS 12
+
+// For led chips like WS2812, which have a data line, ground, and power, you just
+// need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
+// ground, and power), like the LPD8806 define both DATA_PIN and CLOCK_PIN
+// Clock pin only needed for SPI based chipsets when not using hardware SPI
+#define DATA_PIN 19
+#define CLOCK_PIN 18
+
+// Define the array of leds
+CRGB leds[NUM_LEDS];
 
 DS3231_Simple Clock;
 
@@ -83,6 +95,10 @@ int menu_status = 0;
 
 TaskHandle_t Task1; //!< Taskhandle for "read_inputs" task
 TaskHandle_t Task2;
+TaskHandle_t Task3;
+TaskHandle_t Task4; //!< Taskhandle for "read_inputs" task
+TaskHandle_t Task5;
+TaskHandle_t Task6;
 
 // Global LVGL object variables
 lv_obj_t *home_screen;
@@ -151,7 +167,7 @@ lv_obj_t *label_bluetooth;
 lv_obj_t *label_clock;
 lv_obj_t *spinbox;
 
-// Sound processor config sLiders
+// Sound processor config sLiders "objects"
 lv_obj_t *slider_ingain;
 lv_obj_t *slider_fade_1;
 lv_obj_t *slider_fade_2;
@@ -183,7 +199,7 @@ BD37544FS bd; //!< Sound processor instance (BD37544FS)
 SoftwareSerial swSerial(RX_PIN, TX_PIN); //!< Software serial instance (BM83)
 BM83 bm83(swSerial, TX_IND);			 //!< BM83 instance (BM83)
 
-PCA9634 ledDriver(0x15, 4); //!< Led driver instance (PCA9634)
+PCA9634 ledDriver(0x15, NULL); //!< Led driver instance (PCA9634)
 
 MCP23017 mcp1 = MCP23017(0x20); //!< MCP1 instance (Display board)
 MCP23017 mcp2 = MCP23017(0x24); //!< MCP2 instance (MCU board)
@@ -224,25 +240,20 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	swSerial.begin(9600); //!< Software serial for BM83/BM64 Uart communication @ 9600 baud
 
+	FastLED.addLeds<SK9822, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
+
 	// Input read task creation
-	xTaskCreatePinnedToCore(
-		read_inputs,   /* Task function. */
-		"read_inputs", /* String with name of task. */
-		5000,		   /* Stack size in bytes. */
-		NULL,		   /* Parameter passed as input of the task */
-		1,			   /* Priority of the task. */
-		&Task1,		   /* Task handle. */
-		0);			   /* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
+	/* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
 
 	// Encoder read task creation
-	//xTaskCreatePinnedToCore(back, "back", 5000, NULL, 3, &Task2, 0);
 
 	pinMode(mfbPin, OUTPUT); //!< Sets the MFB pin (GPIO23) as output (BM83)
 
 	Clock.begin();
-	ledDriver.begin(); //!< Led driver init
 
-	ledDriver.allOn(); //!< All  LEDs off (inverted)
+	
+
+	
 
 	// Charger IC setup----------------------------------------------------------------
 	Wire.beginTransmission(0x6A);
@@ -403,7 +414,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	g = lv_group_create();
 	lv_indev_set_group(encoder_indev, g);
 
-	tabview = lv_tabview_create(menu_screen, NULL);
+	tabview = lv_tabview_create(lv_scr_act(), NULL);
 	//lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_BOTTOM);
 	lv_tabview_set_anim_time(tabview, 100);
 	lv_tabview_set_btns_pos(tabview, LV_TABVIEW_TAB_POS_NONE);
@@ -715,13 +726,13 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_group_set_wrap(g, true);
 	lv_group_set_editing(g, false);
 
+	/*
 	splash_screen = lv_obj_create(NULL, NULL);
 	logo1 = lv_img_create(splash_screen, NULL);
 	lv_img_set_src(logo1, &raulogo);
 	lv_obj_align(logo1, splash_screen, LV_ALIGN_CENTER, 2, -3);
 	lv_obj_set_drag(logo1, false);
-
-	lv_scr_load(home_screen);
+	*/
 
 	r.begin(ENC1_ROTARY_PIN_A, ENC1_ROTARY_PIN_B, CLICKS_PER_STEP);
 	r.setChangedHandler(rotate_r);
@@ -747,28 +758,48 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	// Then write it to the clock
 	Clock.write(MyTimestamp);
-	
+
+	xTaskCreatePinnedToCore(loop_task, "Main loop task", 10000, NULL, 24, &Task1, 1);
+	xTaskCreatePinnedToCore(read_inputs, "Button input reads", 5000, NULL, 24, &Task2, 0);
+	xTaskCreatePinnedToCore(back, "Back funtion handling", 5000, NULL, 2, &Task3, 0);
+	xTaskCreatePinnedToCore(source_leds, "Source LED handling", 5000, NULL, 24, &Task4, 0);
 }
 
 void loop() //< Standard arduino setup function
 {
-	TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE; //!< Watchdog timer manipulation
-	TIMERG0.wdt_feed = 1;						//<
-	TIMERG0.wdt_wprotect = 0;					//<
-
-	conf = mcp1.readRegister(MCP23017Register::GPIO_A); //< MCP1 register read
-
-	r.loop(); //< Encoder 1 menu loop
-	u.loop(); //< Encoder 2 volume loop
-	// Ask the clock for the data.
-	MyDateAndTime = Clock.read();
-
-	lv_task_handler(); //< LVGL task handler loop
-
-	delay(2);
 }
 
-void read_inputs(void *parameter) //< Buttons read function
+void loop_task(void *pvParameters) //< Standard arduino setup function
+{
+	for (;;)
+	{
+		conf = mcp1.readRegister(MCP23017Register::GPIO_A); //< MCP1 register read
+
+		r.loop(); //< Encoder 1 menu loop
+		u.loop(); //< Encoder 2 volume loop
+		// Ask the clock for the data.
+		lv_task_handler(); //< LVGL task handler loop
+
+		vTaskDelay(1 / portTICK_PERIOD_MS);
+	}
+}
+
+void source_leds(void *pvParameters) //< Standard arduino setup function
+{
+	for (;;)
+	{
+
+		leds[0] = CRGB::Red;
+		FastLED.show();
+		delay(500);
+		// Now turn the LED off, then pause
+		leds[0] = CRGB::Black;
+		FastLED.show();
+		delay(500);
+	}
+}
+
+void read_inputs(void *pvParameters) //< Buttons read function
 
 {
 
@@ -794,29 +825,32 @@ void read_inputs(void *parameter) //< Buttons read function
 					break;
 				case 4:
 					bm83.musicControl(MUSIC_CONTROL_NEXT);
+
+					
 					//lv_tabview_set_tab_act(tabview, 7, LV_ANIM_ON);
-					lv_scr_load(home_screen);
 					break;
 				case 3:
 					bm83.musicControl(MUSIC_CONTROL_PAUSE);
+				
 					//lv_tabview_set_tab_act(tabview, 6, LV_ANIM_ON);
-					lv_scr_load(menu_screen);
 					break;
 				case 2:
 					bm83.musicControl(MUSIC_CONTROL_PLAY);
-					lv_tabview_set_tab_act(tabview, 5, LV_ANIM_ON);
+					lv_tabview_set_tab_act(tabview, 5, LV_ANIM_OFF);
+					Serial.println("Case 2");
 					break;
 				case 1:
 					bm83.musicControl(MUSIC_CONTROL_PREV);
-					lv_tabview_set_tab_act(tabview, 1, LV_ANIM_ON);
+					lv_tabview_set_tab_act(tabview, 1, LV_ANIM_OFF);
+					Serial.println("Case 1");
 					break;
 				case 0:
 					break;
 				}
 			}
 		}
+		vTaskDelay(3 / portTICK_PERIOD_MS);
 	}
-	vTaskDelay(5);
 }
 
 static void event_handler(lv_obj_t *obj, lv_event_t event)
@@ -956,7 +990,7 @@ void rotate_u(ESPRotary &u)
 	delay(2);
 }
 
-/*
+/*           
 void menu_button(void *pvParameter)
 {
 	int counter = 1;
@@ -1013,17 +1047,16 @@ int enc_get_new_moves()
 	return diff;
 }
 
-//void back(void* pvParameters)
-//{
-//	while (1)
-//	{
-//		if (lv_tabview_get_tab_act(tabview) == 5)
-//		{
-//			Serial.println("Hello");
-//		}
-		
-//	}
-//}
+void back(void *pvParameters)
+{
+
+	for (int i = 0; i <= 20; i++)
+	{
+		Serial.println(i);
+		vTaskDelay(2 / portTICK_PERIOD_MS);
+	}
+	vTaskDelete(NULL);
+}
 
 static void slider_event_cb_ingain(lv_obj_t *slider_ingain, lv_event_t event)
 {
