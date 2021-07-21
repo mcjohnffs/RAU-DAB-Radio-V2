@@ -39,24 +39,10 @@
 #include <SoftwareSerial.h> //!< SoftwareSerial Library for ESP32
 #include <BD37544FS.h>		//!< Sound processor library (BD37544FS)
 #include "ESPRotary.h"		//!< Encoder Library für ESP32
-#include <esp_task_wdt.h>
-#include <DS3231_Simple.h>
-#include <FastLED.h>
 
-// How many leds in your strip?
-#define NUM_LEDS 12
 
-// For led chips like WS2812, which have a data line, ground, and power, you just
-// need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
-// ground, and power), like the LPD8806 define both DATA_PIN and CLOCK_PIN
-// Clock pin only needed for SPI based chipsets when not using hardware SPI
-#define DATA_PIN 19
-#define CLOCK_PIN 18
+PCA9634 ledDriver(0x15, NULL);
 
-// Define the array of leds
-CRGB leds[NUM_LEDS];
-
-DS3231_Simple Clock;
 
 #define BUFFER_MULTIPLIER 35 //!< LVGL buffer multiplier
 
@@ -229,7 +215,7 @@ void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color
 	lv_disp_flush_ready(disp);
 }
 
-DateTime MyDateAndTime;
+
 
 void setup() //!< The standard Arduino setup function used for setup and configuration
 {
@@ -241,7 +227,6 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	swSerial.begin(9600); //!< Software serial for BM83/BM64 Uart communication @ 9600 baud
 
-	FastLED.addLeds<SK9822, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
 
 	// Input read task creation
 	/* Core 0 or 1 (Core 1 is used for the arduino loop function for now)*/
@@ -249,12 +234,10 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	// Encoder read task creation
 
 	pinMode(mfbPin, OUTPUT); //!< Sets the MFB pin (GPIO23) as output (BM83)
-
-	Clock.begin();
-
 	
-
-	
+	  ledDriver.begin();
+  // Turn all leds on 1 for type, 0 for pin wich doesn't matter because all bool is set to true.
+  ledDriver.allOff();
 
 	// Charger IC setup----------------------------------------------------------------
 	Wire.beginTransmission(0x6A);
@@ -305,6 +288,8 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	mcp2.init();					   //!< MCP2 init
 	mcp2.portMode(MCP23017Port::A, 0); //!< Set all as outputs (MCP2)
 	delay(5);
+
+	Serial.println("MCP init complete"); //!< 7.5V enable
 
 	// Standby sequence
 	mcp2.digitalWrite(1, 0); //!< 7.5V disable
@@ -430,12 +415,12 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	tab_aux = lv_tabview_add_tab(tabview, "4");
 	tab_dab = lv_tabview_add_tab(tabview, "5");
 
-	tab_menu = lv_tabview_add_tab(tabview, "5");
-	tab_bt_settings = lv_tabview_add_tab(tabview, "6");
-	tab_audio_settings = lv_tabview_add_tab(tabview, "7");
-	tab_power_settings = lv_tabview_add_tab(tabview, "8");
-	tab_display_settings = lv_tabview_add_tab(tabview, "9");
-	tab_led_settings = lv_tabview_add_tab(tabview, "10");
+	tab_menu = lv_tabview_add_tab(tabview, "6");
+	tab_bt_settings = lv_tabview_add_tab(tabview, "7");
+	tab_audio_settings = lv_tabview_add_tab(tabview, "8");
+	tab_power_settings = lv_tabview_add_tab(tabview, "9");
+	tab_display_settings = lv_tabview_add_tab(tabview, "10");
+	tab_led_settings = lv_tabview_add_tab(tabview, "11");
 
 	//lv_obj_add_style(tabview, LV_TABVIEW_PART_BG, &style3);
 	//lv_obj_add_style(tabview, LV_TABVIEW_PART_BG_SCRL, &style3);
@@ -753,28 +738,15 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	u.setLeftRotationHandler(showDirection_u);
 	u.setRightRotationHandler(showDirection_u);
 
-	// Create a variable to hold the data
-	DateTime MyTimestamp;
 
-	// Load it with the date and time you want to set, for example
-	//   Saturday the 3rd of October 2020 at 14:17 and 33 Seconds...
-	MyTimestamp.Day = 2;
-	MyTimestamp.Month = 7;
-	MyTimestamp.Year = 21;
-	MyTimestamp.Hour = 14;
-	MyTimestamp.Minute = 13;
-	MyTimestamp.Second = 33;
-
-	// Then write it to the clock
-	Clock.write(MyTimestamp);
 
 	xTaskCreatePinnedToCore(loop_task, "Main loop task", 10000, NULL, 24, &Task1, 1);
 	xTaskCreatePinnedToCore(read_inputs, "Button input reads", 5000, NULL, 24, &Task2, 0);
 	xTaskCreatePinnedToCore(back, "Back funtion handling", 5000, NULL, 2, &Task3, 0);
-	xTaskCreatePinnedToCore(source_leds, "Source LED handling", 5000, NULL, 5, &Task4, 0);
+	//xTaskCreatePinnedToCore(source_leds, "Source LED handling", 5000, NULL, 5, &Task4, 0);
 }
 
-void loop() //< Standard arduino setup function
+void loop() //< Standard arduino setup function 
 {
 }
 
@@ -793,6 +765,7 @@ void loop_task(void *pvParameters) //< Standard arduino setup function
 	}
 }
 
+/*
 void source_leds(void *pvParameters) //< Standard arduino setup function
 {
 	for (;;)
@@ -807,7 +780,7 @@ void source_leds(void *pvParameters) //< Standard arduino setup function
 		vTaskDelay(500 / portTICK_PERIOD_MS);
 	}
 }
-
+*/
 void read_inputs(void *pvParameters) //< Buttons read function
 
 {
@@ -833,23 +806,23 @@ void read_inputs(void *pvParameters) //< Buttons read function
 
 					break;
 				case 4:
-					bm83.musicControl(MUSIC_CONTROL_NEXT);
+					//bm83.musicControl(MUSIC_CONTROL_NEXT);
 
 					
-					//lv_tabview_set_tab_act(tabview, 7, LV_ANIM_ON);
+					lv_tabview_set_tab_act(tabview, 7, LV_ANIM_ON);
 					break;
 				case 3:
-					bm83.musicControl(MUSIC_CONTROL_PAUSE);
+					//bm83.musicControl(MUSIC_CONTROL_PAUSE);
 				
 					//lv_tabview_set_tab_act(tabview, 6, LV_ANIM_ON);
 					break;
 				case 2:
-					bm83.musicControl(MUSIC_CONTROL_PLAY);
-					lv_tabview_set_tab_act(tabview, 5, LV_ANIM_OFF);
+					//bm83.musicControl(MUSIC_CONTROL_PLAY);
+					lv_tabview_set_tab_act(tabview, 6, LV_ANIM_OFF);
 					Serial.println("Menu");
 					break;
 				case 1:
-					bm83.musicControl(MUSIC_CONTROL_PREV);
+					//bm83.musicControl(MUSIC_CONTROL_PREV);
 					lv_tabview_set_tab_act(tabview, 1, LV_ANIM_OFF);
 					Serial.println("Home");
 					break;
