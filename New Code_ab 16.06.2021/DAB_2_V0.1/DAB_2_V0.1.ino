@@ -113,6 +113,7 @@ lv_obj_t *win_menu;
 
 lv_obj_t *music_control_container;
 lv_obj_t *status_bar_container;
+lv_obj_t *audio_control_container;
 
 lv_obj_t *logo1;
 
@@ -501,6 +502,14 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//lv_cont_set_fit(menu_container, LV_FIT_MAX);
 	//lv_cont_set_layout(menu_container, LV_LAYOUT_COLUMN_MID);
 
+	audio_control_container = lv_cont_create(tab_audio_settings, NULL);
+	//lv_obj_set_auto_realign(music_control_container, true);
+	lv_cont_set_fit(audio_control_container, LV_FIT_NONE);
+	lv_cont_set_layout(audio_control_container, LV_LAYOUT_COLUMN_MID);
+	lv_obj_set_size(audio_control_container, 320, 170);
+	lv_obj_align(audio_control_container, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 30);
+	lv_obj_add_style(music_control_container, LV_CONT_PART_MAIN, &style2);
+
 	/*Create a list*/
 	list1 = lv_list_create(tab_menu, NULL);
 	lv_obj_set_size(list1, 320, 170);
@@ -586,12 +595,12 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Input gain slider_____________________________________________
 
 	/* Create an informative label */
-	info_ingain = lv_label_create(tab_menu, NULL);
+	info_ingain = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(info_ingain, "Input Gain (0-20dB)");
 	lv_obj_align(info_ingain, slider_ingain, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
 	/* Create a slider in the center of the display */
-	slider_ingain = lv_slider_create(tab_menu, NULL);
+	slider_ingain = lv_slider_create(audio_control_container, NULL);
 	lv_obj_set_width(slider_ingain, LV_DPI * 1);
 	//lv_obj_align(slider_ingain, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 25);
 	lv_obj_set_event_cb(slider_ingain, slider_event_cb_ingain);
@@ -599,7 +608,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_ingain, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_ingain = lv_label_create(tab_menu, NULL);
+	slider_label_ingain = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_ingain, "0");
 	lv_obj_set_auto_realign(slider_label_ingain, true);
 	lv_obj_align(slider_label_ingain, slider_ingain, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
@@ -609,11 +618,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Fader 1 slider________________________________________________
 
 	/* Create an informative label */
-	info_fade_1 = lv_label_create(tab_menu, NULL);
+	info_fade_1 = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(info_fade_1, "Fader 1 (0)-(-87dB)");
 	lv_obj_align(info_fade_1, slider_fade_1, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
-	slider_fade_1 = lv_slider_create(tab_menu, NULL);
+	slider_fade_1 = lv_slider_create(audio_control_container, NULL);
 	lv_obj_set_width(slider_fade_1, LV_DPI * 1);
 	//lv_obj_align(slider_fade_1, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 80);
 	lv_obj_set_event_cb(slider_fade_1, slider_event_cb_fade_1);
@@ -621,7 +630,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_fade_1, 87, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_fade_1 = lv_label_create(tab_menu, NULL);
+	slider_label_fade_1 = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_fade_1, "87");
 	lv_obj_set_auto_realign(slider_label_fade_1, true);
 	lv_obj_align(slider_label_fade_1, slider_fade_1, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
@@ -631,11 +640,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Fader 2 slider________________________________________________
 
 	/* Create an informative label */
-	info_fade_2 = lv_label_create(tab_menu, NULL);
+	info_fade_2 = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(info_fade_2, "Fader 2 (0)-(-87dB)");
 	lv_obj_align(info_fade_2, slider_fade_2, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
-	slider_fade_2 = lv_slider_create(tab_menu, NULL);
+	slider_fade_2 = lv_slider_create(audio_control_container, NULL);
 	lv_obj_set_width(slider_fade_2, LV_DPI * 1);
 	//lv_obj_align(slider_fade_2, NULL, LV_ALIGN_IN_TOP_LEFT, 15, 135);
 	lv_obj_set_event_cb(slider_fade_2, slider_event_cb_fade_2);
@@ -643,7 +652,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_fade_2, 87, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_fade_2 = lv_label_create(tab_menu, NULL);
+	slider_label_fade_2 = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_fade_2, "87");
 	lv_obj_set_auto_realign(slider_label_fade_2, true);
 	lv_obj_align(slider_label_fade_2, slider_fade_2, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
@@ -653,11 +662,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Bass slider___________________________________________________
 
 	/* Create an informative label */
-	info_bass = lv_label_create(tab_menu, NULL);
+	info_bass = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(info_bass, "Bass (-14)-(+14dB)");
 	lv_obj_align(info_bass, slider_bass, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
-	slider_bass = lv_slider_create(tab_menu, NULL);
+	slider_bass = lv_slider_create(audio_control_container, NULL);
 	lv_obj_set_width(slider_bass, LV_DPI * 1);
 	//lv_obj_align(slider_bass, NULL, LV_ALIGN_IN_TOP_RIGHT, -15, 25);
 	lv_obj_set_event_cb(slider_bass, slider_event_cb_bass);
@@ -665,7 +674,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_bass, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_bass = lv_label_create(tab_menu, NULL);
+	slider_label_bass = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_bass, "0");
 	lv_obj_set_auto_realign(slider_label_bass, true);
 	lv_obj_align(slider_label_bass, slider_bass, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
@@ -675,11 +684,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Middle slider_________________________________________________
 
 	/* Create an informative label */
-	info_mid = lv_label_create(tab_menu, NULL);
+	info_mid = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(info_mid, "Midd (-14)-(+14dB)");
 	lv_obj_align(info_mid, slider_mid, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
-	slider_mid = lv_slider_create(tab_menu, NULL);
+	slider_mid = lv_slider_create(audio_control_container, NULL);
 	lv_obj_set_width(slider_mid, LV_DPI * 1);
 	//lv_obj_align(slider_mid, NULL, LV_ALIGN_IN_TOP_RIGHT, -20, 80);
 	lv_obj_set_event_cb(slider_mid, slider_event_cb_mid);
@@ -687,7 +696,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_mid, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_mid = lv_label_create(tab_menu, NULL);
+	slider_label_mid = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_mid, "0");
 	lv_obj_set_auto_realign(slider_label_mid, true);
 	lv_obj_align(slider_label_mid, slider_mid, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
@@ -697,11 +706,11 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	//Treble slider_________________________________________________
 
 	/* Create an informative label */
-	info_treb = lv_label_create(tab_menu, NULL);
+	info_treb = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(info_treb, "Treb (-14)-(+14dB)");
 	lv_obj_align(info_treb, slider_treb, LV_ALIGN_OUT_TOP_LEFT, 0, 0);
 
-	slider_treb = lv_slider_create(tab_menu, NULL);
+	slider_treb = lv_slider_create(audio_control_container, NULL);
 	lv_obj_set_width(slider_treb, LV_DPI * 1);
 	//lv_obj_align(slider_treb, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 135);
 	lv_obj_set_event_cb(slider_treb, slider_event_cb_treb);
@@ -709,7 +718,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_slider_set_value(slider_treb, 0, LV_ANIM_OFF);
 
 	/* Create a label below the slider */
-	slider_label_treb = lv_label_create(tab_menu, NULL);
+	slider_label_treb = lv_label_create(audio_control_container, NULL);
 	lv_label_set_text(slider_label_treb, "0");
 	lv_obj_set_auto_realign(slider_label_treb, true);
 	lv_obj_align(slider_label_treb, slider_treb, LV_ALIGN_OUT_BOTTOM_MID, 5, 5);
@@ -762,7 +771,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	xTaskCreatePinnedToCore(loop_task, "Main loop task", 10000, NULL, 24, &Task1, 1);
 	xTaskCreatePinnedToCore(read_inputs, "Button input reads", 5000, NULL, 24, &Task2, 0);
 	xTaskCreatePinnedToCore(back, "Back funtion handling", 5000, NULL, 2, &Task3, 0);
-	xTaskCreatePinnedToCore(source_leds, "Source LED handling", 5000, NULL, 24, &Task4, 0);
+	xTaskCreatePinnedToCore(source_leds, "Source LED handling", 5000, NULL, 5, &Task4, 0);
 }
 
 void loop() //< Standard arduino setup function
@@ -791,11 +800,11 @@ void source_leds(void *pvParameters) //< Standard arduino setup function
 
 		leds[0] = CRGB::Red;
 		FastLED.show();
-		delay(500);
+		vTaskDelay(500 / portTICK_PERIOD_MS);
 		// Now turn the LED off, then pause
 		leds[0] = CRGB::Black;
 		FastLED.show();
-		delay(500);
+		vTaskDelay(500 / portTICK_PERIOD_MS);
 	}
 }
 
@@ -837,12 +846,12 @@ void read_inputs(void *pvParameters) //< Buttons read function
 				case 2:
 					bm83.musicControl(MUSIC_CONTROL_PLAY);
 					lv_tabview_set_tab_act(tabview, 5, LV_ANIM_OFF);
-					Serial.println("Case 2");
+					Serial.println("Menu");
 					break;
 				case 1:
 					bm83.musicControl(MUSIC_CONTROL_PREV);
 					lv_tabview_set_tab_act(tabview, 1, LV_ANIM_OFF);
-					Serial.println("Case 1");
+					Serial.println("Home");
 					break;
 				case 0:
 					break;
@@ -863,6 +872,7 @@ static void event_handler(lv_obj_t *obj, lv_event_t event)
 		}
 		else if (obj == list_btn_audio)
 		{
+			lv_tabview_set_tab_act(tabview, 7, LV_ANIM_OFF);
 			Serial.println("2");
 		}
 		else if (obj == list_btn_disp)

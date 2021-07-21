@@ -1,0 +1,6 @@
+{
+    "port": "COM10",
+    "configuration": "PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none",
+    "board": "esp32:esp32:esp32",
+    "sketch": "DAB_2_V0.1\\DAB_2_V0.1.ino"
+}
