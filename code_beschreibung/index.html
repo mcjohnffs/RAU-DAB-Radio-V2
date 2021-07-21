@@ -1,0 +1,817 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="canonical" href="https://mcjohnffs.github.io/code_beschreibung/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.9">
+    
+    
+      
+        <title>Code Beschreibung - DAB V2.0</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ca7ac06f.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.f1a3b89f.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#000000">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#code-beschreibung" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="DAB V2.0" class="md-header__button md-logo" aria-label="DAB V2.0" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DAB V2.0
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Code Beschreibung
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="DAB V2.0" class="md-nav__button md-logo" aria-label="DAB V2.0" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    DAB V2.0
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Hard-%20und%20Software%20Knfiguration/" class="md-nav__link">
+        Hard- und Software Konfiguration
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Installation%20der%20Entwicklungsumgebung/" class="md-nav__link">
+        Installation der Entwicklungsumgebung
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Code Beschreibung
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Code Beschreibung
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#code-aufbau" class="md-nav__link">
+    Code Aufbau
+  </a>
+  
+    <nav class="md-nav" aria-label="Code Aufbau">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-bibliotheken-libraries" class="md-nav__link">
+    1. Bibliotheken / Libraries
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-variablen" class="md-nav__link">
+    2. Variablen
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lvgl" class="md-nav__link">
+    LVGL
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tft_espi" class="md-nav__link">
+    TFT_eSPI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#touch" class="md-nav__link">
+    touch
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wire" class="md-nav__link">
+    Wire
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pca9634" class="md-nav__link">
+    PCA9634
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp23017" class="md-nav__link">
+    MCP23017
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bm83" class="md-nav__link">
+    BM83
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#softwareserial" class="md-nav__link">
+    SoftwareSerial
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bd37544fs" class="md-nav__link">
+    BD37544FS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esprotary" class="md-nav__link">
+    ESPRotary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bm83/" class="md-nav__link">
+        BM83 Anleitung
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Testsoftware/" class="md-nav__link">
+        Testsoftware
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Files/_d_a_b__2___v0_81_8ino/" class="md-nav__link">
+        Source Code
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Datenbl%C3%A4tter/" class="md-nav__link">
+        Datenblätter
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Quellen/" class="md-nav__link">
+        Quellen
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#code-aufbau" class="md-nav__link">
+    Code Aufbau
+  </a>
+  
+    <nav class="md-nav" aria-label="Code Aufbau">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-bibliotheken-libraries" class="md-nav__link">
+    1. Bibliotheken / Libraries
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-variablen" class="md-nav__link">
+    2. Variablen
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lvgl" class="md-nav__link">
+    LVGL
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tft_espi" class="md-nav__link">
+    TFT_eSPI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#touch" class="md-nav__link">
+    touch
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wire" class="md-nav__link">
+    Wire
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pca9634" class="md-nav__link">
+    PCA9634
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp23017" class="md-nav__link">
+    MCP23017
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bm83" class="md-nav__link">
+    BM83
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#softwareserial" class="md-nav__link">
+    SoftwareSerial
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bd37544fs" class="md-nav__link">
+    BD37544FS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esprotary" class="md-nav__link">
+    ESPRotary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="code-beschreibung">Code Beschreibung</h1>
+<h2 id="code-aufbau">Code Aufbau</h2>
+<h3 id="1-bibliotheken-libraries">1. Bibliotheken / Libraries</h3>
+<div class="highlight"><pre><span></span><code><span class="cp">#include</span> <span class="cpf">&lt;lvgl.h&gt;</span><span class="c1">           //!&lt; Light and versatile Embedded Graphics Library (LVGL)</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;TFT_eSPI.h&gt;</span><span class="c1">       //!&lt; General TFT library (TFT_eSPI)</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;touch.h&quot;</span><span class="c1">          //!&lt; Communication header for the touch controller - between &quot;FT6206&quot; and LVGL</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;Wire.h&gt;</span><span class="c1">           //!&lt; Arduino I2C library</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;PCA9634.h&gt;</span><span class="c1">        //!&lt; LED driver library (PCA9634)</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;MCP23017.h&gt;</span><span class="c1">       //!&lt; Port expander library (MPC23017)</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;BM83.h&quot;</span><span class="c1">           //!&lt; Bluetooth Module library (BM83/BM64)</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;SoftwareSerial.h&gt;</span><span class="c1"> //!&lt; SoftwareSerial Library for ESP32</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;BD37544FS.h&gt;</span><span class="c1">      //!&lt; Sound processor library (BD37544FS)</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;ESPRotary.h&quot;</span><span class="c1">      //!&lt; Encoder library for ESP32</span><span class="cp"></span>
+</code></pre></div>
+<h3 id="2-variablen">2. Variablen</h3>
+<div class="highlight"><pre><span></span><code><span class="cp">#define BUFFER_MULTIPLIER 35 </span><span class="c1">//!&lt; LVGL buffer multiplier</span>
+
+<span class="cp">#define RX_PIN 4 </span><span class="c1">//!&lt; BM83 UART RX</span>
+<span class="cp">#define TX_PIN 0 </span><span class="c1">//!&lt; BM83 UART TX</span>
+<span class="cp">#define TX_IND 5 </span><span class="c1">//!&lt; BM83 TX IND</span>
+<span class="cp">#define DAC1 26  </span><span class="c1">//!&lt; DAC pin for DC_SET_V</span>
+
+<span class="cp">#define ENC1_ROTARY_PIN_A 34 </span><span class="c1">//!&lt; Encoder 1 Pin A</span>
+<span class="cp">#define ENC1_ROTARY_PIN_B 35 </span><span class="c1">//!&lt; Encoder 1 Pin B</span>
+
+<span class="cp">#define ENC2_ROTARY_PIN_A 39 </span><span class="c1">//!&lt; Encoder 2 Pin A</span>
+<span class="cp">#define ENC2_ROTARY_PIN_B 36 </span><span class="c1">//!&lt; Encoder 2 Pin B</span>
+
+<span class="cp">#define CLICKS_PER_STEP 2 </span><span class="c1">// Number depends on the encoder</span>
+
+<span class="cp">#define MIN_POS 87  </span><span class="c1">//!&lt; Max volume 0 dB</span>
+<span class="cp">#define MAX_POS 0   </span><span class="c1">//!&lt; Min volume -87 dB</span>
+<span class="cp">#define START_POS 0 </span><span class="c1">//!&lt; Volume start position</span>
+<span class="cp">#define INCREMENT 1 </span><span class="c1">//!&lt; Volume increment</span>
+
+<span class="k">const</span> <span class="kt">int</span> <span class="n">mfbPin</span> <span class="o">=</span> <span class="mi">23</span><span class="p">;</span> <span class="c1">//!&lt; BM83 MFB Pin, required for BM83 power on</span>
+
+<span class="k">static</span> <span class="n">lv_group_t</span> <span class="o">*</span><span class="n">g</span><span class="p">;</span>             <span class="c1">//!&lt; An object group</span>
+<span class="k">static</span> <span class="n">lv_indev_t</span> <span class="o">*</span><span class="n">encoder_indev</span><span class="p">;</span> <span class="c1">//!&lt; Encoder 1 LVGL input device</span>
+
+<span class="n">LV_IMG_DECLARE</span><span class="p">(</span><span class="n">raulogo</span><span class="p">);</span>
+
+<span class="c1">// Global variables</span>
+<span class="kt">uint8_t</span> <span class="n">conf</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">vol</span><span class="p">;</span> <span class="c1">//!&lt; Current volume value</span>
+<span class="kt">int</span> <span class="n">encoderLastValue</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">k</span><span class="p">;</span> <span class="c1">//!&lt; Current encoder position (volume)</span>
+<span class="kt">int</span> <span class="n">menu_status</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="n">TaskHandle_t</span> <span class="n">Task1</span><span class="p">;</span> <span class="c1">//!&lt; Taskhandle for &quot;read_inputs&quot; task</span>
+<span class="n">TaskHandle_t</span> <span class="n">Task2</span><span class="p">;</span>
+<span class="n">TaskHandle_t</span> <span class="n">Task3</span><span class="p">;</span>
+<span class="n">TaskHandle_t</span> <span class="n">Task4</span><span class="p">;</span> <span class="c1">//!&lt; Taskhandle for &quot;read_inputs&quot; task</span>
+<span class="n">TaskHandle_t</span> <span class="n">Task5</span><span class="p">;</span>
+<span class="n">TaskHandle_t</span> <span class="n">Task6</span><span class="p">;</span>
+
+<span class="c1">// Global LVGL object variables</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">splash_screen</span><span class="p">;</span>
+
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">music_control_container</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">status_bar_container</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">audio_control_container</span><span class="p">;</span>
+
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tabview</span><span class="p">;</span>
+
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tab_home</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tab_vis</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tab_bt</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tab_aux</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tab_dab</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tab_menu</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tab_bt_settings</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tab_audio_settings</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tab_power_settings</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tab_display_settings</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">tab_led_settings</span><span class="p">;</span>
+
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">btn_play</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">btn_next</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">btn_prev</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">btn_mute</span><span class="p">;</span>
+
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">list1</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">list_btn_bt</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">list_btn_audio</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">list_btn_disp</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">list_btn_leds</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">list_btn_misc</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">list_btn_pwr</span><span class="p">;</span>
+
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">btn1</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">btn2</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">btn3</span><span class="p">;</span>
+
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">sw1</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">sw2</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">sw3</span><span class="p">;</span>
+
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">label</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">label_battery</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">label_bluetooth</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">label_clock</span><span class="p">;</span>
+
+<span class="c1">// Sound processor config sLiders &quot;objects&quot;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_ingain</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_fade_1</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_fade_2</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_bass</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_mid</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_treb</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_label_ingain</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_label_fade_1</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_label_fade_2</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_label_bass</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_label_mid</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">slider_label_treb</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">info_ingain</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">info_fade_1</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">info_fade_2</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">info_bass</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">info_mid</span><span class="p">;</span>
+<span class="n">lv_obj_t</span> <span class="o">*</span><span class="n">info_treb</span><span class="p">;</span>
+
+<span class="k">static</span> <span class="n">lv_disp_buf_t</span> <span class="n">disp_buf</span><span class="p">;</span>
+<span class="k">static</span> <span class="n">lv_color_t</span> <span class="n">buf_1</span><span class="p">[</span><span class="n">LV_HOR_RES_MAX</span> <span class="o">*</span> <span class="n">BUFFER_MULTIPLIER</span><span class="p">];</span> <span class="c1">//!&lt; LVGL display buffer</span>
+<span class="k">static</span> <span class="n">lv_color_t</span> <span class="n">buf_2</span><span class="p">[</span><span class="n">LV_HOR_RES_MAX</span> <span class="o">*</span> <span class="n">BUFFER_MULTIPLIER</span><span class="p">];</span> <span class="c1">//!&lt; LVGL display buffer</span>
+</code></pre></div>
+<h3 id="lvgl">LVGL</h3>
+<ul>
+<li></li>
+</ul>
+<h3 id="tft_espi">TFT_eSPI</h3>
+<ul>
+<li></li>
+</ul>
+<h3 id="touch">touch</h3>
+<ul>
+<li></li>
+</ul>
+<h3 id="wire">Wire</h3>
+<ul>
+<li></li>
+</ul>
+<h3 id="pca9634">PCA9634</h3>
+<ul>
+<li></li>
+</ul>
+<h3 id="mcp23017">MCP23017</h3>
+<ul>
+<li></li>
+</ul>
+<h3 id="bm83">BM83</h3>
+<ul>
+<li></li>
+</ul>
+<h3 id="softwareserial">SoftwareSerial</h3>
+<ul>
+<li></li>
+</ul>
+<h3 id="bd37544fs">BD37544FS</h3>
+<ul>
+<li></li>
+</ul>
+<h3 id="esprotary">ESPRotary</h3>
+<ul>
+<li></li>
+</ul>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../Installation%20der%20Entwicklungsumgebung/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation der Entwicklungsumgebung" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Installation der Entwicklungsumgebung
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../bm83/" class="md-footer__link md-footer__link--next" aria-label="Next: BM83 Anleitung" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              BM83 Anleitung
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.82b56eb2.min.js"></script>
+      
+    
+  </body>
+</html>
