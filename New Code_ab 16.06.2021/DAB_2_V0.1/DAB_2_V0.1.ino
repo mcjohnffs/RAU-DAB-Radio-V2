@@ -90,6 +90,7 @@ lv_obj_t *splash_screen;
 
 lv_obj_t *audio_page;
 lv_obj_t *bt_page;
+lv_obj_t *power_page;
 lv_obj_t *menu_screen;
 lv_obj_t *menu_container;
 
@@ -98,6 +99,7 @@ lv_obj_t *status_bar_container;
 lv_obj_t *audio_control_container;
 lv_obj_t *menu_control_container;
 lv_obj_t *bt_control_container;
+lv_obj_t *power_control_container;
 
 lv_obj_t *tabview;
 
@@ -134,6 +136,11 @@ lv_obj_t *list_btn_pwr;
 lv_obj_t *btn1;
 lv_obj_t *btn2;
 lv_obj_t *btn3;
+lv_obj_t *btn_standby;
+lv_obj_t *btn_pwrup;
+lv_obj_t *btn_pwrdwn;
+lv_obj_t *btn_analog_on;
+lv_obj_t *btn_poweramp_on;
 
 lv_obj_t *sw1;
 lv_obj_t *sw2;
@@ -215,7 +222,6 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	// Turn all leds on 1 for type, 0 for pin wich doesn't matter because all bool is set to true.
 	ledDriver.allOff();
 
-	
 	// Charger IC setup----------------------------------------------------------------
 	Wire.beginTransmission(0x6A);
 	Wire.write(0x14);
@@ -227,13 +233,13 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	Wire.write(0x30);
 	Wire.endTransmission();
 
-//wdt
+	//wdt
 	Wire.beginTransmission(0x6A);
 	Wire.write(0x03);
 	Wire.write(0x5A);
 	Wire.endTransmission();
-	
-// ladestrom 
+
+	// ladestrom
 	Wire.beginTransmission(0x6A);
 	Wire.write(0x04);
 	Wire.write(0x40);
@@ -258,7 +264,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	Wire.write(0x09);
 	Wire.write(0x04);
 	Wire.endTransmission();
-	
+
 	// --------------------------------------------------------------------
 
 	mcp1.init();								//!< MCP1 init
@@ -281,26 +287,6 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	mcp2.digitalWrite(3, 0); //!< Power Amp shutdown activation
 	delay(10);
 	mcp2.digitalWrite(4, 1); //!< Power Amp mute activation
-
-	// Power up sequence
-	delay(20);
-	mcp2.digitalWrite(1, 1);
-	Serial.println("7.5V enabled!"); //!< 7.5V enable
-	delay(10);
-	mcp2.digitalWrite(0, 1);
-	Serial.println("+-5V enabled!"); //!< +-5V enable
-	delay(10);
-	dacWrite(DAC1, 255); //!< Sets GPIO26 to ~3.1 V
-	delay(10);
-	mcp2.digitalWrite(2, 1);
-	Serial.println("PVCC enabled!"); //!< PVCC enable
-	delay(10);
-	mcp2.digitalWrite(3, 1);
-	Serial.println("Power Amp Shutdown deactivated!"); //!< Power amp shutdown deactivation
-	delay(10);
-	mcp2.digitalWrite(4, 0);
-	Serial.println("Power Amp Mute deactivated!"); //!< Power amp mute deactivation
-	delay(10);
 
 	lv_init(); //!< LVGL init
 
@@ -446,13 +432,12 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_add_style(music_control_container, LV_CONT_PART_MAIN, &style2);
 	lv_obj_set_click(music_control_container, false);
 
-
 	audio_page = lv_page_create(tab_audio_settings, NULL);
 	lv_obj_set_size(audio_page, 320, 170);
 	lv_obj_align(audio_page, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 30);
 	audio_control_container = lv_page_get_scrl(audio_page);
 
-	lv_obj_set_auto_realign(audio_control_container, true);					 /*Auto realign when the size changes*/
+	lv_obj_set_auto_realign(audio_control_container, true);					  /*Auto realign when the size changes*/
 	lv_obj_align_origo(audio_control_container, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
 	lv_cont_set_fit(audio_control_container, LV_FIT_MAX);
 	lv_cont_set_layout(audio_control_container, LV_LAYOUT_COLUMN_MID);
@@ -462,10 +447,20 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_align(bt_page, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 30);
 	bt_control_container = lv_page_get_scrl(bt_page);
 
-	lv_obj_set_auto_realign(bt_control_container, true);					 /*Auto realign when the size changes*/
+	lv_obj_set_auto_realign(bt_control_container, true);				   /*Auto realign when the size changes*/
 	lv_obj_align_origo(bt_control_container, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
 	lv_cont_set_fit(bt_control_container, LV_FIT_MAX);
 	lv_cont_set_layout(bt_control_container, LV_LAYOUT_COLUMN_MID);
+
+	power_page = lv_page_create(tab_power_settings, NULL);
+	lv_obj_set_size(power_page, 320, 170);
+	lv_obj_align(power_page, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 30);
+	power_control_container = lv_page_get_scrl(power_page);
+
+	lv_obj_set_auto_realign(power_control_container, true);				   /*Auto realign when the size changes*/
+	lv_obj_align_origo(power_control_container, NULL, LV_ALIGN_CENTER, 0, 0); /*This parametrs will be sued when realigned*/
+	lv_cont_set_fit(power_control_container, LV_FIT_MAX);
+	lv_cont_set_layout(power_control_container, LV_LAYOUT_COLUMN_MID);
 
 	list1 = lv_list_create(tab_menu, NULL);
 	lv_obj_set_size(list1, 320, 170);
@@ -494,29 +489,28 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_label_set_text(label, LV_SYMBOL_MUTE);
 	lv_obj_add_style(btn_mute, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_mute, 75, 35);
-	lv_obj_add_protect(btn_mute,LV_PROTECT_CLICK_FOCUS);
+	lv_obj_add_protect(btn_mute, LV_PROTECT_CLICK_FOCUS);
 
 	btn_prev = lv_btn_create(music_control_container, NULL);
 	label = lv_label_create(btn_prev, NULL);
 	lv_label_set_text(label, LV_SYMBOL_PREV);
 	lv_obj_add_style(btn_prev, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_prev, 75, 35);
-	lv_obj_add_protect(btn_prev,LV_PROTECT_CLICK_FOCUS);
+	lv_obj_add_protect(btn_prev, LV_PROTECT_CLICK_FOCUS);
 
 	btn_play = lv_btn_create(music_control_container, NULL);
 	label = lv_label_create(btn_play, NULL);
 	lv_label_set_text(label, LV_SYMBOL_PLAY);
 	lv_obj_add_style(btn_play, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_play, 75, 35);
-	lv_obj_add_protect(btn_play,LV_PROTECT_CLICK_FOCUS);
+	lv_obj_add_protect(btn_play, LV_PROTECT_CLICK_FOCUS);
 
 	btn_next = lv_btn_create(music_control_container, NULL);
 	label = lv_label_create(btn_next, NULL);
 	lv_label_set_text(label, LV_SYMBOL_NEXT);
 	lv_obj_add_style(btn_next, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_next, 75, 35);
-	lv_obj_add_protect(btn_next,LV_PROTECT_CLICK_FOCUS);
-
+	lv_obj_add_protect(btn_next, LV_PROTECT_CLICK_FOCUS);
 
 	btn_back = lv_btn_create(menu_control_container, NULL);
 	label = lv_label_create(btn_back, NULL);
@@ -524,7 +518,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_add_style(btn_back, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_back, 75, 35);
 	lv_obj_set_event_cb(btn_back, button_event_handler);
-	lv_obj_add_protect(btn_back,LV_PROTECT_CLICK_FOCUS);
+	lv_obj_add_protect(btn_back, LV_PROTECT_CLICK_FOCUS);
 
 	btn_minus = lv_btn_create(menu_control_container, NULL);
 	label = lv_label_create(btn_minus, NULL);
@@ -532,7 +526,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_add_style(btn_minus, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_minus, 75, 35);
 	lv_obj_set_event_cb(btn_minus, button_event_handler);
-	lv_obj_add_protect(btn_minus,LV_PROTECT_CLICK_FOCUS);
+	lv_obj_add_protect(btn_minus, LV_PROTECT_CLICK_FOCUS);
 
 	btn_plus = lv_btn_create(menu_control_container, NULL);
 	label = lv_label_create(btn_plus, NULL);
@@ -540,7 +534,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_add_style(btn_plus, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_plus, 75, 35);
 	lv_obj_set_event_cb(btn_plus, button_event_handler);
-	lv_obj_add_protect(btn_plus,LV_PROTECT_CLICK_FOCUS);
+	lv_obj_add_protect(btn_plus, LV_PROTECT_CLICK_FOCUS);
 
 	btn_forw = lv_btn_create(menu_control_container, NULL);
 	label = lv_label_create(btn_forw, NULL);
@@ -548,19 +542,49 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_add_style(btn_forw, LV_BTN_PART_MAIN, &style1);
 	lv_obj_set_size(btn_forw, 75, 35);
 	lv_obj_set_event_cb(btn_forw, button_event_handler);
-	lv_obj_add_protect(btn_forw,LV_PROTECT_CLICK_FOCUS);
+	lv_obj_add_protect(btn_forw, LV_PROTECT_CLICK_FOCUS);
 
 	btn1 = lv_btn_create(bt_page, NULL);
 	lv_obj_set_event_cb(btn1, event_bm83setup);
 	label = lv_label_create(btn1, NULL);
 	lv_label_set_text(label, "BM83 Setup");
 	lv_obj_add_style(btn1, LV_BTN_PART_MAIN, &style1);
- 
+
 	btn2 = lv_btn_create(bt_page, NULL);
 	lv_obj_set_event_cb(btn2, event_bm83pair);
 	label = lv_label_create(btn2, NULL);
 	lv_label_set_text(label, "BM83 Pairing");
 	lv_obj_add_style(btn2, LV_BTN_PART_MAIN, &style1);
+
+	btn_standby = lv_btn_create(power_page, NULL);
+	lv_obj_set_event_cb(btn_standby, event_standby);
+	label = lv_label_create(btn_standby, NULL);
+	lv_label_set_text(label, "Standby");
+	lv_obj_add_style(btn_standby, LV_BTN_PART_MAIN, &style1);
+
+	btn_pwrup = lv_btn_create(power_page, NULL);
+	lv_obj_set_event_cb(btn_pwrup, event_pwrup);
+	label = lv_label_create(btn_pwrup, NULL);
+	lv_label_set_text(label, "Power up comp.");
+	lv_obj_add_style(btn_pwrup, LV_BTN_PART_MAIN, &style1);
+
+	btn_pwrdwn = lv_btn_create(power_page, NULL);
+	lv_obj_set_event_cb(btn_pwrdwn, event_pwrdown);
+	label = lv_label_create(btn_pwrdwn, NULL);
+	lv_label_set_text(label, "Power down comp.");
+	lv_obj_add_style(btn_pwrdwn, LV_BTN_PART_MAIN, &style1);
+
+	btn_analog_on = lv_btn_create(power_page, NULL);
+	lv_obj_set_event_cb(btn_analog_on, event_analog_on);
+	label = lv_label_create(btn_analog_on, NULL);
+	lv_label_set_text(label, "Analog on");
+	lv_obj_add_style(btn_analog_on, LV_BTN_PART_MAIN, &style1);
+
+	btn_poweramp_on = lv_btn_create(power_page, NULL);
+	lv_obj_set_event_cb(btn_poweramp_on, event_poweramp_on);
+	label = lv_label_create(btn_poweramp_on, NULL);
+	lv_label_set_text(label, "Power amp on");
+	lv_obj_add_style(btn_poweramp_on, LV_BTN_PART_MAIN, &style1);
 
 	sw1 = lv_switch_create(audio_page, NULL);
 	label = lv_label_create(sw1, NULL);
@@ -686,7 +710,7 @@ void loop()
 	//Nothing, everything is handled with tasks
 }
 
-void loop_task(void *pvParameters) //< Standard arduino setup function
+void loop_task(void *pvParameters) //<
 {
 	for (;;)
 	{
@@ -702,7 +726,7 @@ void loop_task(void *pvParameters) //< Standard arduino setup function
 }
 
 /*
-void source_leds(void *pvParameters) //< Standard arduino setup function
+void source_leds(void *pvParameters) 
 {
 	for (;;)
 	{
@@ -740,30 +764,25 @@ void read_inputs(void *pvParameters) //< Buttons read function
 
 					break;
 				case 4:
-					//bm83.musicControl(MUSIC_CONTROL_NEXT);
-					lv_tabview_set_tab_act(tabview, 7, LV_ANIM_OFF);
+					bm83.musicControl(MUSIC_CONTROL_NEXT);
 					break;
 				case 3:
-					//bm83.musicControl(MUSIC_CONTROL_PAUSE);
-					//lv_tabview_set_tab_act(tabview, 6, LV_ANIM_ON);
+					bm83.musicControl(MUSIC_CONTROL_PAUSE);
 					break;
 				case 2:
 					bm83.musicControl(MUSIC_CONTROL_PLAY);
-					lv_tabview_set_tab_act(tabview, 5, LV_ANIM_OFF);
 					break;
 				case 1:
-					//bm83.musicControl(MUSIC_CONTROL_PREV);
-					lv_tabview_set_tab_act(tabview, 0, LV_ANIM_OFF);
+					bm83.musicControl(MUSIC_CONTROL_PREV);
 					break;
 				case 0:
 					break;
 				}
 			}
 		}
-		vTaskDelay(3 / portTICK_PERIOD_MS);
+		vTaskDelay(2 / portTICK_PERIOD_MS);
 	}
 }
-
 
 static void button_event_handler(lv_obj_t *obj, lv_event_t event)
 {
@@ -776,9 +795,7 @@ static void button_event_handler(lv_obj_t *obj, lv_event_t event)
 				prev_tab--;
 			}
 			Serial.println("btn_back clicked");
-			
 			lv_tabview_set_tab_act(tabview, prev_tab, LV_ANIM_OFF);
-
 		}
 		else if (obj == btn_minus)
 		{
@@ -794,13 +811,11 @@ static void button_event_handler(lv_obj_t *obj, lv_event_t event)
 			current_tab++;
 			prev_tab = lv_tabview_get_tab_act(tabview);
 			lv_tabview_set_tab_act(tabview, current_tab, LV_ANIM_OFF);
-			
+
 			Serial.println("btn_forw clicked");
 		}
-
 	}
 }
-
 
 static void event_handler(lv_obj_t *obj, lv_event_t event)
 {
@@ -809,32 +824,148 @@ static void event_handler(lv_obj_t *obj, lv_event_t event)
 		if (obj == list_btn_bt)
 		{
 			lv_tabview_set_tab_act(tabview, 6, LV_ANIM_OFF);
-			Serial.println("1");
 		}
 		else if (obj == list_btn_audio)
 		{
 			lv_tabview_set_tab_act(tabview, 7, LV_ANIM_OFF);
-			Serial.println("2");
 		}
 		else if (obj == list_btn_disp)
 		{
-			Serial.println("3");
 		}
 		else if (obj == list_btn_leds)
 		{
-			Serial.println("4");
 		}
 		else if (obj == list_btn_misc)
 		{
-			Serial.println("5");
 		}
 		else if (obj == list_btn_pwr)
 		{
-			Serial.println("6");
+			lv_tabview_set_tab_act(tabview, 8, LV_ANIM_OFF);
 		}
 	}
 }
 
+static void event_standby(lv_obj_t *btn_standby, lv_event_t event) //< BM83 setup function
+{
+	if (event == LV_EVENT_CLICKED)
+	{
+		// Standby sequence
+		mcp2.digitalWrite(1, 0); //!< 7.5V disable
+		mcp2.digitalWrite(0, 0); //!< +-5V disable
+		mcp2.digitalWrite(2, 0); //!< PVCC disable
+		mcp2.digitalWrite(3, 0); //!< Power Amp shutdown activation
+		mcp2.digitalWrite(4, 1); //!< Power Amp mute activation
+	}
+}
+
+static void event_pwrup(lv_obj_t *btn_pwrup, lv_event_t event) //< BM83 setup function
+{
+	if (event == LV_EVENT_CLICKED)
+	{
+
+		Serial.println("Power up start!");
+		mcp2.digitalWrite(1, 1);
+		Serial.println("7.5V enabled!"); //!< 7.5V enable
+		delay(20);
+		bd.setSelect(1);							   // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
+		bd.setIn_gain(0);							   // int 0...7 === 0...20 dB
+		bd.setVol_1(87);							   // int 0...87 === 0...-87 dB
+		bd.setFad_1(0);								   // int 0...87 === 0...-87 dB
+		bd.setFad_2(0);								   // int 0...87 === 0...-87 dB
+		bd.setBass(0);								   // int -7...0...+7 === -14...+14 dB
+		bd.setMidd(0);								   // int -7...0...+7 === -14...+14 dB
+		bd.setTreb(0);								   // int -7...0...+7 === -14...+14 dB
+		Serial.println("Sound processor configured!"); //!< 7.5V enable
+		mcp2.digitalWrite(4, 1);
+		Serial.println("+-5V enabled!"); //!< +-5V enable
+		dacWrite(DAC1, 255);			 //!< Sets GPIO26 to ~3.1 V
+		mcp2.digitalWrite(2, 1);
+		Serial.println("PVCC enabled!"); //!< PVCC enable
+		delay(20);
+		mcp2.digitalWrite(3, 1);
+		Serial.println("Power Amp Shutdown deactivated!"); //!< Power amp shutdown deactivation
+		delay(40);
+		mcp2.digitalWrite(4, 0);
+		Serial.println("Power Amp Mute deactivated!"); //!< Power amp mute deactivation
+		Serial.println("Power up end!");
+	}
+}
+
+static void event_pwrdown(lv_obj_t *btn_pwrdwn, lv_event_t event) //< BM83 setup function
+{
+	if (event == LV_EVENT_CLICKED)
+	{
+		Serial.println("Power down start!");
+		mcp2.digitalWrite(4, 1);
+		Serial.println("Power Amp Mute activated!");
+		delay(10);
+		mcp2.digitalWrite(3, 0);
+		Serial.println("Power Amp Shutdown activated!");
+		delay(10);
+		mcp2.digitalWrite(2, 0);
+		Serial.println("PVCC disabled!");
+		dacWrite(DAC1, 0);
+		mcp2.digitalWrite(4, 0);
+		Serial.println("+-5V disabled");
+		bd.setSelect(1);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
+		bd.setIn_gain(0); // int 0...7 === 0...20 dB
+		bd.setVol_1(87);  // int 0...87 === 0...-87 dB
+		bd.setFad_1(0);	  // int 0...87 === 0...-87 dB
+		bd.setFad_2(0);	  // int 0...87 === 0...-87 dB
+		bd.setBass(0);	  // int -7...0...+7 === -14...+14 dB
+		bd.setMidd(0);	  // int -7...0...+7 === -14...+14 dB
+		bd.setTreb(0);	  // int -7...0...+7 === -14...+14 dB
+		Serial.println("Sound processor configured!");
+		delay(10);
+		mcp2.digitalWrite(1, 0);
+		Serial.println("7.5V disabled!");
+		// sound processor mute fehlt
+		Serial.println("Power down end!");
+	}
+}
+
+static void event_analog_on(lv_obj_t *btn_analog_on, lv_event_t event) //< BM83 setup function
+{
+	if (event == LV_EVENT_CLICKED)
+	{
+		Serial.println("Analog on start!");
+		mcp2.digitalWrite(1, 1);
+		Serial.println("7.5V enabled!"); //!< 7.5V enable
+		delay(20);
+		bd.setSelect(1);							   // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
+		bd.setIn_gain(0);							   // int 0...7 === 0...20 dB
+		bd.setVol_1(87);							   // int 0...87 === 0...-87 dB
+		bd.setFad_1(0);								   // int 0...87 === 0...-87 dB
+		bd.setFad_2(0);								   // int 0...87 === 0...-87 dB
+		bd.setBass(0);								   // int -7...0...+7 === -14...+14 dB
+		bd.setMidd(0);								   // int -7...0...+7 === -14...+14 dB
+		bd.setTreb(0);								   // int -7...0...+7 === -14...+14 dB
+		Serial.println("Sound processor configured!"); //!< 7.5V enable
+		mcp2.digitalWrite(4, 1);
+		Serial.println("+-5V enabled!"); //!< +-5V enable
+		Serial.println("Power up start!");
+		Serial.println("Analog on end!");
+	}
+}
+
+static void event_poweramp_on(lv_obj_t *btn_poweramp_on, lv_event_t event) //< BM83 setup function
+{
+	if (event == LV_EVENT_CLICKED)
+	{
+		Serial.println("Power amp on start!");
+		dacWrite(DAC1, 255); //!< Sets GPIO26 to ~3.1 V
+		mcp2.digitalWrite(2, 1);
+		Serial.println("PVCC enabled!"); //!< PVCC enable
+		delay(20);
+		mcp2.digitalWrite(3, 1);
+		Serial.println("Power Amp Shutdown deactivated!"); //!< Power amp shutdown deactivation
+		delay(40);
+		mcp2.digitalWrite(4, 0);
+		Serial.println("Power Amp Mute deactivated!"); //!< Power amp mute deactivation
+													   // sound processor mute fehlt
+		Serial.println("Power amp on end!");
+	}
+}
 static void event_bm83setup(lv_obj_t *btn1, lv_event_t event) //< BM83 setup function
 {
 	if (event == LV_EVENT_CLICKED)
@@ -862,6 +993,8 @@ static void event_soundsetup(lv_obj_t *btn3, lv_event_t event)
 		bd.setSelect(1);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
 		bd.setIn_gain(0); // int 0...7 === 0...20 dB
 		bd.setVol_1(87);  // int 0...87 === 0...-87 dB
+		bd.setFad_1(0);	  // int 0...87 === 0...-87 dB
+		bd.setFad_2(0);	  // int 0...87 === 0...-87 dB
 		bd.setBass(0);	  // int -7...0...+7 === -14...+14 dB
 		bd.setMidd(0);	  // int -7...0...+7 === -14...+14 dB
 		bd.setTreb(0);	  // int -7...0...+7 === -14...+14 dB
@@ -1007,7 +1140,7 @@ void menu_bar(void *pvParameters)
 
 	for (;;)
 	{
-		
+
 		current_tab = lv_tabview_get_tab_act(tabview);
 
 		if (current_tab > 1)
@@ -1015,10 +1148,10 @@ void menu_bar(void *pvParameters)
 			lv_obj_move_background(music_control_container);
 			lv_obj_move_foreground(menu_control_container);
 		}
-		else 
-		{	
+		else
+		{
 			lv_obj_move_background(menu_control_container);
-			lv_obj_move_foreground(music_control_container);						
+			lv_obj_move_foreground(music_control_container);
 		}
 		vTaskDelay(1 / portTICK_PERIOD_MS);
 	}
@@ -1034,7 +1167,6 @@ static void slider_event_cb_ingain(lv_obj_t *slider_ingain, lv_event_t event)
 		bd.setIn_gain(lv_slider_get_value(slider_ingain));
 	}
 }
-
 
 static void slider_event_cb_bass(lv_obj_t *slider_bass, lv_event_t event)
 {
