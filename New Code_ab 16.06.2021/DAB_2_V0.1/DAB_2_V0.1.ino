@@ -545,16 +545,18 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_add_protect(btn_forw, LV_PROTECT_CLICK_FOCUS);
 
 	btn1 = lv_btn_create(bt_page, NULL);
-	lv_obj_set_event_cb(btn1, event_bm83setup);
 	label = lv_label_create(btn1, NULL);
 	lv_label_set_text(label, "BM83 Setup");
 	lv_obj_add_style(btn1, LV_BTN_PART_MAIN, &style1);
+	lv_obj_set_event_cb(btn1, event_bm83setup);
+	lv_obj_add_protect(btn1, LV_PROTECT_CLICK_FOCUS);
 
 	btn2 = lv_btn_create(bt_page, NULL);
-	lv_obj_set_event_cb(btn2, event_bm83pair);
 	label = lv_label_create(btn2, NULL);
 	lv_label_set_text(label, "BM83 Pairing");
 	lv_obj_add_style(btn2, LV_BTN_PART_MAIN, &style1);
+	lv_obj_set_event_cb(btn2, event_bm83pair);
+	lv_obj_add_protect(btn2, LV_PROTECT_CLICK_FOCUS);
 
 	btn_standby = lv_btn_create(power_page, NULL);
 	lv_obj_set_event_cb(btn_standby, event_standby);
@@ -876,7 +878,7 @@ static void event_pwrup(lv_obj_t *btn_pwrup, lv_event_t event) //< BM83 setup fu
 		bd.setMidd(0);								   // int -7...0...+7 === -14...+14 dB
 		bd.setTreb(0);								   // int -7...0...+7 === -14...+14 dB
 		Serial.println("Sound processor configured!"); //!< 7.5V enable
-		mcp2.digitalWrite(4, 1);
+		mcp2.digitalWrite(0, 1);
 		Serial.println("+-5V enabled!"); //!< +-5V enable
 		dacWrite(DAC1, 255);			 //!< Sets GPIO26 to ~3.1 V
 		mcp2.digitalWrite(2, 1);
@@ -905,7 +907,7 @@ static void event_pwrdown(lv_obj_t *btn_pwrdwn, lv_event_t event) //< BM83 setup
 		mcp2.digitalWrite(2, 0);
 		Serial.println("PVCC disabled!");
 		dacWrite(DAC1, 0);
-		mcp2.digitalWrite(4, 0);
+		mcp2.digitalWrite(0, 0);
 		Serial.println("+-5V disabled");
 		bd.setSelect(1);  // int 0...7 === A B C D E F INPUT_SHORT INPUT_MUTE
 		bd.setIn_gain(0); // int 0...7 === 0...20 dB
@@ -941,9 +943,8 @@ static void event_analog_on(lv_obj_t *btn_analog_on, lv_event_t event) //< BM83 
 		bd.setMidd(0);								   // int -7...0...+7 === -14...+14 dB
 		bd.setTreb(0);								   // int -7...0...+7 === -14...+14 dB
 		Serial.println("Sound processor configured!"); //!< 7.5V enable
-		mcp2.digitalWrite(4, 1);
+		mcp2.digitalWrite(0, 1);
 		Serial.println("+-5V enabled!"); //!< +-5V enable
-		Serial.println("Power up start!");
 		Serial.println("Analog on end!");
 	}
 }
@@ -971,7 +972,7 @@ static void event_bm83setup(lv_obj_t *btn1, lv_event_t event) //< BM83 setup fun
 	if (event == LV_EVENT_CLICKED)
 	{
 		digitalWrite(mfbPin, HIGH); // sets the MFB Pin 23 "High" to power on BM83 over BAT_IN
-		delay(500);
+		//delay(500);
 		bm83.run();
 		bm83.powerOn();			   // Sends "power on" command over UART to BM83
 		digitalWrite(mfbPin, LOW); // sets the MFB Pin 23 "LOW" (no longer needed after power on process)
