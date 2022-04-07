@@ -1,13 +1,14 @@
 {
-  "baseUrl": "/doxybook2/mkdocs-material/",
+  "baseUrl": "/",
   "indexInFolders": true,
-  "linkSuffix": "/",
-  "indexClassesName": "index",
-  "indexFilesName": "index",
-  "indexGroupsName": "index",
-  "indexNamespacesName": "index",
-  "indexRelatedPagesName": "index",
-  "indexExamplesName": "index",
+  "linkSuffix": ".md",
+  "linkLowercase": false,
+  "indexFunctionsName": "README",
+  "indexFilesName": "README",
+  "indexGroupsName": "README",
+  "indexNamespacesName": "README",
+  "indexRelatedPagesName": "README",
+  "indexExamplesName": "README",
   "mainPageInRoot": true,
-  "mainPageName": "index"
+  "mainPageName": "README"
 }

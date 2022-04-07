@@ -1,3 +1,4 @@
 {
-    "restructuredtext.confPath": "${workspaceFolder}\\Stuff\\my-project\\docs2\\source"
+    "restructuredtext.confPath": "${workspaceFolder}\\Stuff\\my-project\\docs2\\source",
+    "docwriter.style": "Doxygen"
 }

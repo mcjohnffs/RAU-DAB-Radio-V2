@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.3" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>DAB V2.0</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<sect1 id="index_1description">
+<title>Übersicht</title>
+</sect1>
+<sect1 id="index_1circuit">
+<title>Schema?</title>
+<para><itemizedlist>
+<listitem></listitem><listitem></listitem></itemizedlist>
+</para>
+</sect1>
+<sect1 id="index_1libraries">
+<title>Libraries</title>
+<para><itemizedlist>
+<listitem><para><itemizedlist>
+<listitem></listitem></itemizedlist>
+</para>
+</listitem></itemizedlist>
+</para>
+</sect1>
+<sect1 id="index_1notes">
+<title>Notes</title>
+<para><itemizedlist>
+<listitem></listitem></itemizedlist>
+</para>
+</sect1>
+<sect1 id="index_1todo">
+<title>TODO</title>
+<para><itemizedlist>
+<listitem></listitem></itemizedlist>
+</para>
+</sect1>
+<sect1 id="index_1author">
+<title>Author</title>
+<para><itemizedlist>
+<listitem></listitem></itemizedlist>
+</para>
+<para>Copyright (c) 2021, E.Isaku, All rights reserved. </para>
+</sect1>
+    </detaileddescription>
+    <location file="DAB_2_V0.1.ino"/>
+  </compounddef>
+</doxygen>
