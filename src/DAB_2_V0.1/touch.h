@@ -60,11 +60,14 @@ bool my_touchpad_read(lv_indev_drv_t * indev_driver, lv_indev_data_t * data)
     data->point.y = touchY;
     last_user_input = millis();
 
+    // Debug xy touch points
+    /*
     Serial.print("X: ");
     Serial.print(touchX);
     Serial.print(" Y: ");
     Serial.println(touchY);
-    // }
+    */ 
+
   } else {
     
     data->point.x = oldTouchX;

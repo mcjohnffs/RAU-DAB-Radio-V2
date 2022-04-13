@@ -1,0 +1,10 @@
+site_name: DAB Radio
+site_url: https://mcjohnffs.github.io/
+nav:
+    - Home: index.markdown
+    - Hard- und Software Konfiguration: Hard- und Software Knfiguration.markdown
+    - Datenblätter: Datenblätter.markdown
+    - Installation der Entwicklungsumgebung: Installation der Entwicklungsumgebung.markdown
+    - Quellen: Quellen.markdown
+theme:
+  name: material

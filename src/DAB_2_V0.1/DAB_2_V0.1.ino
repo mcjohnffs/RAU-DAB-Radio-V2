@@ -54,6 +54,7 @@
 #define ENC2_ROTARY_PIN_B 36 //!< Encoder 2 Pin B
 
 #define CLICKS_PER_STEP 2 // Number depends on the encoder
+#define CLICKS_PER_STEP_M 6 // Number depends on the encoder
 
 #define MIN_POS 87	//!< Max volume 0 dB
 #define MAX_POS 0	//!< Min volume -87 dB
@@ -65,7 +66,6 @@ const int mfbPin = 23; //!< BM83 MFB Pin, required for BM83 power on
 static lv_group_t *g;			  //!< An object group
 static lv_indev_t *encoder_indev; //!< Encoder 1 LVGL input device
 
-LV_IMG_DECLARE(raulogo);
 
 // Global variables
 uint8_t conf;
@@ -77,6 +77,7 @@ int menu_status = 0;
 int current_tab;
 int prev_tab;
 int home_tab;
+int menu_tab;
 
 TaskHandle_t Task1; //!< Taskhandle for "read_inputs" task
 TaskHandle_t Task2;
@@ -184,14 +185,6 @@ MCP23017 mcp2 = MCP23017(0x24); //!< MCP2 instance (MCU board)
 
 TFT_eSPI tft = TFT_eSPI(); //!< TFT instance
 
-#if USE_LV_LOG != 0
-void my_print(lv_log_level_t level, const char *file, uint32_t line, const char *dsc) //!< LVGL serial debugging
-{
-
-	Serial.println("%s@%d->%s\r\n", file, line, dsc);
-	Serial.flush();
-}
-#endif
 
 /**
  * *Flush the display with the given color.*
@@ -229,7 +222,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 
 	ledDriver.begin();
 	// Turn all leds on 1 for type, 0 for pin wich doesn't matter because all bool is set to true.
-	ledDriver.allOff();
+	ledDriver.allOn();
 
 	// Charger IC setup----------------------------------------------------------------
 	Wire.beginTransmission(0x6A);
@@ -391,6 +384,8 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	tab_display_settings = lv_tabview_add_tab(tabview, "9");
 	tab_led_settings = lv_tabview_add_tab(tabview, "10");
 
+
+	// disable tab side scrolling
 	lv_page_set_scroll_propagation(tab_home, false);
 	lv_page_set_scroll_propagation(tab_vis, false);
 	lv_page_set_scroll_propagation(tab_bt, false);
@@ -688,6 +683,13 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_group_add_obj(g, btn1);
 	lv_group_add_obj(g, btn2);
 	lv_group_add_obj(g, btn3);
+	lv_group_add_obj(g, list_btn_bt);
+	lv_group_add_obj(g, list_btn_audio);
+	lv_group_add_obj(g, list_btn_disp);
+	lv_group_add_obj(g, list_btn_misc);
+	lv_group_add_obj(g, list_btn_pwr);
+
+
 
 	lv_group_set_wrap(g, true);
 	lv_group_set_editing(g, false);
@@ -700,7 +702,7 @@ void setup() //!< The standard Arduino setup function used for setup and configu
 	lv_obj_set_drag(logo1, false);
 	*/
 
-	r.begin(ENC1_ROTARY_PIN_A, ENC1_ROTARY_PIN_B, CLICKS_PER_STEP);
+	r.begin(ENC1_ROTARY_PIN_A, ENC1_ROTARY_PIN_B, CLICKS_PER_STEP_M);
 	r.setChangedHandler(rotate_r);
 	r.setLeftRotationHandler(showDirection_r);
 	r.setRightRotationHandler(showDirection_r);
@@ -732,7 +734,10 @@ void loop_task(void *pvParameters) //<
 
 		lv_task_handler(); //< LVGL task handler loop
 
-		vTaskDelay(1 / portTICK_PERIOD_MS);
+		Serial.print("Main Loop Stack: ");
+		Serial.println(uxTaskGetStackHighWaterMark( NULL ));
+
+		vTaskDelay(1);
 	}
 }
 
@@ -797,7 +802,9 @@ void read_inputs(void *pvParameters) //< Buttons read function
 				}
 			}
 		}
-		vTaskDelay(2 / portTICK_PERIOD_MS);
+		Serial.print("Read inputs Stack: ");
+		Serial.println(uxTaskGetStackHighWaterMark( NULL ));
+		vTaskDelay(2);
 	}
 }
 
@@ -1237,12 +1244,18 @@ bool encoder_read(lv_indev_drv_t *encoder_indev, lv_indev_data_t *data)
 	data->enc_diff = enc_get_new_moves();
 
 	home_tab = lv_tabview_get_tab_act(tabview);
+	menu_tab = lv_tabview_get_tab_act(tabview);
 
 	if (mcp1.digitalRead(5) == 1 && home_tab == 0)
 	{
 		data->state = LV_INDEV_STATE_PR;
 		prev_tab = lv_tabview_get_tab_act(tabview);
 		lv_tabview_set_tab_act(tabview, 5, LV_ANIM_OFF);
+	}
+
+	else if (mcp1.digitalRead(5) == 1 && menu_tab == 5)
+	{
+		data->state = LV_INDEV_STATE_PR;
 	}
 
 	else
@@ -1261,6 +1274,7 @@ bool encoder_read(lv_indev_drv_t *encoder_indev, lv_indev_data_t *data)
 int enc_get_new_moves()
 {
 	int encoderCount = r.getPosition();
+	Serial.println(encoderCount);
 	int diff = encoderCount - encoderLastValue;
 	encoderLastValue = encoderCount;
 	//Serial.print("Diff:");
@@ -1294,7 +1308,10 @@ void menu_bar(void *pvParameters)
 			lv_obj_move_background(menu_control_container);
 			lv_obj_move_foreground(music_control_container);
 		}
-		vTaskDelay(1 / portTICK_PERIOD_MS);
+
+		Serial.print("Menu Bar Stack: ");
+		Serial.println(uxTaskGetStackHighWaterMark( NULL ));
+		vTaskDelay(1);
 	}
 }
 
